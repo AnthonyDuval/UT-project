@@ -4,6 +4,8 @@
 
 import { loadDemoSave, saveDemoSave } from './demoStorage'
 import { toPublicState } from './demoState'
+import { getLocale, getTranslator } from '../i18n'
+import { tx } from '../i18n/helpers'
 
 export const DEMO_MARKET_ITEMS = [
   {
@@ -60,8 +62,9 @@ export function getDemoMarket() {
 export function buyDemoItem(itemId) {
   const save = loadDemoSave()
   const item = DEMO_MARKET_ITEMS.find((i) => i.id === itemId)
-  if (!item) throw new Error('Objet introuvable')
-  if (save.player.bittek < item.price) throw new Error('BitTek insuffisant')
+  const tr = getTranslator(getLocale())
+  if (!item) throw new Error(tr('errors.marketNotFound'))
+  if (save.player.bittek < item.price) throw new Error(tr('errors.marketInsufficient'))
 
   save.player.bittek -= item.price
 
@@ -78,8 +81,9 @@ export function buyDemoItem(itemId) {
   }
 
   saveDemoSave(save)
+  const itemName = tr(`market.items.${itemId}.name`) || item.name
   return {
-    message: `[DEMO MARKET] Achat : ${item.name} (-${item.price} BitTek)`,
+    message: tr('errors.marketPurchase', { name: itemName, price: item.price }),
     state: toPublicState(save),
     inventory: getDemoInventory(),
   }
@@ -108,20 +112,21 @@ export function getDemoInventory() {
 export function useDemoItem(itemId) {
   const save = loadDemoSave()
   const inv = save.inventory.find((e) => e.itemId === itemId)
-  if (!inv) throw new Error('Objet absent de l\'inventaire')
+  const tr = getTranslator(getLocale())
+  if (!inv) throw new Error(tr('errors.marketNotInInventory'))
 
   const item = DEMO_MARKET_ITEMS.find((i) => i.id === itemId)
-  if (!item) throw new Error('Objet introuvable')
+  if (!item) throw new Error(tr('errors.marketNotFound'))
 
-  const output = [`[DEMO INV] Utilisation : ${item.name}`]
+  const output = [tx('inventory.demoUse', { name: item.name })]
 
   if (item.effect_type === 'reduce_trace') {
     const old = save.traceLevel
     save.traceLevel = Math.max(0, save.traceLevel - item.effect_value)
-    output.push(`[INV] TRACE : ${old}% → ${save.traceLevel}%`)
+    output.push(tx('inventory.traceReduced', { old, new: save.traceLevel }))
   } else if (item.effect_type === 'trace_halved') {
     save.activeEffects.push({ type: 'trace_halved', usesLeft: item.effect_value, label: item.name })
-    output.push(`[INV] Brouilleur actif — ${item.effect_value} charges`)
+    output.push(tx('inventory.jammerActive', { count: item.effect_value }))
   }
 
   if (inv.quantity <= 1) {

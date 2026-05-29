@@ -4,17 +4,30 @@
 
 import { MISSION_DEFS } from './demoState'
 import { syncMissionObjectiveText } from '../utils/missionHints'
+import { tx, txRaw } from '../i18n/helpers'
+import { getTranslator, getLocale } from '../i18n'
 
-const NOVA_CONTACT_LINES = [
-  '',
-  '╔══════════════════════════════════════════════════╗',
-  '║  TRANSMISSION INTERCEPTÉE — ORIGINE INCONNUE     ║',
-  '╚══════════════════════════════════════════════════╝',
-  '',
-  '« Bien joué. UltraTech ne doit pas savoir. »',
-  '« Le marché noir t\'attend. Reste fantôme. »',
-  '— N0VA',
-]
+function getMissionTitle(missionId) {
+  return getTranslator(getLocale())(`missions.${missionId}.title`)
+    || MISSION_DEFS[missionId]?.title
+}
+
+function novaContactLines() {
+  const t = txRaw('terminal.missionProgress.signalFantome.novaTransmission')
+  if (t && typeof t === 'object') {
+    return [
+      '',
+      t.banner,
+      t.title,
+      t.footerBanner,
+      '',
+      t.line1,
+      t.line2,
+      t.signature,
+    ]
+  }
+  return ['']
+}
 
 function objectiveDone(save, objectiveId) {
   const read = new Set(save.read_files || [])
@@ -52,26 +65,28 @@ function grantMissionRewards(save, missionId) {
     save.player.reputation += preview?.reputation ?? 1
     save.flags.mission_1_complete = true
     save.marketUnlocked = true
+    save.hintBrokerUnlocked = true
     if (!save.discoveredNodes.includes('satlink_03')) {
       save.discoveredNodes.push('satlink_03')
     }
     if (!save.seenEvents.includes('nova_contact')) {
       save.seenEvents.push('nova_contact')
       if (save.novaIntroSeen) {
-        narrativeLines.push(...NOVA_CONTACT_LINES)
+        narrativeLines.push(...novaContactLines())
       } else {
         narrativeLines.push(
           '',
-          '[???] Transmission interceptée — origine inconnue.',
-          '« Bien joué. UltraTech ne doit pas savoir. »',
-          '« Le marché noir t\'attend. Reste fantôme. »',
+          tx('terminal.missionProgress.signalFantome.novaIntercepted'),
+          tx('terminal.missionProgress.signalFantome.novaLine1'),
+          tx('terminal.missionProgress.signalFantome.novaLine2'),
         )
       }
     }
-    messages.push('[SYS] +50 BitTek | +1 Réputation')
-    messages.push('[SYS] BLACK MARKET — accès autorisé.')
-    messages.push('[NET] Nouveau relais détecté : SATLINK_03')
-    messages.push('[MISSION] Signal Fantôme — TERMINÉE')
+    messages.push(tx('terminal.missionProgress.signalFantome.bittekRep'))
+    messages.push(tx('terminal.missionProgress.signalFantome.marketUnlocked'))
+    messages.push(tx('terminal.missionProgress.signalFantome.hintBroker'))
+    messages.push(tx('terminal.missionProgress.signalFantome.satlinkDetected'))
+    messages.push(tx('terminal.missionProgress.signalFantome.missionComplete'))
   }
 
   if (missionId === 'satlink_intrusion') {
@@ -81,8 +96,8 @@ function grantMissionRewards(save, missionId) {
     if (!save.unlocked_commands.includes('probe')) {
       save.unlocked_commands.push('probe')
     }
-    messages.push('[SYS] +75 BitTek | +1 Réputation')
-    messages.push('[MISSION] Intrusion Orbitale — TERMINÉE')
+    messages.push(tx('terminal.missionProgress.satlinkIntrusion.bittekRep'))
+    messages.push(tx('terminal.missionProgress.satlinkIntrusion.missionComplete'))
   }
 
   return { messages, narrativeLines }
@@ -106,7 +121,7 @@ function completeMission(save, missionId) {
     for (const cmd of ['probe', 'status']) {
       if (!save.unlocked_commands.includes(cmd)) save.unlocked_commands.push(cmd)
     }
-    messages.push(`[MISSION] Nouvelle mission : ${MISSION_DEFS[nextId].title}`)
+    messages.push(tx('terminal.missionProgress.newMission', { title: getMissionTitle(nextId) }))
   }
 
   return { messages, narrativeLines }
@@ -128,7 +143,8 @@ export function updateMissionProgress(save) {
       if (objectiveDone(save, obj.id)) {
         completed.push(obj.id)
         m.completedObjectives = completed
-        output.push(`[MISSION] ✓ ${obj.label}`)
+        const label = tx(`terminal.missionProgress.objectives.${obj.id}`) || obj.label
+        output.push(tx('terminal.missionProgress.objectiveComplete', { label }))
       }
     }
 

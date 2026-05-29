@@ -6,6 +6,7 @@ import { HIDDEN_COMMANDS } from './mysteryEvents'
 import { processMysteryEvents } from './eventManager'
 import { discoverCodex } from './codexService'
 import { NODE_META } from './demoState'
+import { tx, txRaw } from '../i18n/helpers'
 
 function bumpHiddenUse(save, cmd) {
   save.hiddenCommandUses = save.hiddenCommandUses || {}
@@ -30,14 +31,10 @@ function cmdMirror(save) {
 
   return {
     output: [
-      '[MIRROR] Reflet instable...',
-      '╔══════════════════════════════╗',
-      '║  ghost_demo    ghost_demo    ║',
-      '║       ↓            ↑         ║',
-      '║  ultratech?    ultratech?    ║',
-      '╚══════════════════════════════╝',
+      tx('terminal.hidden.mirror.unstable'),
+      ...(txRaw('terminal.hidden.mirror.ascii') || []),
       '',
-      '[SYS] memory_fragment.log — segment récupéré.',
+      tx('terminal.hidden.mirror.memoryRecovered'),
       ...(mystery.autoLines.length ? ['', ...mystery.autoLines] : []),
     ],
     addTrace: 3,
@@ -56,17 +53,17 @@ function cmdGhost(save) {
 
   const mystery = processMysteryEvents(save, { type: 'command', command: 'ghost' })
   const lines = [
-    '[GHOST] Balise fantôme activée...',
+    tx('terminal.hidden.ghost.activating'),
     '',
-    '...',
-    '« Quelqu\'un d\'autre écoute ce canal. »',
-    '« Ce n\'est peut-être pas N0VA. »',
+    tx('terminal.hidden.ghost.pause'),
+    tx('terminal.hidden.ghost.line1'),
+    tx('terminal.hidden.ghost.line2'),
     '',
-    '[GHOST] Signal faible — 0x7F.GHOST',
+    tx('terminal.hidden.ghost.signal'),
   ]
 
   if (save.flags.mystery_signal_unlocked) {
-    lines.push('', '[GHOST] unknown_signal.enc — présence détectée dans /home.')
+    lines.push('', tx('terminal.hidden.ghost.unknownSignal'))
   }
 
   return {
@@ -79,7 +76,7 @@ function cmdGhost(save) {
 function cmdNova(save) {
   if (!save.novaIntroSeen) {
     return {
-      output: ['[???] Canal muet — origine non identifiée.'],
+      output: [tx('terminal.hidden.nova.muted')],
       addTrace: 1,
     }
   }
@@ -88,39 +85,11 @@ function cmdNova(save) {
     discoverCodex(save, 'nova_contact_01')
   }
   const tier = save.hiddenCommandUses.nova
-  const dialogues = [
-    [
-      '>>> N0VA <<<',
-      '',
-      '« Opérateur. Ne fais confiance à personne sur ce réseau. »',
-      '« Même pas à moi. »',
-    ],
-    [
-      '>>> N0VA <<<',
-      '',
-      '« UltraTech ne cherche pas des hackers. »',
-      '« Ils cherchent des preuves que nous existons. »',
-      '« Tu es une preuve, maintenant. »',
-    ],
-    [
-      '>>> N0VA <<<',
-      '',
-      '« Si je disparais des logs, continue sans moi. »',
-      '« Ou peut-être que c\'est ce qu\'ils veulent que tu croies. »',
-      '',
-      '— fin de transmission —',
-    ],
-    [
-      '[N0VA] ...',
-      '',
-      '« mirror. ghost. echo. override. »',
-      '« Certains mots ouvrent des portes. D\'autres des pièges. »',
-    ],
-  ]
-
+  const dialogues = txRaw('terminal.hidden.nova.dialogues') || []
   const idx = Math.min(tier - 1, dialogues.length - 1)
+
   return {
-    output: dialogues[idx],
+    output: dialogues[idx] || [],
     addTrace: 2,
     uiEffect: tier === 1 ? { type: 'scanlines', duration: 2000 } : null,
   }
@@ -129,29 +98,31 @@ function cmdNova(save) {
 function cmdTraceHidden(save) {
   bumpHiddenUse(save, 'trace')
   discoverCodex(save, 'trace_introspection')
-  const t = save.traceLevel
+  const level = save.traceLevel
   const lines = [
-    '[TRACE] Analyse introspective...',
+    tx('terminal.hidden.trace.header'),
     '',
-    `  Niveau actuel : ${t}%`,
-    `  Multiplicateur  : x${NODE_META[save.currentNode]?.traceMultiplier || 1}`,
+    tx('terminal.hidden.trace.currentLevel', { level }),
+    tx('terminal.hidden.trace.multiplier', {
+      multiplier: NODE_META[save.currentNode]?.traceMultiplier || 1,
+    }),
   ]
 
-  if (t < 30) {
-    lines.push('', '« Tu es presque invisible. Profite-en. » — ???')
-  } else if (t < 60) {
-    lines.push('', '[TRACE] Motif récurrent : activité anormale.')
+  if (level < 30) {
+    lines.push('', tx('terminal.hidden.trace.low'))
+  } else if (level < 60) {
+    lines.push('', tx('terminal.hidden.trace.mediumPattern'))
     lines.push(save.novaIntroSeen
-      ? '« Ils construisent ton profil. » — N0VA'
-      : '« Ils construisent ton profil. » — ???')
-  } else if (t < 85) {
-    lines.push('', '[WARN] UltraTech corrèle vos actions.')
+      ? tx('terminal.hidden.trace.mediumNova')
+      : tx('terminal.hidden.trace.mediumUnknown'))
+  } else if (level < 85) {
+    lines.push('', tx('terminal.hidden.trace.highWarn'))
     lines.push(save.novaIntroSeen
-      ? '« Ce n\'est plus de la surveillance. C\'est une chasse. » — N0VA'
-      : '« Ce n\'est plus de la surveillance. C\'est une chasse. » — ???')
+      ? tx('terminal.hidden.trace.highNova')
+      : tx('terminal.hidden.trace.highUnknown'))
   } else {
-    lines.push('', '[CRIT] Signature exposée.')
-    lines.push('« Override ne sauvera personne. » — ???')
+    lines.push('', tx('terminal.hidden.trace.critical'))
+    lines.push(tx('terminal.hidden.trace.criticalLine'))
   }
 
   return { output: lines, addTrace: 0 }
@@ -164,11 +135,7 @@ function cmdEcho(save, args) {
 
   if (!text) {
     return {
-      output: [
-        '[ECHO] ...',
-        '[ECHO] ...',
-        '[ECHO] Quelqu\'un répète votre silence.',
-      ],
+      output: txRaw('terminal.hidden.echo.empty') || [],
       addTrace: 1,
     }
   }
@@ -178,15 +145,17 @@ function cmdEcho(save, args) {
     .map((c, i) => (i % 4 === 0 && c !== ' ' ? '█' : c))
     .join('')
 
+  const novaLine = text.includes('nova') || text.includes('N0VA')
+    ? (save.novaIntroSeen
+      ? tx('terminal.hidden.echo.novaKnown')
+      : tx('terminal.hidden.echo.novaUnknown'))
+    : tx('terminal.hidden.echo.recorded')
+
   return {
     output: [
-      `[ECHO] ${corrupted}`,
+      tx('terminal.hidden.echo.prefix', { text: corrupted }),
       '',
-      text.includes('nova') || text.includes('N0VA')
-        ? (save.novaIntroSeen
-          ? '>>> N0VA <<< « Arrête de m\'appeler. Ils écoutent. »'
-          : '>>> ??? <<< « Arrête. Ils écoutent. »')
-        : '[ECHO] Réverbération enregistrée dans les archives.',
+      novaLine,
     ],
     addTrace: 2,
   }
@@ -199,11 +168,7 @@ function cmdOverride(save) {
   if (uses === 1) {
     discoverCodex(save, 'override_denied')
     return {
-      output: [
-        '[OVERRIDE] Tentative d\'élévation...',
-        '[DENIED] Privilèges insuffisants.',
-        '[SYS] Incident enregistré.',
-      ],
+      output: txRaw('terminal.hidden.override.denied') || [],
       addTrace: 8,
     }
   }
@@ -215,11 +180,7 @@ function cmdOverride(save) {
 
   const result = {
     output: [
-      '[OVERRIDE] Contournement partiel...',
-      '[SYS] do_not_open.sys — accès filesystem anormal.',
-      '',
-      '« Ne l\'ouvre pas. » — N0VA',
-      '« Ou ouvre-le. Je veux voir ce qu\'ils cachent. » — ???',
+      ...(txRaw('terminal.hidden.override.breach') || []),
       ...(mystery.autoLines.length ? ['', ...mystery.autoLines] : []),
     ],
     addTrace: 12,
@@ -238,11 +199,7 @@ function cmdOverride(save) {
 function cmdDisconnectHidden(save) {
   discoverCodex(save, 'phantom_disconnect')
   return {
-    output: [
-      '[NET] Aucune connexion active à fermer.',
-      '[???] Pourtant un tunnel fantôme vient de se fermer ailleurs.',
-      '[SYS] Entrée journalisée — origine : INCONNUE',
-    ],
+    output: txRaw('terminal.hidden.disconnect') || [],
     addTrace: 4,
     uiEffect: { type: 'scanlines', duration: 1500 },
   }

@@ -1,4 +1,7 @@
 import { buildCodexState } from './codexService'
+import { getHintBrokerState } from './hintBroker'
+import { createBehaviorState } from '../systems/PlayerBehaviorTracker'
+import { getFileContent, getFileDescription } from '../i18n/helpers'
 import {
   NOVA_GATED_FILES,
   sanitizeMissionRewards,
@@ -11,6 +14,7 @@ const MISSION_DEFS = {
     title: 'Signal Fantôme',
     subtitle: 'Mission 1',
     description: 'Un relais non identifié émet un signal. Localisez-le et établissez contact.',
+    atmosphere: 'Un opérateur a disparu après avoir scanné ce segment. UltraTech a effacé les traces — pas assez vite.',
     primaryNode: 'relay_ghost',
     objectiveDefs: [
       { id: 'read_files', label: 'Découvrir ce qui a été laissé sur le terminal' },
@@ -28,6 +32,7 @@ const MISSION_DEFS = {
     title: 'Intrusion Orbitale',
     subtitle: 'Mission 2',
     description: 'Pénétrez le relais orbital SATLINK_03 et cartographiez le réseau UltraTech.',
+    atmosphere: 'SATLINK_03 transmet des données qu\'aucun contrat orbital ne justifie. Les cartographes effacés le savaient.',
     primaryNode: 'satlink_03',
     objectiveDefs: [
       { id: 'connect_satlink', label: 'Atteindre le relais orbital SATLINK_03' },
@@ -77,6 +82,9 @@ export function createFreshDemoState() {
     gameOver: false,
     marketUnlocked: false,
     marketAdvancedUnlocked: false,
+    hintBrokerUnlocked: false,
+    purchasedHints: [],
+    hintBrokerHistory: [],
     inventory: [],
     activeEffects: [],
     traceReductionPassive: 0,
@@ -93,6 +101,11 @@ export function createFreshDemoState() {
     hiddenCommandUses: {},
     lastCommand: '',
     activeUiEffect: null,
+    activeCinematic: null,
+    cinematicSeenEvents: [],
+    cinematicLastGlobalAt: 0,
+    cinematicLastTriggeredAt: {},
+    cinematicFlags: {},
     fakeGameOverUntil: null,
     uiIntrosSeen: {},
     tutorialFlags: {},
@@ -102,9 +115,13 @@ export function createFreshDemoState() {
     horrorFlags: {},
     connectedSinceMs: null,
     novaIntroSeen: false,
+    seenTransmissions: [],
+    activeCharacterTransmission: null,
+    characterTransmissionLastAt: 0,
     codexDiscovered: {},
     codexNotified: {},
     eventLastTriggeredAt: {},
+    playerBehavior: createBehaviorState(),
   }
 }
 
@@ -149,6 +166,9 @@ export function createAdvancedDemoState() {
     gameOver: false,
     marketUnlocked: true,
     marketAdvancedUnlocked: true,
+    hintBrokerUnlocked: true,
+    purchasedHints: [],
+    hintBrokerHistory: [],
     inventory: [
       { itemId: 'firewall_jetable', quantity: 1 },
       { itemId: 'proxy_fantome', quantity: 1 },
@@ -171,9 +191,17 @@ export function createAdvancedDemoState() {
     hiddenCommandUses: {},
     lastCommand: '',
     activeUiEffect: null,
+    activeCinematic: null,
+    cinematicSeenEvents: [],
+    cinematicLastGlobalAt: 0,
+    cinematicLastTriggeredAt: {},
+    cinematicFlags: {},
     fakeGameOverUntil: null,
     codexDiscovered: {},
     novaIntroSeen: true,
+    seenTransmissions: [],
+    activeCharacterTransmission: null,
+    characterTransmissionLastAt: 0,
   }
 }
 
@@ -194,6 +222,7 @@ function buildMissionListItem(missionId, save) {
     title: def.title,
     subtitle: def.subtitle,
     description: def.description,
+    atmosphere: def.atmosphere,
     primaryNode: def.primaryNode,
     status: m.status,
     currentObjective: m.currentObjective,
@@ -330,6 +359,8 @@ export function toPublicState(save) {
     network: buildNetwork(save),
     programToolkit: buildProgramToolkit(save),
     activeUiEffect: save.activeUiEffect || null,
+    activeCinematic: save.activeCinematic || null,
+    activeCharacterTransmission: save.activeCharacterTransmission || null,
     fakeGameOverActive: !!(save.fakeGameOverUntil && now < save.fakeGameOverUntil),
     seenEvents: save.seenEvents || [],
     flags: save.flags || {},
@@ -338,7 +369,16 @@ export function toPublicState(save) {
     tutorialFlags: save.tutorialFlags || {},
     codex: buildCodexState(save),
     novaIntroSeen: !!save.novaIntroSeen,
+    hintBroker: getHintBrokerState(save),
   }
+}
+
+export function getDemoFile(name) {
+  const base = DEMO_FILES[name]
+  if (!base) return null
+  const description = getFileDescription(name) || base.description
+  const content = getFileContent(name) || base.content
+  return { ...base, description, content }
 }
 
 export function getVisibleFiles(save) {

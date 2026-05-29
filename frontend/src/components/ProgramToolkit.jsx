@@ -1,9 +1,12 @@
+import { useLanguage } from '../i18n/LanguageProvider'
 import './ProgramToolkit.css'
 
 /**
  * Boîte à outils — programmes installés et inventaire numérique.
  */
 export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
+  const { t } = useLanguage()
+
   if (!toolkit) return null
 
   const { installed = [], inventory = [], installedCount, inventoryCount } = toolkit
@@ -12,11 +15,11 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
     return (
       <div className="ptoolkit ptoolkit--compact">
         <div className="ptoolkit__row">
-          <span>/programs</span>
+          <span>{t('toolkit.programsPath')}</span>
           <strong>{installedCount ?? installed.length}</strong>
         </div>
         <div className="ptoolkit__row">
-          <span>/inventory</span>
+          <span>{t('toolkit.inventoryPath')}</span>
           <strong>{inventoryCount ?? inventory.reduce((n, i) => n + (i.quantity || 1), 0)}</strong>
         </div>
       </div>
@@ -26,9 +29,9 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
   return (
     <div className="ptoolkit">
       <section className="ptoolkit__section">
-        <h3 className="ptoolkit__heading">/programs — installés</h3>
+        <h3 className="ptoolkit__heading">{t('toolkit.programsHeading')}</h3>
         {installed.length === 0 ? (
-          <p className="ptoolkit__empty">Aucun programme installé.</p>
+          <p className="ptoolkit__empty">{t('toolkit.programsEmpty')}</p>
         ) : (
           <ul className="ptoolkit__list">
             {installed.map((prog) => (
@@ -36,7 +39,7 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
                 <span className="ptoolkit__icon">⚙</span>
                 <div className="ptoolkit__info">
                   <span className="ptoolkit__name">{prog.filename}</span>
-                  <span className="ptoolkit__meta">{prog.name} · PERMANENT</span>
+                  <span className="ptoolkit__meta">{prog.name} · {t('toolkit.permanent')}</span>
                 </div>
                 {onRun && (
                   <button
@@ -45,7 +48,7 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
                     onClick={() => onRun(`run ${prog.filename}`)}
                     title={`run ${prog.filename}`}
                   >
-                    RUN
+                    {t('toolkit.run')}
                   </button>
                 )}
               </li>
@@ -55,9 +58,9 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
       </section>
 
       <section className="ptoolkit__section">
-        <h3 className="ptoolkit__heading">/inventory — stock</h3>
+        <h3 className="ptoolkit__heading">{t('toolkit.inventoryHeading')}</h3>
         {inventory.length === 0 ? (
-          <p className="ptoolkit__empty">Stock vide — consultez le BLACK MARKET.</p>
+          <p className="ptoolkit__empty">{t('toolkit.inventoryEmpty')}</p>
         ) : (
           <ul className="ptoolkit__list">
             {inventory.map((prog) => (
@@ -69,7 +72,7 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
                     {prog.quantity > 1 && <span className="ptoolkit__qty"> x{prog.quantity}</span>}
                   </span>
                   <span className="ptoolkit__meta">
-                    {prog.type === 'permanent' ? 'À INSTALLER' : 'CONSUMABLE'}
+                    {prog.type === 'permanent' ? t('toolkit.toInstall') : t('toolkit.consumable')}
                   </span>
                 </div>
                 {onRun && (
@@ -79,7 +82,7 @@ export default function ProgramToolkit({ toolkit, onRun, compact = false }) {
                     onClick={() => onRun(`run ${prog.filename}`)}
                     title={`run ${prog.filename}`}
                   >
-                    RUN
+                    {t('toolkit.run')}
                   </button>
                 )}
               </li>

@@ -16,7 +16,17 @@ import {
 
   tickMysteryEvents,
 
+  dismissCinematicEvent,
+
+  rollRandomCinematicEvent,
+
+  rollCharacterTransmissionEvent,
+
+  dismissCharacterTransmission,
+
   markNovaIntroSeen,
+
+  touchPlayerActivity,
 
 } from './api/client'
 
@@ -32,6 +42,7 @@ import BootScreen from './components/BootScreen'
 
 import AppWindow from './components/AppWindow'
 
+import HintBroker from './components/HintBroker'
 import BlackMarket from './components/BlackMarket'
 
 import MissionJournal from './components/MissionJournal'
@@ -48,9 +59,21 @@ import FeedbackButton from './components/FeedbackButton'
 
 import HowToPlayPanel from './components/HowToPlayPanel'
 
+import SettingsPanel from './components/SettingsPanel'
+
+import { useLanguage } from './i18n/LanguageProvider'
+
 import MysteryOverlay from './components/MysteryOverlay'
 
 import NovaEncounter from './components/NovaEncounter'
+
+import CharacterTransmission from './components/CharacterTransmission'
+
+import CinematicEventManager from './systems/CinematicEventManager'
+
+import { getRandomRollDelayMs } from './systems/RandomCinematicEvents'
+
+import { getRandomTransmissionRollDelayMs } from './systems/CharacterTransmissionSystem.jsx'
 
 import './App.css'
 
@@ -66,6 +89,10 @@ import {
   seedNotifications,
   shouldShowNotification,
 } from './utils/notifications'
+
+import { getTraceCorruption } from './utils/traceCorruption'
+
+import { useAudio, AudioToggle } from './systems/AudioManager.jsx'
 
 const MYSTERY_TICK_MS = 90000
 
@@ -83,35 +110,25 @@ const HORROR_UI_TYPES = new Set([
 
 
 
-function buildPostBootLines() {
-
+function buildPostBootLines(t) {
+  const banner = t('postBoot.banner')
+  const pad = Math.max(0, 58 - banner.length)
   return [
-
     '╔══════════════════════════════════════════════════════════════╗',
-
-    '║       ULTRATECH ONLINE — TERMINAL OPÉRATEUR v3.7             ║',
-
+    `║  ${banner}${' '.repeat(pad)}║`,
     '╚══════════════════════════════════════════════════════════════╝',
-
     '',
-
-    '[SYS] Connexion sécurisée établie.',
-
-    '[SYS] Quelqu\'un vous a laissé accéder à ce terminal.',
-
+    t('postBoot.line1'),
+    t('postBoot.line2'),
     '',
-
-    '[???] Des fragments dorment dans la mémoire locale.',
-
+    t('postBoot.line3'),
     '──────────────────────────────────────────────────────────────',
-
   ]
-
 }
 
-
-
 function App() {
+  const { t, locale } = useLanguage()
+  const { playAmbient, duckAmbient, restoreAmbient } = useAudio()
 
   const [authenticated, setAuthenticated] = useState(false)
 
@@ -126,6 +143,8 @@ function App() {
   const [welcomeLoading, setWelcomeLoading] = useState(false)
 
   const [howToOpen, setHowToOpen] = useState(false)
+
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const [mysteryEffect, setMysteryEffect] = useState(null)
 
@@ -163,6 +182,12 @@ function App() {
 
   const lastActivityRef = useRef(Date.now())
 
+  const lastActivitySyncRef = useRef(0)
+
+  const cinematicBlockRef = useRef(true)
+
+  const transmissionBlockRef = useRef(true)
+
   const appendCodexNotifications = useCallback((discoveries) => {
 
     if (!discoveries?.length) return
@@ -175,7 +200,7 @@ function App() {
 
       if (!shouldShowNotification(key)) continue
 
-      lines.push(`[CODEX] ${entry.name} — ajouté au registre.`)
+      lines.push(t('app.codexAdded', { name: entry.name }))
 
     }
 
@@ -183,7 +208,7 @@ function App() {
 
     setTerminalLines((prev) => [...prev, '', ...lines, ''])
 
-  }, [])
+  }, [t])
 
 
 
@@ -191,7 +216,21 @@ function App() {
 
     lastActivityRef.current = Date.now()
 
-  }, [])
+    const now = Date.now()
+
+    if (now - lastActivitySyncRef.current > 12000) {
+
+      lastActivitySyncRef.current = now
+
+      if (demoMode || isDemoMode()) {
+
+        touchPlayerActivity().catch(() => {})
+
+      }
+
+    }
+
+  }, [demoMode])
 
 
 
@@ -238,6 +277,48 @@ function App() {
     bumpActivity()
 
   }, [bumpActivity])
+
+
+
+  const handleCinematicComplete = useCallback(async () => {
+
+    try {
+
+      const result = await dismissCinematicEvent()
+
+      if (result?.state) setGameState(result.state)
+
+      if (result?.autoLines?.length) {
+
+        setTerminalLines((prev) => [...prev, ...result.autoLines, ''])
+
+      }
+
+    } catch {
+
+      /* ignore */
+
+    }
+
+  }, [])
+
+
+
+  const handleTransmissionComplete = useCallback(async () => {
+
+    try {
+
+      const result = await dismissCharacterTransmission()
+
+      if (result?.state) setGameState(result.state)
+
+    } catch {
+
+      /* ignore */
+
+    }
+
+  }, [])
 
 
 
@@ -301,7 +382,7 @@ function App() {
 
     } catch (err) {
 
-      setError(`Impossible de charger la session (${err.message})`)
+      setError(t('app.loadSession', { message: err.message }))
 
     } finally {
 
@@ -309,13 +390,20 @@ function App() {
 
     }
 
-  }, [triggerGameOver, seedNotificationState])
+  }, [triggerGameOver, seedNotificationState, t])
 
-
+  useEffect(() => {
+    if (!authenticated || authChecking || loading || showWelcome) return
+    fetchGameState()
+      .then((state) => setGameState(state))
+      .catch(() => {})
+  }, [locale, authenticated, authChecking, loading, showWelcome])
 
   const launchDemoGame = useCallback(async (loadFn) => {
 
     setWelcomeLoading(true)
+
+    playAmbient()
 
     enableDemoMode()
 
@@ -375,13 +463,13 @@ function App() {
 
     }
 
-  }, [loadGame, triggerGameOver])
+  }, [loadGame, triggerGameOver, playAmbient])
 
 
 
   const handleWelcomeReset = useCallback(async () => {
 
-    if (!window.confirm('Réinitialiser la sauvegarde ? Toute progression sera perdue.')) {
+    if (!window.confirm(t('app.resetConfirmLong'))) {
 
       return
 
@@ -449,9 +537,9 @@ function App() {
 
     setBooting(false)
 
-    setTerminalLines(buildPostBootLines())
+    setTerminalLines(buildPostBootLines(t))
 
-  }, [])
+  }, [t])
 
 
 
@@ -475,7 +563,7 @@ function App() {
 
       if (!shouldShowNotification(notificationKey('intro', key))) continue
 
-      lines.push(...getIntroLines(key))
+      lines.push(...getIntroLines(key, locale))
 
       uiIntrosHandledRef.current[key] = true
 
@@ -485,7 +573,7 @@ function App() {
 
     setTerminalLines((prev) => [...prev, '', ...lines, ''])
 
-  }, [])
+  }, [locale])
 
 
 
@@ -536,6 +624,8 @@ function App() {
     const fakeOver = gameState?.fakeGameOverActive
 
     if (!command.trim() || commandLoading || gameOverActive) return
+
+    if (gameState?.activeCinematic?.lockTerminal) return
 
     if (gameState?.gameOver && !fakeOver) return
 
@@ -629,9 +719,9 @@ function App() {
 
     setTerminalLines([
 
-      ...buildPostBootLines(),
+      ...buildPostBootLines(t),
 
-      extraLine || result.message || '[SYS] Sauvegarde rechargée.',
+      extraLine || result.message || t('app.saveReloaded'),
 
       '',
 
@@ -651,13 +741,13 @@ function App() {
 
     setBooting(false)
 
-  }, [])
+  }, [t])
 
 
 
   const handleReset = async (skipConfirm = false) => {
 
-    if (!skipConfirm && !window.confirm('Réinitialiser la sauvegarde ? Toute progression sera perdue.')) {
+    if (!skipConfirm && !window.confirm(t('app.resetConfirmLong'))) {
 
       return
 
@@ -669,11 +759,11 @@ function App() {
 
       const result = await resetGame()
 
-      applyGameReload(result, '[SYS] Sauvegarde réinitialisée — Mission 1.')
+      applyGameReload(result, t('app.resetDone'))
 
     } catch (err) {
 
-      setError(`Erreur reset : ${err.message}`)
+      setError(t('app.resetError', { message: err.message }))
 
     }
 
@@ -733,6 +823,111 @@ function App() {
 
 
 
+  cinematicBlockRef.current =
+    showWelcome
+    || showNovaEncounter
+    || booting
+    || gameOverActive
+    || howToOpen
+    || commandLoading
+    || !!gameState?.gameOver
+    || !!gameState?.activeCinematic
+    || !!gameState?.activeCharacterTransmission
+    || !!gameState?.fakeGameOverActive
+    || !!terminalEffect
+
+  transmissionBlockRef.current =
+    showWelcome
+    || showNovaEncounter
+    || booting
+    || gameOverActive
+    || howToOpen
+    || commandLoading
+    || !!gameState?.gameOver
+    || !!gameState?.activeCinematic
+    || !!gameState?.activeCharacterTransmission
+    || !!gameState?.fakeGameOverActive
+    || !!terminalEffect
+
+
+
+  useEffect(() => {
+
+    if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
+
+    let cancelled = false
+    let timerId
+
+    const scheduleRoll = () => {
+      const delay = getRandomRollDelayMs()
+      timerId = setTimeout(async () => {
+        if (cancelled) return
+
+        if (!cinematicBlockRef.current) {
+          try {
+            const result = await rollRandomCinematicEvent(false)
+            if (result?.state) {
+              setGameState(result.state)
+              if (result.autoLines?.length) {
+                setTerminalLines((prev) => [...prev, ...result.autoLines, ''])
+              }
+            }
+          } catch {
+            /* ignore roll errors */
+          }
+        }
+
+        if (!cancelled) scheduleRoll()
+      }, delay)
+    }
+
+    scheduleRoll()
+
+    return () => {
+      cancelled = true
+      clearTimeout(timerId)
+    }
+
+  }, [inDemo, showWelcome, authenticated, loading, booting])
+
+
+
+  useEffect(() => {
+
+    if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
+
+    let cancelled = false
+    let timerId
+
+    const scheduleRoll = () => {
+      const delay = getRandomTransmissionRollDelayMs()
+      timerId = setTimeout(async () => {
+        if (cancelled) return
+
+        if (!transmissionBlockRef.current) {
+          try {
+            const result = await rollCharacterTransmissionEvent(false, 'random')
+            if (result?.state) setGameState(result.state)
+          } catch {
+            /* ignore roll errors */
+          }
+        }
+
+        if (!cancelled) scheduleRoll()
+      }, delay)
+    }
+
+    scheduleRoll()
+
+    return () => {
+      cancelled = true
+      clearTimeout(timerId)
+    }
+
+  }, [inDemo, showWelcome, authenticated, loading, booting])
+
+
+
   useEffect(() => {
 
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
@@ -780,6 +975,8 @@ function App() {
         || howToOpen
         || commandLoading
         || terminalEffect
+        || gameState?.activeCinematic
+        || gameState?.activeCharacterTransmission
         || gameState?.fakeGameOverActive
         || mysteryEffect?.type === 'fake_gameover'
         || (gameState?.gameOver && !gameState?.fakeGameOverActive)
@@ -811,6 +1008,7 @@ function App() {
     gameState?.novaIntroSeen,
     gameState?.gameOver,
     gameState?.fakeGameOverActive,
+    gameState?.activeCinematic,
     gameOverActive,
     howToOpen,
     commandLoading,
@@ -822,11 +1020,43 @@ function App() {
 
 
 
-  const isLocked = !!error || commandLoading || gameOverActive
+  useEffect(() => {
 
-    || (gameState?.gameOver && !gameState?.fakeGameOverActive)
+    if (!authenticated || showWelcome) return undefined
+
+    const shouldDuck =
+      showNovaEncounter
+      || !!gameState?.activeCinematic
+      || !!gameState?.activeCharacterTransmission
+      || gameState?.fakeGameOverActive
+      || gameOverActive
+      || (gameState?.gameOver && !gameState?.fakeGameOverActive)
+
+    if (shouldDuck) duckAmbient()
+    else restoreAmbient()
+
+    return undefined
+
+  }, [
+    authenticated,
+    showWelcome,
+    showNovaEncounter,
+    gameState?.activeCinematic,
+    gameState?.activeCharacterTransmission,
+    gameState?.fakeGameOverActive,
+    gameState?.gameOver,
+    gameOverActive,
+    duckAmbient,
+    restoreAmbient,
+  ])
 
 
+
+  const cinematicActive = gameState?.activeCinematic
+  const transmissionActive = gameState?.activeCharacterTransmission
+  const cinematicLocksTerminal = cinematicActive?.lockTerminal
+
+  const isLocked = !!error || commandLoading || gameOverActive || cinematicLocksTerminal
 
   const networkTheme = gameState?.network?.currentNodeMeta?.theme ?? 'default'
 
@@ -836,13 +1066,13 @@ function App() {
 
   const terminalTitle = ui.earlyGame
 
-    ? 'TERMINAL SÉCURISÉ'
+    ? t('windows.terminalSecure')
 
     : gameState?.network?.connected
 
-      ? `${gameState.network.currentNodeMeta.displayName} — TERMINAL`
+      ? t('windows.terminal', { name: gameState.network.currentNodeMeta.displayName })
 
-      : `${operatorName} — TERMINAL`
+      : t('windows.terminal', { name: operatorName })
 
 
 
@@ -858,7 +1088,7 @@ function App() {
 
           <span className="loader__bar" />
 
-          <span className="loader__sub">Connexion réseau détectée…</span>
+          <span className="loader__sub">{t('loader.subtitle')}</span>
 
         </div>
 
@@ -874,15 +1104,15 @@ function App() {
 
     return (
 
-      <WelcomeScreen
-
-        loading={welcomeLoading}
-
-        onOpenBeta={() => launchDemoGame(null)}
-
-        onReset={handleWelcomeReset}
-
-      />
+      <>
+        <WelcomeScreen
+          loading={welcomeLoading}
+          onOpenBeta={() => launchDemoGame(null)}
+          onReset={handleWelcomeReset}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+        <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      </>
 
     )
 
@@ -908,7 +1138,7 @@ function App() {
 
               <span className="loader__bar" />
 
-              <span className="loader__sub">Chargement de la session…</span>
+              <span className="loader__sub">{t('app.sessionLoading')}</span>
 
             </div>
 
@@ -928,15 +1158,22 @@ function App() {
 
   const horrorActive = activeEffect && HORROR_UI_TYPES.has(activeEffect.type)
 
+  const traceFx = getTraceCorruption(gameState?.traceLevel ?? 0)
+
 
 
   return (
 
-    <div className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${activeEffect ? 'app--mystery-active' : ''} ${horrorActive ? 'app--horror-active' : ''}`}>
+    <div
+      className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${activeEffect ? 'app--mystery-active' : ''} ${horrorActive ? 'app--horror-active' : ''} ${cinematicActive ? 'app--cinematic-active' : ''} ${cinematicLocksTerminal ? 'app--cinematic-lock' : ''} ${traceFx.className}`}
+      style={{ '--trace-scan-opacity': traceFx.scanlineOpacity }}
+    >
 
       <div className="app__immersion" aria-hidden="true">
 
         <div className="app__scanlines" />
+
+        {traceFx.rgbSplit && <div className="app__rgb-split" />}
 
         <div className="app__vignette" />
 
@@ -951,6 +1188,8 @@ function App() {
         onReset={handleReset}
 
         onOpenHowTo={() => setHowToOpen(true)}
+
+        onOpenSettings={() => setSettingsOpen(true)}
 
         username={operatorName}
 
@@ -988,7 +1227,7 @@ function App() {
 
                 <span>⚠ {error}</span>
 
-                <button onClick={() => loadGame()}>Réessayer</button>
+                <button onClick={() => loadGame()}>{t('errors.retry')}</button>
 
               </div>
 
@@ -1030,7 +1269,7 @@ function App() {
 
             <AppWindow
 
-              title="CANAL CLANDESTIN"
+              title={t('windows.chat')}
 
               active={openApps.includes('chat')}
 
@@ -1052,7 +1291,7 @@ function App() {
 
             <AppWindow
 
-              title="BOÎTE À OUTILS"
+              title={t('windows.toolkit')}
 
               active={openApps.includes('toolkit')}
 
@@ -1080,17 +1319,47 @@ function App() {
 
             <AppWindow
 
-              title="JOURNAL DE MISSIONS"
+              title={t('windows.journal')}
 
               active={openApps.includes('journal')}
 
               onClose={() => handleCloseApp('journal')}
 
-              variant="secondary"
+              variant="journal"
 
             >
 
-              <MissionJournal journal={gameState?.missionJournal} />
+              <MissionJournal journal={gameState?.missionJournal} gameState={gameState} />
+
+            </AppWindow>
+
+            )}
+
+
+
+            {ui.unlockedApps.includes('broker') && (
+
+            <AppWindow
+
+              title={t('windows.broker')}
+
+              active={openApps.includes('broker')}
+
+              onClose={() => handleCloseApp('broker')}
+
+              variant="broker"
+
+            >
+
+              <HintBroker
+
+                gameState={gameState}
+
+                onStateUpdate={handleStateUpdate}
+
+                disabled={isLocked}
+
+              />
 
             </AppWindow>
 
@@ -1102,7 +1371,7 @@ function App() {
 
             <AppWindow
 
-              title="CODEX — REGISTRE CLASSIFIÉ"
+              title={t('windows.codex')}
 
               active={openApps.includes('codex')}
 
@@ -1124,13 +1393,13 @@ function App() {
 
             <AppWindow
 
-              title="BLACK MARKET"
+              title={t('windows.market')}
 
               active={openApps.includes('market')}
 
               onClose={() => handleCloseApp('market')}
 
-              variant="secondary"
+              variant="market"
 
             >
 
@@ -1160,7 +1429,7 @@ function App() {
 
       <footer className="footer">
 
-        <span>{ui.earlyGame ? 'Connexion sécurisée active' : `UltraTech Corp. — ${operatorName}`}</span>
+        <span>{ui.earlyGame ? t('footer.secureConnection') : t('footer.corp', { operator: operatorName })}</span>
 
         <div className="footer__right">
 
@@ -1169,10 +1438,10 @@ function App() {
           <span className="footer__blink">
 
             {gameState?.gameOver
-              ? '● SESSION COMPROMISE'
+              ? t('footer.sessionCompromised')
               : ui.earlyGame
-                ? '● ligne ouverte'
-                : '● VOUS ÊTES OBSERVÉ'}
+                ? t('footer.lineOpen')
+                : t('footer.beingWatched')}
 
           </span>
 
@@ -1184,6 +1453,8 @@ function App() {
 
       <HowToPlayPanel open={howToOpen} onClose={() => setHowToOpen(false)} />
 
+      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
 
 
       <NovaEncounter
@@ -1192,6 +1463,24 @@ function App() {
         onInteract={handleNovaEncounterInteract}
         onDismiss={handleNovaEncounterDismiss}
       />
+
+
+
+      <CinematicEventManager
+        event={cinematicActive}
+        onComplete={handleCinematicComplete}
+      />
+
+
+
+      <CharacterTransmission
+        transmission={transmissionActive}
+        onComplete={handleTransmissionComplete}
+      />
+
+
+
+      <AudioToggle />
 
 
 

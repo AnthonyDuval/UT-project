@@ -143,6 +143,22 @@
   border-color: rgba(255, 180, 60, 0.55);
 }
 
+.btn-settings {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  padding: 0.55rem 0.85rem;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.btn-settings:hover {
+  color: var(--text-primary);
+  border-color: rgba(0, 255, 120, 0.35);
+}
+
 .btn-howto {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);

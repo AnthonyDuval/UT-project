@@ -2,6 +2,8 @@
  * Débloque progressivement les panneaux UI selon la progression du joueur.
  */
 
+import { getTranslator } from '../i18n'
+
 const INTRO_LINES = {
   trace: [
     '[ALERTE] UltraTech surveille ce terminal.',
@@ -20,6 +22,10 @@ const INTRO_LINES = {
   market: [
     '[???] Quelqu\'un vous a ouvert une porte…',
     '[SYS] BLACK MARKET — accès autorisé.',
+  ],
+  broker: [
+    '[???] Signal faible sur relay clandestin…',
+    '[BROKER] GHOST BROKER — indices disponibles contre BitTek.',
   ],
   toolkit: [
     '[SYS] Quelque chose a été laissé dans la boîte à outils.',
@@ -62,6 +68,7 @@ export function computeUiProgression(state) {
       showBittek: false,
       showReputation: false,
       showMarket: false,
+      showBroker: false,
       showToolkit: false,
       showCodex: false,
       showChat: false,
@@ -93,6 +100,7 @@ export function computeUiProgression(state) {
     showBittek: (state.player?.bittek ?? 0) > 0 || state.marketUnlocked,
     showReputation: (state.player?.reputation ?? 0) > 0,
     showMarket: state.marketUnlocked,
+    showBroker: state.hintBrokerUnlocked || state.marketUnlocked,
     showToolkit: toolkitReady,
     showCodex: codexReady,
     showChat: chatReady,
@@ -108,6 +116,7 @@ export function computeUiProgression(state) {
       ...(toolkitReady ? ['toolkit'] : []),
       ...(codexReady ? ['codex'] : []),
       ...(state.marketUnlocked ? ['market'] : []),
+      ...((state.hintBrokerUnlocked || state.marketUnlocked) ? ['broker'] : []),
     ],
   }
 }
@@ -121,6 +130,7 @@ export function collectNewIntros(state, seenIntros = {}) {
     ['bittek', ui.showBittek],
     ['reputation', ui.showReputation],
     ['market', ui.showMarket],
+    ['broker', ui.showBroker],
     ['toolkit', ui.showToolkit],
     ['codex', ui.showCodex],
     ['chat', ui.showChat],
@@ -139,7 +149,11 @@ export function collectNewIntros(state, seenIntros = {}) {
   return newOnes
 }
 
-export function getIntroLines(introKey) {
+export function getIntroLines(introKey, locale) {
+  if (locale) {
+    const lines = getTranslator(locale).raw(`intros.${introKey}`)
+    if (Array.isArray(lines)) return lines
+  }
   return INTRO_LINES[introKey] || []
 }
 

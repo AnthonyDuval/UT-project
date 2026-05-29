@@ -1,9 +1,12 @@
+import { useLanguage } from '../i18n/LanguageProvider'
 import './WelcomeScreen.css'
 
 /**
  * Écran d'accueil — portail clandestin avant ouverture du terminal.
  */
-export default function WelcomeScreen({ loading, onOpenBeta, onReset }) {
+export default function WelcomeScreen({ loading, onOpenBeta, onReset, onOpenSettings }) {
+  const { t } = useLanguage()
+
   return (
     <div className="welcome">
       <div className="welcome__immersion" aria-hidden="true">
@@ -19,7 +22,7 @@ export default function WelcomeScreen({ loading, onOpenBeta, onReset }) {
             <span className="welcome__sigil-core">◈</span>
           </div>
           <h1 className="welcome__title">ULTRATECH ONLINE</h1>
-          <p className="welcome__subtitle">Connexion réseau détectée.</p>
+          <p className="welcome__subtitle">{t('welcome.subtitle')}</p>
         </header>
 
         <div className="welcome__actions">
@@ -32,10 +35,10 @@ export default function WelcomeScreen({ loading, onOpenBeta, onReset }) {
             {loading ? (
               <>
                 <span className="welcome__btn-pulse" aria-hidden="true" />
-                Établissement du lien…
+                {t('welcome.loading')}
               </>
             ) : (
-              'OUVRIR LA BÊTA TEST'
+              t('welcome.openBeta')
             )}
           </button>
 
@@ -45,14 +48,22 @@ export default function WelcomeScreen({ loading, onOpenBeta, onReset }) {
             onClick={onReset}
             disabled={loading}
           >
-            Réinitialiser la sauvegarde
+            {t('welcome.reset')}
           </button>
         </div>
 
         <footer className="welcome__footer">
+          <button
+            type="button"
+            className="welcome__cfg-btn"
+            onClick={onOpenSettings}
+            disabled={loading}
+          >
+            {t('topbar.settings')}
+          </button>
           <span className="welcome__status">
             <span className="welcome__status-dot" aria-hidden="true" />
-            Canal chiffré · accès restreint
+            {t('welcome.footer')}
           </span>
         </footer>
       </div>

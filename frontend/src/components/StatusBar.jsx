@@ -1,5 +1,8 @@
 import { getMissionObjective } from '../utils/missionHints'
 import { computeUiProgression } from '../utils/uiProgression'
+import { useLanguage } from '../i18n/LanguageProvider'
+import { JournalBiosIcon, MarketBiosIcon, BrokerBiosIcon } from './icons/BiosNavIcons'
+import './icons/BiosNavIcons.css'
 import './StatusBar.css'
 
 /**
@@ -10,22 +13,24 @@ export default function StatusBar({
   onFileOpen,
   onOpenApp,
 }) {
+  const { t, locale } = useLanguage()
+
   if (!state) return null
 
   const ui = computeUiProgression(state)
   const { visible_files } = state
-  const objective = getMissionObjective(state)
+  const objective = getMissionObjective(state, locale)
 
   return (
     <div className={`statusbar ${ui.earlyGame ? 'statusbar--minimal' : ''}`}>
       <div className="statusbar__objective">
-        <h2 className="statusbar__objective-label">PISTE ACTUELLE</h2>
+        <h2 className="statusbar__objective-label">{t('statusbar.currentLead')}</h2>
         <p className="statusbar__objective-title">{objective.title}</p>
         <p className="statusbar__objective-hint">{objective.hint}</p>
       </div>
 
       <div className="statusbar__section statusbar__section--files">
-        <h2 className="statusbar__heading">DOCUMENTS</h2>
+        <h2 className="statusbar__heading">{t('statusbar.documents')}</h2>
         <ul className="statusbar__files">
           {visible_files?.length > 0 ? (
             visible_files.map((file) => (
@@ -41,7 +46,7 @@ export default function StatusBar({
               </li>
             ))
           ) : (
-            <li className="statusbar__file statusbar__file--empty">Aucun document</li>
+            <li className="statusbar__file statusbar__file--empty">{t('statusbar.noDocuments')}</li>
           )}
         </ul>
       </div>
@@ -50,19 +55,19 @@ export default function StatusBar({
         <div className="statusbar__intro-panel statusbar__intro-panel--trace">
           <span className="statusbar__intro-dot" />
           <div>
-            <strong>Surveillance UltraTech</strong>
-            <p>{state.traceLevel ?? 0}% — restez discret</p>
+            <strong>{t('statusbar.surveillance')}</strong>
+            <p>{t('statusbar.surveillanceHint', { level: state.traceLevel ?? 0 })}</p>
           </div>
         </div>
       )}
 
       {ui.showNetwork && (
         <div className="statusbar__section statusbar__section--network-compact">
-          <h2 className="statusbar__heading">RÉSEAU</h2>
+          <h2 className="statusbar__heading">{t('statusbar.network')}</h2>
           <p className="statusbar__network-simple">
             {state.network?.connected
-              ? `Connecté · ${state.network.currentNodeMeta?.name}`
-              : `${(state.network?.nodes?.length ?? 0)} signal(aux) détecté(s)`}
+              ? t('statusbar.connected', { node: state.network.currentNodeMeta?.name })
+              : t('statusbar.signals', { count: state.network?.nodes?.length ?? 0 })}
           </p>
         </div>
       )}
@@ -71,10 +76,14 @@ export default function StatusBar({
         <div className="statusbar__section">
           <button
             type="button"
-            className="statusbar__journal-btn"
+            className="bios-nav-btn bios-nav-btn--journal"
             onClick={() => onOpenApp?.('journal')}
           >
-            Journal de missions →
+            <span className="bios-nav-icon bios-nav-icon--journal">
+              <JournalBiosIcon />
+            </span>
+            <span className="bios-nav-btn__label">{t('statusbar.missionJournal')}</span>
+            <span className="bios-nav-btn__arrow" aria-hidden>→</span>
           </button>
         </div>
       )}
@@ -83,10 +92,30 @@ export default function StatusBar({
         <div className="statusbar__section">
           <button
             type="button"
-            className="statusbar__journal-btn statusbar__journal-btn--market"
+            className="bios-nav-btn bios-nav-btn--market"
             onClick={() => onOpenApp?.('market')}
           >
-            Black Market →
+            <span className="bios-nav-icon bios-nav-icon--market">
+              <MarketBiosIcon />
+            </span>
+            <span className="bios-nav-btn__label">{t('statusbar.blackMarket')}</span>
+            <span className="bios-nav-btn__arrow" aria-hidden>→</span>
+          </button>
+        </div>
+      )}
+
+      {ui.showBroker && (
+        <div className="statusbar__section">
+          <button
+            type="button"
+            className="bios-nav-btn bios-nav-btn--broker"
+            onClick={() => onOpenApp?.('broker')}
+          >
+            <span className="bios-nav-icon bios-nav-icon--broker">
+              <BrokerBiosIcon />
+            </span>
+            <span className="bios-nav-btn__label">{t('statusbar.ghostBroker')}</span>
+            <span className="bios-nav-btn__arrow" aria-hidden>→</span>
           </button>
         </div>
       )}
@@ -98,7 +127,7 @@ export default function StatusBar({
             className="statusbar__journal-btn statusbar__journal-btn--codex"
             onClick={() => onOpenApp?.('codex')}
           >
-            Codex · {state.codex?.progressLabel ?? '0/18'} →
+            {t('statusbar.codex', { progress: state.codex?.progressLabel ?? '0/18' })}
           </button>
         </div>
       )}

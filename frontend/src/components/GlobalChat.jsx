@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchChat, sendChatMessage } from '../api/client'
+import { useLanguage } from '../i18n/LanguageProvider'
+import { localeDateFormat } from '../i18n/helpers'
 import './GlobalChat.css'
 
 const POLL_INTERVAL_MS = 3000
@@ -8,6 +10,7 @@ const POLL_INTERVAL_MS = 3000
  * Canal clandestin global — polling toutes les 3 secondes.
  */
 export default function GlobalChat({ username, disabled, demoMode }) {
+  const { t } = useLanguage()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -58,7 +61,10 @@ export default function GlobalChat({ username, disabled, demoMode }) {
 
   const formatTime = (iso) => {
     try {
-      return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      return new Date(iso).toLocaleTimeString(localeDateFormat(), {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     } catch {
       return '--:--'
     }
@@ -67,9 +73,9 @@ export default function GlobalChat({ username, disabled, demoMode }) {
   return (
     <div className="gchat">
       <header className="gchat__header">
-        <h2 className="gchat__title">CANAL CLANDESTIN GLOBAL</h2>
+        <h2 className="gchat__title">{t('chat.title')}</h2>
         <span className="gchat__status">
-          {demoMode ? '● LOCAL — canal simulé' : '● LIVE — polling 3s'}
+          {demoMode ? t('chat.statusLocal') : t('chat.statusLive')}
         </span>
       </header>
 
@@ -77,7 +83,7 @@ export default function GlobalChat({ username, disabled, demoMode }) {
 
       <div className="gchat__messages" ref={listRef}>
         {messages.length === 0 ? (
-          <p className="gchat__empty">Aucun message. Soyez le premier opérateur sur le canal.</p>
+          <p className="gchat__empty">{t('chat.empty')}</p>
         ) : (
           messages.map((msg, i) => (
             <div
@@ -97,12 +103,12 @@ export default function GlobalChat({ username, disabled, demoMode }) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Message chiffré..."
+          placeholder={t('chat.placeholder')}
           maxLength={500}
           disabled={disabled || sending}
         />
         <button type="submit" disabled={disabled || sending || !input.trim()}>
-          ENVOYER
+          {t('chat.send')}
         </button>
       </form>
     </div>

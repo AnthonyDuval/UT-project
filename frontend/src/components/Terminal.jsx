@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getLineClass } from '../utils/lineStyle'
+import { useLanguage } from '../i18n/LanguageProvider'
 import './Terminal.css'
 
 /**
@@ -12,6 +13,7 @@ export default function Terminal({
   horrorEffect,
   onHorrorEffectDone,
 }) {
+  const { t } = useLanguage()
   const [input, setInput] = useState('')
   const [possessed, setPossessed] = useState(false)
   const outputRef = useRef(null)
@@ -110,9 +112,9 @@ export default function Terminal({
       </div>
 
       <form className="terminal__input-row" onSubmit={handleSubmit}>
-        <span className="terminal__prompt">ghost@ultratech:~$</span>
+        <span className="terminal__prompt">{t('terminalUi.prompt')}</span>
         {disabled ? (
-          <span className="terminal__locked">▌ SESSION VERROUILLÉE</span>
+          <span className="terminal__locked">{t('terminalUi.sessionLocked')}</span>
         ) : (
           <input
             ref={inputRef}
@@ -125,7 +127,7 @@ export default function Terminal({
             readOnly={possessed}
             autoComplete="off"
             spellCheck="false"
-            aria-label="Commande terminal"
+            aria-label={t('terminalUi.inputAria')}
           />
         )}
       </form>

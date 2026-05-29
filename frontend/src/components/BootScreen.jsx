@@ -1,46 +1,54 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 import './BootScreen.css'
-
-const BOOT_SEQUENCE = [
-  { text: '[KERNEL] UltraTech OS v3.7 — boot sequence initiated', delay: 0 },
-  { text: '[CHECK] Memory integrity............ OK', delay: 400 },
-  { text: '[CHECK] Encryption module........... OK', delay: 800 },
-  { text: '[CHECK] Network stack............... WARN', delay: 1200, className: 'boot-warn' },
-  { text: '[AUTH]  Operator clearance.......... DENIED', delay: 1600, className: 'boot-error' },
-  { text: '[AUTH]  Clearance override.......... ACCEPTED', delay: 2100, className: 'boot-ok' },
-  { text: '[LOAD]  Session locale.............. MOUNTED', delay: 2400, className: 'boot-ok' },
-  { text: '[NET]   SecOps monitoring........... ACTIVE', delay: 2800, className: 'boot-warn' },
-  { text: '[NET]   Relay scan module........... STANDBY', delay: 3200 },
-  { text: '[WARN]  Unauthorized access logged', delay: 3600, className: 'boot-error' },
-  { text: '[WARN]  Trace subsystem armed', delay: 4000, className: 'boot-warn' },
-  { text: '[SYS]   Session tunnel established', delay: 4400, className: 'boot-ok' },
-  { text: '[SYS]   Terminal ready — awaiting input', delay: 4800, className: 'boot-ok' },
-]
 
 /**
  * Séquence de boot cinématique plein écran.
  */
 export default function BootScreen({ onComplete }) {
+  const { locale, localeCode, localeLabel, t } = useLanguage()
   const [visibleLines, setVisibleLines] = useState([])
   const [phase, setPhase] = useState('logo')
   const [progress, setProgress] = useState(0)
+
+  const bootSequence = useMemo(() => t.raw('boot.sequence') || [], [t, locale])
+
+  const localeLines = useMemo(
+    () => [
+      {
+        text: t('boot.detectedLocale', { code: localeCode }),
+        delay: 2550,
+        className: 'boot-ok boot-locale',
+      },
+      {
+        text: t('boot.interfaceLanguage', { label: localeLabel }),
+        delay: 2680,
+        className: 'boot-ok boot-locale',
+      },
+    ],
+    [t, localeCode, localeLabel, locale],
+  )
+
+  const fullSequence = useMemo(() => {
+    const merged = [...bootSequence]
+    merged.splice(7, 0, ...localeLines)
+    return merged
+  }, [bootSequence, localeLines])
 
   useEffect(() => {
     const timers = []
 
     timers.push(setTimeout(() => setPhase('lines'), 1200))
 
-    BOOT_SEQUENCE.forEach((line) => {
+    fullSequence.forEach((line) => {
       timers.push(
         setTimeout(() => {
           setVisibleLines((prev) => [...prev, line])
-        }, 1200 + line.delay)
+        }, 1200 + line.delay),
       )
     })
 
-    timers.push(
-      setTimeout(() => setPhase('done'), 1200 + 5400)
-    )
+    timers.push(setTimeout(() => setPhase('done'), 1200 + 5400))
 
     const progInterval = setInterval(() => {
       setProgress((p) => Math.min(100, p + 2))
@@ -51,14 +59,14 @@ export default function BootScreen({ onComplete }) {
         clearInterval(progInterval)
         setProgress(100)
         setTimeout(onComplete, 600)
-      }, 1200 + 5600)
+      }, 1200 + 5600),
     )
 
     return () => {
       timers.forEach(clearTimeout)
       clearInterval(progInterval)
     }
-  }, [onComplete])
+  }, [onComplete, fullSequence])
 
   return (
     <div className={`boot-screen boot-screen--${phase}`}>

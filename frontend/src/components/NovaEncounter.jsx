@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 import './NovaEncounter.css'
 
-const NOVA_VIDEO_SRC = '/assets/videos/nova_intro.mp4'
+const NOVA_VIDEO_SRC = '/assets/videos/characters/nova_intro.mp4'
 const DEFAULT_VOLUME = 0.6
-
-const NOVA_MESSAGE =
-  'Bonjour, opérateur. Je suis Nova. Ne crains rien, je suis là pour t\'aider. Du moins je l\'espère.'
 
 /**
  * Première manifestation N0VA — fenêtre intrusive, grande vidéo, son activé si possible.
  */
 export default function NovaEncounter({ open, onDismiss, onInteract, onAppear }) {
+  const { t } = useLanguage()
   const [phase, setPhase] = useState('hidden')
   const [reply, setReply] = useState('')
   const [audioBlocked, setAudioBlocked] = useState(false)
@@ -103,10 +102,10 @@ export default function NovaEncounter({ open, onDismiss, onInteract, onAppear })
         <header className="nova-encounter__header">
           <span className="nova-encounter__signal" aria-hidden="true" />
           <div className="nova-encounter__header-text">
-            <span className="nova-encounter__tag">CANAL PRIORITAIRE — INTRUSION DÉTECTÉE</span>
+            <span className="nova-encounter__tag">{t('novaEncounter.tag')}</span>
             <h2 id="nova-encounter-title">N0VA</h2>
           </div>
-          <span className="nova-encounter__status">● LIVE</span>
+          <span className="nova-encounter__status">{t('novaEncounter.live')}</span>
         </header>
 
         <div className="nova-encounter__body">
@@ -131,16 +130,16 @@ export default function NovaEncounter({ open, onDismiss, onInteract, onAppear })
                 className="nova-encounter__audio-btn"
                 onClick={handleEnableAudio}
               >
-                Activer le signal audio
+                {t('novaEncounter.enableAudio')}
               </button>
             )}
           </div>
 
           <div className="nova-encounter__panel">
-            <p className="nova-encounter__message">{NOVA_MESSAGE}</p>
+            <p className="nova-encounter__message">{t('novaEncounter.message')}</p>
 
             <label className="nova-encounter__reply-label" htmlFor="nova-reply">
-              Répondre
+              {t('novaEncounter.reply')}
             </label>
             <input
               ref={inputRef}
@@ -150,7 +149,7 @@ export default function NovaEncounter({ open, onDismiss, onInteract, onAppear })
               value={reply}
               onChange={handleInputChange}
               onFocus={handleInputFocus}
-              placeholder="Répondre..."
+              placeholder={t('novaEncounter.replyPlaceholder')}
               autoComplete="off"
               spellCheck="false"
             />
@@ -158,9 +157,9 @@ export default function NovaEncounter({ open, onDismiss, onInteract, onAppear })
         </div>
 
         <footer className="nova-encounter__footer">
-          <span>Origine : INCONNUE</span>
-          <span>Chiffrement : PARTIEL</span>
-          <span>Interface forcée</span>
+          <span>{t('novaEncounter.footerOrigin')}</span>
+          <span>{t('novaEncounter.footerEncryption')}</span>
+          <span>{t('novaEncounter.footerForced')}</span>
         </footer>
       </div>
     </div>

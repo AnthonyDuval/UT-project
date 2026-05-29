@@ -39,6 +39,25 @@ function migrateSave(save) {
   save.eventLastTriggeredAt = save.eventLastTriggeredAt || {}
   save.tutorialFlags = save.tutorialFlags || {}
   save.novaIntroSeen = save.novaIntroSeen ?? false
+  save.seenTransmissions = save.seenTransmissions || []
+  save.characterTransmissionLastAt = save.characterTransmissionLastAt || 0
+  if (save.activeCharacterTransmission === undefined) save.activeCharacterTransmission = null
+  if (!save.playerBehavior) {
+    save.playerBehavior = {
+      lastInputAt: Date.now(),
+      lastTickAt: Date.now(),
+      commandsUsed: {},
+      secretCommandsUsed: {},
+      recentCommands: [],
+      scanCount: 0,
+      overrideCount: 0,
+      filesOpened: {},
+      connectedMs: 0,
+      memory: {},
+      reactionLastAt: {},
+      globalReactionAt: 0,
+    }
+  }
   for (const id of Object.keys(save.codexDiscovered)) {
     save.codexNotified[id] = true
   }

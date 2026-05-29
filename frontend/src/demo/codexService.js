@@ -9,13 +9,25 @@ import {
   FILE_TO_CODEX,
 } from './codexCatalog'
 import { filterCodexOrder, NOVA_CODEX_IDS } from '../utils/novaGate'
+import { getLocale, getTranslator } from '../i18n'
 
 export function ensureCodexState(save) {
   if (!save.codexDiscovered) save.codexDiscovered = {}
   if (!save.codexNotified) save.codexNotified = {}
 }
 
-/** Entrée déjà débloquée (save + localStorage via codexDiscovered). */
+function localizedEntry(entryId) {
+  const tr = getTranslator(getLocale())
+  const meta = tr.raw(`codex.entries.${entryId}`) || CODEX_ENTRIES[entryId]
+  if (!meta) return null
+  return {
+    name: meta.name,
+    description: meta.description,
+    nextHint: meta.nextHint,
+    rarity: meta.rarity,
+  }
+}
+
 export function isUnlocked(save, entryId) {
   if (!entryId || !CODEX_ENTRIES[entryId]) return false
   ensureCodexState(save)
@@ -25,16 +37,13 @@ export function isUnlocked(save, entryId) {
 function queueCodexDiscovery(save, entryId) {
   save._pendingCodexDiscoveries = save._pendingCodexDiscoveries || []
   if (save._pendingCodexDiscoveries.some((e) => e.id === entryId)) return
+  const meta = localizedEntry(entryId)
   save._pendingCodexDiscoveries.push({
     id: entryId,
-    name: CODEX_ENTRIES[entryId].name,
+    name: meta?.name || CODEX_ENTRIES[entryId].name,
   })
 }
 
-/**
- * Débloque une entrée une seule fois.
- * @returns {boolean} true si nouvelle découverte
- */
 export function discoverCodex(save, entryId) {
   if (!CODEX_ENTRIES[entryId]) return false
   if (NOVA_CODEX_IDS.has(entryId) && !save.novaIntroSeen) return false
@@ -42,8 +51,10 @@ export function discoverCodex(save, entryId) {
 
   ensureCodexState(save)
   save.codexDiscovered[entryId] = new Date().toISOString()
+  const meta = localizedEntry(entryId)
+  const tr = getTranslator(getLocale())
   save.events_log = save.events_log || []
-  save.events_log.push(`[CODEX] Entrée débloquée : ${CODEX_ENTRIES[entryId].name}`)
+  save.events_log.push(tr('codex.unlocked', { name: meta?.name || entryId }))
   queueCodexDiscovery(save, entryId)
 
   return true
@@ -61,7 +72,6 @@ export function discoverCodexFromFile(save, filename) {
   return discoverCodex(save, entryId)
 }
 
-/** Consomme et retourne les découvertes en attente (évite les doublons côté UI). */
 export function consumePendingCodexDiscoveries(save) {
   const pending = save._pendingCodexDiscoveries || []
   delete save._pendingCodexDiscoveries
@@ -81,21 +91,22 @@ export function buildCodexState(save) {
   const discovered = save.codexDiscovered
   const order = filterCodexOrder(CODEX_ORDER, save.novaIntroSeen)
   const total = order.length
+  const tr = getTranslator(getLocale())
 
   const entries = order.map((id, index) => {
-    const meta = CODEX_ENTRIES[id]
     const discoveredAt = discovered[id]
 
     if (discoveredAt) {
+      const meta = localizedEntry(id)
       return {
         id,
         slot: index + 1,
         discovered: true,
         discoveredAt,
-        name: meta.name,
-        description: meta.description,
-        nextHint: meta.nextHint,
-        rarity: meta.rarity,
+        name: meta?.name,
+        description: meta?.description,
+        nextHint: meta?.nextHint,
+        rarity: meta?.rarity,
       }
     }
 

@@ -6,6 +6,7 @@ import {
   DEMO_FILES,
   NODE_META,
   PROGRAMS,
+  getDemoFile,
   getVisibleFiles,
   toPublicState,
 } from './demoState'
@@ -34,6 +35,19 @@ import {
   processHorrorTrace,
   trackHorrorConnection,
 } from '../systems/HorrorEventSystem'
+import { trackBehaviorCommand, ensureBehavior } from '../systems/PlayerBehaviorTracker'
+import {
+  mergeBehaviorResult,
+  processBehaviorAfterCommand,
+  processBehaviorTick,
+} from '../systems/SystemReactionEngine'
+import { clearActiveCinematic } from '../systems/CinematicEventSystem'
+import { rollRandomCinematic } from '../systems/RandomCinematicEvents'
+import {
+  rollCharacterTransmission,
+  clearActiveCharacterTransmission,
+} from '../systems/CharacterTransmissionSystem.jsx'
+import { tx, txRaw } from '../i18n/helpers'
 
 function trackTutorial(save, cmd, args) {
   save.tutorialFlags = save.tutorialFlags || {}
@@ -43,6 +57,11 @@ function trackTutorial(save, cmd, args) {
   if (cmd === 'scan') save.tutorialFlags.scan = true
   if (cmd === 'connect') save.tutorialFlags.connect = true
   syncMissionObjectiveText(save)
+}
+
+function tryCharacterTransmission(save, trigger = 'random') {
+  if (save.gameOver || save.activeCinematic || save.activeCharacterTransmission) return null
+  return rollCharacterTransmission(save, { trigger })
 }
 
 function finishCommand(save, output, extras = {}) {
@@ -55,6 +74,8 @@ function finishCommand(save, output, extras = {}) {
     clear_terminal: extras.clear_terminal || false,
     state: toPublicState(save),
     uiEffect: save.activeUiEffect,
+    cinematic: save.activeCinematic || null,
+    transmission: save.activeCharacterTransmission || null,
     autoLines: extras.autoLines || [],
     terminalEffect: extras.terminalEffect || null,
     newCodexDiscoveries,
@@ -65,6 +86,7 @@ function finalizeCommand(save, output, extras = {}) {
   const mission = updateMissionProgress(save)
   if (mission.output.length) output = [...output, '', ...mission.output]
   if (mission.narrative.length) output = [...output, ...mission.narrative]
+  if (mission.output.length) tryCharacterTransmission(save, 'mission_progress')
 
   const traceMsgs = traceMessages(save)
   if (traceMsgs.length) output = [...output, '', ...traceMsgs]
@@ -82,17 +104,19 @@ function addTrace(save, amount) {
   const mysteryAuto = []
   if (save.traceLevel >= 30 && !save.trace_alerts_triggered.includes(30)) {
     save.trace_alerts_triggered.push(30)
-    save.events_log.push('[TRACE] Activite reseau inhabituelle detectee.')
+    save.events_log.push(tx('terminal.trace.activity30'))
   }
   if (save.traceLevel >= 60 && !save.trace_alerts_triggered.includes(60)) {
     save.trace_alerts_triggered.push(60)
-    save.events_log.push('[TRACE] UltraTech analyse votre signature.')
+    save.events_log.push(tx('terminal.trace.analyzing60'))
   }
   if (save.traceLevel >= 100) {
     save.gameOver = true
-    save.events_log.push('[GAME OVER] UltraTech vous a localise.')
+    save.events_log.push(tx('terminal.trace.gameOver'))
   }
   if (prev !== save.traceLevel) {
+    if (prev < 50 && save.traceLevel >= 50) tryCharacterTransmission(save, 'high_trace')
+    if (prev < 70 && save.traceLevel >= 70) tryCharacterTransmission(save, 'high_trace')
     const merged = mergeHorrorResult(
       processMysteryTrace(save),
       processHorrorTrace(save),
@@ -108,31 +132,34 @@ function addTrace(save, amount) {
 
 function traceMessages(save) {
   if (save.traceLevel >= 100) {
-    return ['[TRACE] NIVEAU CRITIQUE — 100% — GAME OVER IMMINENT']
+    return [tx('terminal.trace.critical')]
   }
   return []
 }
 
 function cmdHelp(save) {
   const sorted = [...save.unlocked_commands].filter((c) => c !== 'ls').sort()
-  const lines = [
-    'Registre partiel — mots reconnus par le terminal :',
+  return [
+    tx('terminal.help.header'),
     '',
     ...sorted.map((name) => `  ${name}`),
     '',
-    '[???] Ce terminal en sait plus qu\'il ne dit.',
+    tx('terminal.help.footer'),
   ]
-  return lines
 }
 
 function cmdFiles(save) {
   const visible = getVisibleFiles(save)
   if (!visible.length) {
-    return ['[VIDE] Aucun fragment accessible.']
+    return [tx('terminal.files.empty')]
   }
-  const lines = ['Fragments locaux :', '']
+  const lines = [tx('terminal.files.header'), '']
   for (const name of visible) {
-    lines.push(`  • ${name.padEnd(22)} ${DEMO_FILES[name]?.description || ''}`)
+    const file = getDemoFile(name)
+    lines.push(tx('terminal.ls.fileEntryBullet', {
+      name: name.padEnd(22),
+      description: file?.description || '',
+    }))
   }
   return lines
 }
@@ -141,23 +168,30 @@ function cmdLs(save, args) {
   if (args[0]) {
     const path = args[0].toLowerCase().replace('/', '')
     if (path === 'programs') {
-      const lines = ['Répertoire : /programs', '']
-      if (!save.installedPrograms.length) lines.push('[VIDE] Aucun programme installé.')
+      const lines = [tx('terminal.ls.programsDir'), '']
+      if (!save.installedPrograms.length) lines.push(tx('terminal.ls.programsEmpty'))
       else {
         for (const pid of save.installedPrograms) {
           const p = PROGRAMS[pid]
-          lines.push(`  ${p?.filename || pid} — ${p?.name || pid} [PERMANENT]`)
+          lines.push(tx('terminal.ls.programEntry', {
+            filename: p?.filename || pid,
+            name: p?.name || pid,
+          }))
         }
       }
       return lines
     }
     if (path === 'inventory') {
-      const lines = ['Répertoire : /inventory', '']
-      if (!save.programInventory.length) lines.push('[VIDE] Aucun programme en stock.')
+      const lines = [tx('terminal.ls.inventoryDir'), '']
+      if (!save.programInventory.length) lines.push(tx('terminal.ls.inventoryEmpty'))
       else {
         for (const e of save.programInventory) {
           const p = PROGRAMS[e.programId]
-          lines.push(`  ${p?.filename || e.programId} — x${e.quantity} [${p?.type?.toUpperCase() || 'EXE'}]`)
+          lines.push(tx('terminal.ls.inventoryEntry', {
+            filename: p?.filename || e.programId,
+            quantity: e.quantity,
+            type: p?.type?.toUpperCase() || 'EXE',
+          }))
         }
       }
       return lines
@@ -166,32 +200,38 @@ function cmdLs(save, args) {
 
   const visible = getVisibleFiles(save)
   const isLocal = save.currentNode === 'local'
-  const path = isLocal ? '/home/ghost_demo/' : `/net/${save.currentNode}/`
-  const lines = [`Répertoire courant : ${path}`, '']
+  const dirPath = isLocal ? '/home/ghost_demo/' : `/net/${save.currentNode}/`
+  const lines = [tx('terminal.ls.currentDir', { path: dirPath }), '']
   if (isLocal) {
-    lines.push(`  [DIR] /programs          — ${save.installedPrograms.length} installé(s)`)
-    lines.push(`  [DIR] /inventory         — ${save.programInventory.reduce((n, e) => n + e.quantity, 0)} en stock`)
+    lines.push(tx('terminal.ls.dirPrograms', { count: save.installedPrograms.length }))
+    lines.push(tx('terminal.ls.dirInventory', {
+      count: save.programInventory.reduce((n, e) => n + e.quantity, 0),
+    }))
     lines.push('')
   }
   for (const name of visible) {
-    lines.push(`  ${name.padEnd(24)} — ${DEMO_FILES[name]?.description || ''}`)
+    const file = getDemoFile(name)
+    lines.push(tx('terminal.ls.fileEntry', {
+      name: name.padEnd(24),
+      description: file?.description || '',
+    }))
   }
   return lines
 }
 
 function cmdOpen(save, args) {
-  if (!args[0]) return ['[ERR] Usage : open [fichier]']
+  if (!args[0]) return [tx('terminal.open.usage')]
   const name = args[0].toLowerCase()
-  if (!getVisibleFiles(save).includes(name)) return [`[ERR] Fichier inaccessible : '${name}'`]
-  const file = DEMO_FILES[name]
-  if (!file) return [`[ERR] Fichier inconnu : '${name}'`]
+  if (!getVisibleFiles(save).includes(name)) {
+    return [tx('terminal.open.inaccessible', { name })]
+  }
+  const file = getDemoFile(name)
+  if (!file) return [tx('terminal.open.unknown', { name })]
 
-  const lines = [`=== ${name} ===`, '', ...file.content]
+  const lines = [tx('terminal.open.header', { name }), '', ...file.content]
   if (!save.read_files.includes(name)) save.read_files.push(name)
 
-  if (name === 'note.txt') {
-    save.flags.note_read = true
-  }
+  if (name === 'note.txt') save.flags.note_read = true
   if (name === 'toolkit_manifest.txt') {
     for (const c of ['run', 'install', 'uninstall']) {
       if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
@@ -222,89 +262,79 @@ function cmdOpen(save, args) {
 function cmdStatus(save) {
   const net = NODE_META[save.currentNode] || NODE_META.local
   return [
-    '╔══════════════════════════════════════════════════╗',
-    '║  STATUT OPÉRATEUR                                 ║',
-    '╚══════════════════════════════════════════════════╝',
+    tx('terminal.status.banner'),
+    tx('terminal.status.title'),
+    tx('terminal.status.footerBanner'),
     '',
-    `  Identifiant  : ${save.player.username}`,
-    `  BitTek       : ${save.player.bittek}`,
-    `  Réputation   : ${save.player.reputation}`,
-    `  Trace UT     : ${save.traceLevel}%`,
+    tx('terminal.status.identifier', { username: save.player.username }),
+    tx('terminal.status.bittek', { bittek: save.player.bittek }),
+    tx('terminal.status.reputation', { reputation: save.player.reputation }),
+    tx('terminal.status.trace', { trace: save.traceLevel }),
     '',
-    '  Réseau :',
-    `    • Nœud actif   : ${net.name}`,
-    `    • Sécurité     : ${net.securityLevel}`,
-    `    • Trace mult.  : x${net.traceMultiplier}`,
+    tx('terminal.status.network'),
+    tx('terminal.status.activeNode', { node: net.name }),
+    tx('terminal.status.security', { security: net.securityLevel }),
+    tx('terminal.status.multiplier', { multiplier: net.traceMultiplier }),
     '',
-    '  [SYS] Canal sécurisé — données chiffrées.',
+    tx('terminal.status.footer'),
   ]
 }
 
 function cmdConnect(save, args) {
-  if (!args[0]) return ['[ERR] Usage : connect [node]']
+  if (!args[0]) return [tx('terminal.connect.usage')]
   const target = args[0].toLowerCase()
   if (!save.discoveredNodes.includes(target)) {
-    return [`[ERR] Nœud '${target}' non découvert.`]
+    return [tx('terminal.connect.undiscovered', { target })]
   }
   const meta = NODE_META[target]
-  if (!meta) return [`[ERR] Nœud inconnu : '${target}'`]
+  if (!meta) return [tx('terminal.connect.unknown', { target })]
   if (!save.hackedNodes.includes(target)) save.hackedNodes.push(target)
   save.currentNode = target
   trackHorrorConnection(save)
   addTrace(save, 15)
   syncMissionObjectiveText(save)
 
+  if (target === 'relay_ghost') tryCharacterTransmission(save, 'ghost_node')
+
   if (target === 'mirror_relay') {
-    return [
-      '[NET] Tunnel instable — reflet détecté...',
-      `[NET] Connected to ${meta.name}`,
-      '[???] Ce nœud n\'existe pas dans les registres UltraTech.',
-    '[???] Quelqu\'un observe depuis l\'autre côté du miroir.',
-      '[???] Le reflet montre deux chemins de sortie.',
-      '',
-      '[???] « Ne regarde pas trop longtemps. »',
-    ]
+    return (txRaw('terminal.connect.mirror') || []).map((line) =>
+      line.replace('{{nodeName}}', meta.name))
   }
 
-  return [
-    '[NET] Connexion chiffrée en cours…',
-    `[NET] Tunnel établi — ${meta.name}`,
-    '[???] Vous êtes à l\'intérieur. Restez discret.',
-  ]
+  return (txRaw('terminal.connect.normal') || []).map((line) =>
+    line.replace('{{nodeName}}', meta.name))
 }
 
 function cmdDisconnect(save) {
-  if (save.currentNode === 'local') return ['[NET] Déjà sur le terminal local.']
+  if (save.currentNode === 'local') return [tx('terminal.disconnect.alreadyLocal')]
   const prev = NODE_META[save.currentNode]?.name || save.currentNode
   save.currentNode = 'local'
   trackHorrorConnection(save)
   addTrace(save, 3)
   return [
-    '[NET] Fermeture du tunnel chiffré...',
-    `[NET] Déconnecté de ${prev}`,
-    '[NET] Retour au terminal local.',
+    tx('terminal.disconnect.closing'),
+    tx('terminal.disconnect.disconnected', { node: prev }),
+    tx('terminal.disconnect.backLocal'),
   ]
 }
 
 function cmdScan(save) {
   if (save.flags.scan_completed) {
-    return ['[SCAN] Analyse déjà effectuée.', '[SCAN] Relais RELAY_GHOST actif.']
+    return [
+      tx('terminal.scan.alreadyDone'),
+      tx('terminal.scan.alreadyRelay'),
+    ]
   }
   save.flags.scan_completed = true
   if (!save.discoveredNodes.includes('relay_ghost')) save.discoveredNodes.push('relay_ghost')
   addTrace(save, 15)
   syncMissionObjectiveText(save)
-  return [
-    '[SCAN] Parcours du réseau local…',
-    '[SCAN] Réponse anormale — signature RELAY_GHOST',
-    '[???] Quelqu\'un écoute. Vous aussi.',
-    '[SYS] Fragment capturé dans la mémoire locale.',
-  ]
+  return txRaw('terminal.scan.lines') || []
 }
 
 function cmdProbe(save) {
   if (save.currentNode !== 'satlink_03') {
-    return ['[PROBE] Aucun segment adjacent depuis cette position.']
+    return [tx('terminal.probe.noSegment')]
   }
   save.flags.probe_morgue = true
   save.flags.probe_used_satlink = true
@@ -313,42 +343,38 @@ function cmdProbe(save) {
   }
   addTrace(save, 8)
   syncMissionObjectiveText(save)
-  return [
-    '[PROBE] Segment orbital cartographié.',
-    '[PROBE] morgue_server — DÉTECTÉ',
-    '[PROBE] blackvault — DÉTECTÉ (firewall actif)',
-  ]
+  return txRaw('terminal.probe.lines') || []
 }
 
 function cmdRun(save, args) {
-  if (!args[0]) return ['[ERR] Usage : run [programme.exe]']
+  if (!args[0]) return [tx('terminal.run.usage')]
   const name = args[0].toLowerCase()
   const pid = Object.keys(PROGRAMS).find((k) => PROGRAMS[k].filename === name || k === name)
-  if (!pid) return [`[ERR] Programme introuvable : '${name}'`]
+  if (!pid) return [tx('terminal.run.notFound', { name })]
 
   const installed = save.installedPrograms.includes(pid)
   const inv = save.programInventory.find((e) => e.programId === pid)
-  if (!installed && !inv) return [`[ERR] ${PROGRAMS[pid].filename} absent.`]
+  if (!installed && !inv) return [tx('terminal.run.missing', { filename: PROGRAMS[pid].filename })]
 
-  const lines = [`[RUN] Exécution : ${PROGRAMS[pid].filename}`, '']
+  const lines = [tx('terminal.run.executing', { file: PROGRAMS[pid].filename }), '']
 
   if (PROGRAMS[pid].type === 'consumable' && inv) {
     inv.quantity -= 1
     if (inv.quantity <= 0) {
       save.programInventory = save.programInventory.filter((e) => e.programId !== pid)
     }
-    lines.push(`[RUN] ${PROGRAMS[pid].filename} consommé.`)
+    lines.push(tx('terminal.run.consumed', { file: PROGRAMS[pid].filename }))
   }
 
   if (pid === 'trace_wiper') {
     const old = save.traceLevel
     save.traceLevel = Math.max(0, save.traceLevel - 15)
-    lines.push(`[RUN] TRACE : ${old}% → ${save.traceLevel}%`)
+    lines.push(tx('terminal.run.traceChange', { old, new: save.traceLevel }))
   } else if (pid === 'packet_sniffer') {
     const n = NODE_META[save.currentNode]
-    lines.push(`[SNIFF] Nœud : ${n.name} | x${n.traceMultiplier}`)
+    lines.push(tx('terminal.run.sniff', { node: n.name, multiplier: n.traceMultiplier }))
   } else {
-    lines.push(`[RUN] ${PROGRAMS[pid].name} — OK.`)
+    lines.push(tx('terminal.run.ok', { name: PROGRAMS[pid].name }))
   }
 
   addTrace(save, 5)
@@ -357,19 +383,19 @@ function cmdRun(save, args) {
 
 function cmdMarket(save) {
   return [
-    '╔══════════════════════════════════════════════════╗',
-    '║  BLACK MARKET [DEMO]                              ║',
-    '╚══════════════════════════════════════════════════╝',
+    tx('terminal.market.banner'),
+    tx('terminal.market.title'),
+    tx('terminal.market.footerBanner'),
     '',
-    `  Solde : ${save.player.bittek} BitTek`,
-    '  [???] Quelqu\'un a laissé une porte ouverte sur le bureau.',
+    tx('terminal.market.balance', { bittek: save.player.bittek }),
+    tx('terminal.market.hint'),
   ]
 }
 
 function cmdSync(save) {
   return [
-    '[SYNC] Mode démo — cohérence locale OK.',
-    `[SYNC] Trace : ${save.traceLevel}% | Nœud : ${save.currentNode}`,
+    tx('terminal.sync.demo'),
+    tx('terminal.sync.status', { trace: save.traceLevel, node: save.currentNode }),
   ]
 }
 
@@ -379,7 +405,7 @@ export function executeDemoCommand(command) {
 
   if (save.gameOver && !save.fakeGameOverUntil) {
     return {
-      output: ['[LOCKED] Session terminée.', '[LOCKED] GAME OVER.'],
+      output: [tx('terminal.locked.session'), tx('terminal.locked.gameOver')],
       clear_terminal: false,
       state: toPublicState(save),
     }
@@ -393,11 +419,13 @@ export function executeDemoCommand(command) {
 
   save.lastCommand = command.trim()
   trackTutorial(save, cmd, args)
+  trackBehaviorCommand(save, cmd, args, {
+    isSecret: isHiddenCommand(cmd),
+    rawCommand: command.trim(),
+  })
 
-  let uiEffect = null
   let autoLines = []
 
-  // Commandes secrètes (prioritaires — pas dans help)
   if (isHiddenCommand(cmd)) {
     const hidden = handleHiddenCommand(save, cmd, args)
     if (hidden) {
@@ -422,15 +450,18 @@ export function executeDemoCommand(command) {
           duration: horror.fakeGameOver.duration,
         }
       }
-      const output = hidden.silent ? [] : [...(hidden.output || []), ...autoLines]
-      return finishCommand(save, output, {
+      const behavior = processBehaviorAfterCommand(save, cmd)
+      if (behavior.autoLines.length) autoLines.push(...behavior.autoLines)
+      if (behavior.uiEffect) save.activeUiEffect = behavior.uiEffect
+      tryCharacterTransmission(save, 'secret_command')
+      const mergedOut = hidden.silent ? behavior.autoLines : [...(hidden.output || []), ...autoLines]
+      return finishCommand(save, mergedOut, {
         autoLines,
         terminalEffect: horror.terminalEffect || null,
       })
     }
   }
 
-  // disconnect mystérieux avant déblocage
   if (cmd === 'disconnect' && !save.unlocked_commands.includes('disconnect')) {
     const mysteryDisc = handleMysteryDisconnect(save, false)
     if (mysteryDisc) {
@@ -444,7 +475,7 @@ export function executeDemoCommand(command) {
     addTrace(save, 2)
     saveDemoSave(save)
     return {
-      output: [`[ERR] Commande inconnue : '${cmd}'`, ...traceMessages(save)],
+      output: [tx('terminal.unknown.command', { cmd }), ...traceMessages(save)],
       clear_terminal: false,
       state: toPublicState(save),
     }
@@ -471,15 +502,18 @@ export function executeDemoCommand(command) {
     case 'sync': output = cmdSync(save); break
     case 'install':
     case 'uninstall':
-      output = ['[SYS] Procédure non documentée — le terminal refuse de confirmer.']
+      output = [tx('terminal.install.undocumented')]
       break
     default:
-      output = [`[ERR] Commande '${cmd}' non implémentée en demo.`]
+      output = [tx('terminal.unknown.notImplemented', { cmd })]
   }
 
-  const postCmd = mergeHorrorResult(
-    processMysteryAfterCommand(save, cmd),
-    processHorrorAfterCommand(save, cmd),
+  const postCmd = mergeBehaviorResult(
+    mergeHorrorResult(
+      processMysteryAfterCommand(save, cmd),
+      processHorrorAfterCommand(save, cmd),
+    ),
+    processBehaviorAfterCommand(save, cmd),
   )
   if (postCmd.autoLines.length) autoLines.push(...postCmd.autoLines)
   if (postCmd.uiEffect) save.activeUiEffect = postCmd.uiEffect
@@ -504,11 +538,14 @@ export function executeDemoCommand(command) {
   return finalizeCommand(save, output, { clear_terminal, autoLines, terminalEffect })
 }
 
-/** Tick session — événements temporels / hasard. */
 export function tickDemoMystery() {
   const save = loadDemoSave()
   clearExpiredUiEffects(save)
-  const result = mergeHorrorResult(processMysteryTick(save), processHorrorTick(save))
+  const behaviorTick = processBehaviorTick(save)
+  const result = mergeBehaviorResult(
+    mergeHorrorResult(processMysteryTick(save), processHorrorTick(save)),
+    behaviorTick,
+  )
   if (result.uiEffect) save.activeUiEffect = result.uiEffect
   if (result.fakeGameOver) {
     save.fakeGameOverUntil = Date.now() + result.fakeGameOver.duration
@@ -527,9 +564,59 @@ export function tickDemoMystery() {
     state: toPublicState(save),
     autoLines: result.autoLines,
     uiEffect: save.activeUiEffect,
+    cinematic: save.activeCinematic || null,
     terminalEffect: result.terminalEffect || null,
     newCodexDiscoveries,
   }
+}
+
+export function clearActiveCinematicDemo() {
+  const save = loadDemoSave()
+  const { autoLines } = clearActiveCinematic(save)
+  saveDemoSave(save)
+  return { state: toPublicState(save), autoLines }
+}
+
+export function rollRandomCinematicDemo(blocked = false) {
+  const save = loadDemoSave()
+  clearExpiredUiEffects(save)
+  const result = rollRandomCinematic(save, { blocked })
+
+  if (!result.cinematic) {
+    return { state: toPublicState(save), autoLines: [], cinematic: null, fired: null }
+  }
+
+  saveDemoSave(save)
+  return {
+    state: toPublicState(save),
+    autoLines: result.autoLines,
+    cinematic: result.cinematic,
+    fired: result.fired,
+  }
+}
+
+export function rollCharacterTransmissionDemo(blocked = false, trigger = 'random') {
+  const save = loadDemoSave()
+  clearExpiredUiEffects(save)
+  const result = rollCharacterTransmission(save, { blocked, trigger })
+
+  if (!result.transmission) {
+    return { state: toPublicState(save), transmission: null, fired: null }
+  }
+
+  saveDemoSave(save)
+  return {
+    state: toPublicState(save),
+    transmission: result.transmission,
+    fired: result.fired,
+  }
+}
+
+export function clearActiveCharacterTransmissionDemo() {
+  const save = loadDemoSave()
+  clearActiveCharacterTransmission(save)
+  saveDemoSave(save)
+  return { state: toPublicState(save) }
 }
 
 export function getDemoState() {
@@ -539,7 +626,7 @@ export function getDemoState() {
 export function resetDemoGame() {
   const save = resetDemoSave()
   return {
-    message: '[SYS] Sauvegarde réinitialisée — Mission 1 : Signal Fantôme.',
+    message: tx('terminal.reset.message'),
     state: toPublicState(save),
   }
 }
@@ -547,12 +634,11 @@ export function resetDemoGame() {
 export function loadAdvancedDemoGame() {
   const save = loadAdvancedDemoSave()
   return {
-    message: '[DEMO] Démo avancée chargée — SATLINK_03, BLACK MARKET, missions débloquées.',
+    message: tx('terminal.advancedDemo.message'),
     state: toPublicState(save),
   }
 }
 
-/** Marque la première manifestation N0VA comme vue (une fois par sauvegarde). */
 export function markNovaIntroSeenDemo() {
   const save = loadDemoSave()
   if (save.novaIntroSeen) {
@@ -560,10 +646,17 @@ export function markNovaIntroSeenDemo() {
   }
   save.novaIntroSeen = true
   save.events_log = save.events_log || []
-  save.events_log.push('[N0VA] Premier contact — canal entrant intercepté.')
+  save.events_log.push(tx('terminal.novaFirstContact'))
   discoverCodex(save, 'nova_contact_01')
   saveDemoSave(save)
   const newCodexDiscoveries = consumePendingCodexDiscoveries(save)
   saveDemoSave(save)
   return { state: toPublicState(save), newCodexDiscoveries }
+}
+
+export function touchPlayerActivityDemo() {
+  const save = loadDemoSave()
+  ensureBehavior(save).lastInputAt = Date.now()
+  saveDemoSave(save)
+  return { state: toPublicState(save) }
 }

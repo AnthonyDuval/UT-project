@@ -1,13 +1,10 @@
+import { getLocale, getTranslator } from '../i18n'
+
 /**
  * Objectifs d'enquête — indices narratifs, jamais de tutoriel technique.
  */
-export function getMissionObjective(state) {
-  if (!state) {
-    return {
-      title: 'Connexion…',
-      hint: 'Établissement du lien sécurisé.',
-    }
-  }
+export function getMissionObjectiveKey(state) {
+  if (!state) return 'objectives.connection'
 
   const read = state.read_files || []
   const flags = state.flags || {}
@@ -16,48 +13,13 @@ export function getMissionObjective(state) {
   const m1 = state.missions?.signal_fantome
 
   if (m1?.status === 'active' && !flags.mission_1_complete) {
-    if (!t.help) {
-      return {
-        title: 'Signal entrant',
-        hint: 'Quelqu\'un vous a ouvert une porte. Le terminal semble attendre quelque chose.',
-      }
-    }
-    if (!t.files && !read.length) {
-      return {
-        title: 'Mémoire locale',
-        hint: 'Des fragments dorment quelque part sur ce terminal.',
-      }
-    }
-    if (!read.includes('note.txt')) {
-      return {
-        title: 'Message non signé',
-        hint: 'Un document porte une note laissée par un inconnu.',
-      }
-    }
-    if (!read.includes('system.log')) {
-      return {
-        title: 'Anomalie RELAY_GHOST',
-        hint: 'Le journal système enregistre quelque chose qu\'UltraTech préfère taire.',
-      }
-    }
-    if (!flags.scan_completed) {
-      return {
-        title: 'Opérateur fantôme',
-        hint: 'Le dernier opérateur ayant utilisé SCAN sur ce relais a disparu.',
-      }
-    }
-    if (!read.includes('ghost_relay.log')) {
-      return {
-        title: 'Réponse du réseau',
-        hint: 'L\'analyse a laissé une trace. Un nouveau fragment attend dans les documents.',
-      }
-    }
-    if (!flags.mission_1_complete) {
-      return {
-        title: 'Relais actif',
-        hint: 'Les anciens opérateurs traversaient les nœuds clandestins en silence.',
-      }
-    }
+    if (!t.help) return 'objectives.m1.signal_incoming'
+    if (!t.files && !read.length) return 'objectives.m1.local_memory'
+    if (!read.includes('note.txt')) return 'objectives.m1.unsigned_note'
+    if (!read.includes('system.log')) return 'objectives.m1.relay_anomaly'
+    if (!flags.scan_completed) return 'objectives.m1.ghost_operator'
+    if (!read.includes('ghost_relay.log')) return 'objectives.m1.network_response'
+    if (!flags.mission_1_complete) return 'objectives.m1.active_relay'
   }
 
   const m2 = state.missions?.satlink_intrusion
@@ -66,69 +28,85 @@ export function getMissionObjective(state) {
 
   if (m2?.status === 'active') {
     if (!hacked.includes('satlink_03')) {
-      return {
-        title: 'Canal orbital',
-        hint: novaRevealed
-          ? 'N0VA parle d\'un relais — SATLINK_03. Quelque chose attend de l\'autre côté.'
-          : 'Un relais orbital attend — SATLINK_03. Quelque chose est de l\'autre côté.',
-      }
+      return novaRevealed ? 'objectives.m2.orbital_channel.nova' : 'objectives.m2.orbital_channel'
     }
     if (connected !== 'satlink_03' && hacked.includes('satlink_03')) {
-      return {
-        title: 'Segment orbital',
-        hint: 'Le tunnel est ouvert. Le relais garde encore des secrets.',
-      }
+      return 'objectives.m2.orbital_segment'
     }
-    if (!flags.probe_used_satlink) {
-      return {
-        title: 'Cartographe effacé',
-        hint: 'Dernier cartographe connu — statut : EFFACÉ. Son journal mentionne PROBE.',
-      }
-    }
-    if (!read.includes('satlink_manifest.dat')) {
-      return {
-        title: 'Manifeste orbital',
-        hint: 'Un fichier traîne sur le relais. UltraTech préfère qu\'on ne le lise pas.',
-      }
-    }
+    if (!flags.probe_used_satlink) return 'objectives.m2.erased_cartographer'
+    if (!read.includes('satlink_manifest.dat')) return 'objectives.m2.orbital_manifest'
     const discovered = state.network?.discoveredNodes || []
     if (!discovered.includes('morgue_server') || !discovered.includes('blackvault')) {
-      return {
-        title: 'Segments interdits',
-        hint: 'Deux nœuds apparaissent sur la cartographie — morgue_server, blackvault.',
-      }
+      return 'objectives.m2.forbidden_segments'
     }
     if (!read.includes('nova_orbital_fragment.dat')) {
-      return {
-        title: novaRevealed ? 'Fragment N0VA' : 'Fragment orbital',
-        hint: novaRevealed
-          ? 'N0VA laisse des traces sur les relais qu\'elle utilise.'
-          : 'Quelqu\'un a laissé une trace sur ce relais.',
-      }
+      return novaRevealed ? 'objectives.m2.orbital_fragment.nova' : 'objectives.m2.orbital_fragment'
     }
   }
 
   const journal = state.missionJournal
   const current = journal?.currentMission
 
-  if (!current) {
+  if (!current) return 'objectives.infiltration'
+
+  return { type: 'journal', mission: current }
+}
+
+function resolveObjective(key, translate) {
+  if (typeof key === 'object' && key.type === 'journal') {
+    const mission = key.mission
     return {
-      title: 'Infiltration en cours',
-      hint: 'Le réseau garde encore des secrets. UltraTech observe.',
+      title: mission.title,
+      hint: mission.currentObjective || translate('objectives.fallback.hint'),
+    }
+  }
+
+  if (key === 'objectives.m2.orbital_channel.nova') {
+    return {
+      title: translate('objectives.m2.orbital_channel.title'),
+      hint: translate('objectives.m2.orbital_channel.hint_nova'),
+    }
+  }
+
+  if (key === 'objectives.m2.orbital_channel') {
+    return {
+      title: translate('objectives.m2.orbital_channel.title'),
+      hint: translate('objectives.m2.orbital_channel.hint'),
+    }
+  }
+
+  if (key === 'objectives.m2.orbital_fragment.nova') {
+    return {
+      title: translate('objectives.m2.orbital_fragment.title_nova'),
+      hint: translate('objectives.m2.orbital_fragment.hint_nova'),
+    }
+  }
+
+  if (key === 'objectives.m2.orbital_fragment') {
+    return {
+      title: translate('objectives.m2.orbital_fragment.title'),
+      hint: translate('objectives.m2.orbital_fragment.hint'),
     }
   }
 
   return {
-    title: current.title,
-    hint: current.currentObjective || 'Poursuivez l\'enquête.',
+    title: translate(`${key}.title`),
+    hint: translate(`${key}.hint`),
   }
 }
 
-export function getThreatLevel(traceLevel = 0) {
-  if (traceLevel >= 85) return { label: 'CRITIQUE', className: 'critical' }
-  if (traceLevel >= 60) return { label: 'ÉLEVÉE', className: 'high' }
-  if (traceLevel >= 30) return { label: 'MODÉRÉE', className: 'moderate' }
-  return { label: 'FAIBLE', className: 'low' }
+export function getMissionObjective(state, locale) {
+  const translate = getTranslator(locale ?? getLocale())
+  const key = getMissionObjectiveKey(state)
+  return resolveObjective(key, translate)
+}
+
+export function getThreatLevel(traceLevel = 0, locale) {
+  const translate = getTranslator(locale ?? getLocale())
+  if (traceLevel >= 85) return { label: translate('threat.critical'), className: 'critical' }
+  if (traceLevel >= 60) return { label: translate('threat.high'), className: 'high' }
+  if (traceLevel >= 30) return { label: translate('threat.moderate'), className: 'moderate' }
+  return { label: translate('threat.low'), className: 'low' }
 }
 
 /** Sync mission objective text from investigation state. */

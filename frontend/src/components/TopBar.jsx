@@ -1,11 +1,13 @@
 import TraceBar from './TraceBar'
 import { computeUiProgression } from '../utils/uiProgression'
+import { useLanguage } from '../i18n/LanguageProvider'
 import './TopBar.css'
 
 /**
  * Barre supérieure minimaliste — stats débloquées progressivement.
  */
-export default function TopBar({ state, onReset, onOpenHowTo, username }) {
+export default function TopBar({ state, onReset, onOpenHowTo, onOpenSettings, username }) {
+  const { t } = useLanguage()
   const ui = computeUiProgression(state)
   const traceLevel = state?.traceLevel ?? 0
 
@@ -29,7 +31,7 @@ export default function TopBar({ state, onReset, onOpenHowTo, username }) {
 
           {ui.showReputation && (
             <div className="topbar__stat">
-              <span className="topbar__stat-label">Réputation</span>
+              <span className="topbar__stat-label">{t('topbar.reputation')}</span>
               <span className="topbar__stat-value">{state?.player?.reputation ?? 0}</span>
             </div>
           )}
@@ -45,15 +47,23 @@ export default function TopBar({ state, onReset, onOpenHowTo, username }) {
           <span className="topbar__user">{username}</span>
         )}
         <button
-          className="btn-howto"
-          onClick={onOpenHowTo}
-          title="Comment jouer"
+          className="btn-settings"
+          onClick={onOpenSettings}
+          title={t('topbar.settingsTitle')}
           type="button"
         >
-          ? Aide
+          {t('topbar.settings')}
         </button>
-        <button className="btn-reset" onClick={onReset} title="Reset sauvegarde" type="button">
-          ↺ Reset
+        <button
+          className="btn-howto"
+          onClick={onOpenHowTo}
+          title={t('topbar.helpTitle')}
+          type="button"
+        >
+          {t('topbar.help')}
+        </button>
+        <button className="btn-reset" onClick={onReset} title={t('topbar.resetTitle')} type="button">
+          {t('topbar.reset')}
         </button>
       </div>
     </header>

@@ -20,6 +20,24 @@
   max-width: 440px;
 }
 
+.app-window--market {
+  flex: 7;
+  min-width: 0;
+  max-width: 70vw;
+}
+
+.app-window--broker {
+  flex: 5;
+  min-width: 480px;
+  max-width: 58vw;
+}
+
+.app-window--journal {
+  flex: 5;
+  min-width: 480px;
+  max-width: 58vw;
+}
+
 @keyframes window-open {
   from {
     opacity: 0;

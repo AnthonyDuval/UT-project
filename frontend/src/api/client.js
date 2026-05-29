@@ -1,6 +1,9 @@
 /** Client API REST — backend FastAPI ou mode démo offline local */
 
-import { executeDemoCommand, getDemoState, loadAdvancedDemoGame, markNovaIntroSeenDemo, resetDemoGame, tickDemoMystery } from '../demo/demoEngine'
+import { getLocale, getTranslator } from '../i18n'
+
+import { clearActiveCinematicDemo, executeDemoCommand, getDemoState, loadAdvancedDemoGame, markNovaIntroSeenDemo, resetDemoGame, rollRandomCinematicDemo, rollCharacterTransmissionDemo, clearActiveCharacterTransmissionDemo, tickDemoMystery, touchPlayerActivityDemo } from '../demo/demoEngine'
+import { buyDemoHint, getDemoHintBroker } from '../demo/hintBroker'
 import { buyDemoItem, getDemoInventory, getDemoMarket, useDemoItem } from '../demo/demoMarket'
 import { loadDemoChat, saveDemoChat } from '../demo/demoStorage'
 
@@ -84,7 +87,7 @@ async function apiFetch(endpoint, options = {}) {
 
   if (response.status === 401 && token) {
     clearAuthToken()
-    const err = new Error('Session expirée — reconnectez-vous.')
+    const err = new Error(getTranslator(getLocale())('api.sessionExpired'))
     err.code = 'UNAUTHORIZED'
     throw err
   }
@@ -96,7 +99,7 @@ async function apiFetch(endpoint, options = {}) {
       ? detail
       : Array.isArray(detail)
         ? detail.map((d) => d.msg).join(', ')
-        : `Erreur API (${response.status})`
+        : getTranslator(getLocale())('api.generic', { status: response.status })
     console.error(`[API] ${options.method || 'GET'} ${endpoint} → ${response.status}`, message)
     throw new Error(message)
   }
@@ -108,7 +111,7 @@ async function apiFetch(endpoint, options = {}) {
 
 export async function registerUser(username, password) {
   if (DEMO_MODE) {
-    throw new Error('Inscription indisponible en mode démo offline.')
+    throw new Error(getTranslator(getLocale())('api.registerDemo'))
   }
   const result = await apiFetch('/auth/register', {
     method: 'POST',
@@ -120,7 +123,7 @@ export async function registerUser(username, password) {
 
 export async function loginUser(username, password) {
   if (DEMO_MODE) {
-    throw new Error('Connexion indisponible en mode démo offline.')
+    throw new Error(getTranslator(getLocale())('api.loginDemo'))
   }
   const result = await apiFetch('/auth/login', {
     method: 'POST',
@@ -174,7 +177,7 @@ export async function resetGame() {
 
 export async function loadAdvancedDemo() {
   if (!DEMO_MODE) {
-    throw new Error('Démo avancée disponible uniquement en mode offline.')
+    throw new Error(getTranslator(getLocale())('api.advancedDemo'))
   }
   return demoDelay(loadAdvancedDemoGame())
 }
@@ -189,6 +192,41 @@ export async function tickMysteryEvents() {
 export async function markNovaIntroSeen() {
   if (DEMO_MODE) {
     return demoDelay(markNovaIntroSeenDemo())
+  }
+  return { state: null }
+}
+
+export async function dismissCinematicEvent() {
+  if (DEMO_MODE) {
+    return demoDelay(clearActiveCinematicDemo())
+  }
+  return { state: null, autoLines: [] }
+}
+
+export async function rollRandomCinematicEvent(blocked = false) {
+  if (DEMO_MODE) {
+    return demoDelay(rollRandomCinematicDemo(blocked))
+  }
+  return { state: null, autoLines: [], cinematic: null, fired: null }
+}
+
+export async function rollCharacterTransmissionEvent(blocked = false, trigger = 'random') {
+  if (DEMO_MODE) {
+    return demoDelay(rollCharacterTransmissionDemo(blocked, trigger))
+  }
+  return { state: null, transmission: null, fired: null }
+}
+
+export async function dismissCharacterTransmission() {
+  if (DEMO_MODE) {
+    return demoDelay(clearActiveCharacterTransmissionDemo())
+  }
+  return { state: null }
+}
+
+export async function touchPlayerActivity() {
+  if (DEMO_MODE) {
+    return demoDelay(touchPlayerActivityDemo())
   }
   return { state: null }
 }
@@ -238,6 +276,24 @@ export async function useInventoryItem(itemId) {
   return apiFetch('/inventory/use', {
     method: 'POST',
     body: JSON.stringify({ itemId }),
+  })
+}
+
+export async function fetchHintBroker() {
+  if (DEMO_MODE) {
+    return demoDelay(getDemoHintBroker())
+  }
+  return apiFetch('/hint-broker')
+}
+
+export async function buyHint(hintId) {
+  if (DEMO_MODE) {
+    const result = buyDemoHint(hintId)
+    return demoDelay({ ...result, state: getDemoState() })
+  }
+  return apiFetch('/hint-broker/buy', {
+    method: 'POST',
+    body: JSON.stringify({ hintId }),
   })
 }
 

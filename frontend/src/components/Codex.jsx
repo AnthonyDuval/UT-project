@@ -1,15 +1,10 @@
+import { useLanguage } from '../i18n/LanguageProvider'
+import { localeDateFormat } from '../i18n/helpers'
 import './Codex.css'
 
-const RARITY_LABELS = {
-  commun: 'Commun',
-  rare: 'Rare',
-  interdit: 'Interdit',
-  anomalie: 'Anomalie',
-}
-
-function formatDate(iso) {
+function formatDate(iso, locale) {
   try {
-    return new Date(iso).toLocaleString('fr-FR', {
+    return new Date(iso).toLocaleString(localeDateFormat(), {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -25,10 +20,12 @@ function formatDate(iso) {
  * Codex des découvertes — secrets débloqués uniquement.
  */
 export default function Codex({ codex }) {
+  const { t, locale } = useLanguage()
+
   if (!codex) {
     return (
       <div className="codex codex--empty">
-        <p>Chargement du registre...</p>
+        <p>{t('codex.ui.loading')}</p>
       </div>
     )
   }
@@ -40,15 +37,15 @@ export default function Codex({ codex }) {
     <div className="codex">
       <header className="codex__header">
         <div>
-          <h2 className="codex__title">CODEX DES DÉCOUVERTES</h2>
+          <h2 className="codex__title">{t('codex.ui.title')}</h2>
           <p className="codex__subtitle">
             {novaRevealed
-              ? 'Registre clandestin — classification N0VA/███'
-              : 'Registre clandestin — classification ███'}
+              ? t('codex.ui.subtitleRevealed', { count: discoveredCount, total })
+              : t('codex.ui.subtitleHidden')}
           </p>
         </div>
         <div className="codex__progress-block">
-          <span className="codex__progress-label">Secrets découverts</span>
+          <span className="codex__progress-label">{t('codex.ui.secretsLabel')}</span>
           <strong className="codex__progress-value">{progressLabel}</strong>
           <div className="codex__progress-bar">
             <div className="codex__progress-fill" style={{ width: `${ratio * 100}%` }} />
@@ -56,10 +53,7 @@ export default function Codex({ codex }) {
         </div>
       </header>
 
-      <p className="codex__intro">
-        Les anomalies, commandes oubliées et fichiers corrompus apparaissent ici une fois observés.
-        Les entrées verrouillées n&apos;existent pas — officiellement.
-      </p>
+      <p className="codex__intro">{t('codex.ui.intro')}</p>
 
       <ul className="codex__list">
         {entries.map((entry) => (
@@ -72,7 +66,7 @@ export default function Codex({ codex }) {
               <h3 className="codex__entry-name">{entry.name}</h3>
               {entry.discovered && entry.rarity && (
                 <span className={`codex__rarity codex__rarity--${entry.rarity}`}>
-                  {RARITY_LABELS[entry.rarity] || entry.rarity}
+                  {t(`codex.rarity.${entry.rarity}`) || entry.rarity}
                 </span>
               )}
             </div>
@@ -81,19 +75,19 @@ export default function Codex({ codex }) {
               <>
                 <p className="codex__desc">{entry.description}</p>
                 <div className="codex__meta">
-                  <span className="codex__date">Découvert : {formatDate(entry.discoveredAt)}</span>
+                  <span className="codex__date">
+                    {t('codex.ui.discoveredAt', { date: formatDate(entry.discoveredAt, locale) })}
+                  </span>
                 </div>
                 {entry.nextHint && (
                   <p className="codex__hint">
-                    <span className="codex__hint-label">Piste suivante</span>
+                    <span className="codex__hint-label">{t('codex.ui.nextHint')}</span>
                     {entry.nextHint}
                   </p>
                 )}
               </>
             ) : (
-              <p className="codex__locked-text">
-                Entrée non cataloguée. Continuez d&apos;explorer le terminal, les fichiers et les silences du réseau.
-              </p>
+              <p className="codex__locked-text">{t('codex.ui.lockedHint')}</p>
             )}
           </li>
         ))}
