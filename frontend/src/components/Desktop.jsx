@@ -1,33 +1,35 @@
 import './Desktop.css'
 
 const APPS = [
-  { id: 'terminal', name: 'Terminal', icon: '⌨', alwaysUnlocked: true },
-  { id: 'chat', name: 'Canal', icon: '💬', alwaysUnlocked: true },
-  { id: 'journal', name: 'Journal', icon: '📋', alwaysUnlocked: true },
-  { id: 'toolkit', name: 'ToolKit', icon: '💾', alwaysUnlocked: true },
-  { id: 'codex', name: 'Codex', icon: '📜', alwaysUnlocked: true },
-  { id: 'market', name: 'BLACK MARKET', icon: '🛒', requiresMarket: true },
+  { id: 'terminal', name: 'Terminal', icon: '⌨' },
+  { id: 'journal', name: 'Journal', icon: '📋' },
+  { id: 'chat', name: 'Canal', icon: '💬' },
+  { id: 'toolkit', name: 'ToolKit', icon: '💾' },
+  { id: 'codex', name: 'Codex', icon: '📜' },
+  { id: 'market', name: 'BLACK MARKET', icon: '🛒' },
 ]
 
 /**
- * Lanceur d'applications — mode compact dans la sidebar.
+ * Lanceur d'applications — débloqué progressivement.
  */
-export default function Desktop({ openApps, onOpenApp, marketUnlocked, compact = false }) {
+export default function Desktop({ openApps, onOpenApp, unlockedApps = ['terminal'], compact = false }) {
+  const visible = APPS.filter((app) => unlockedApps.includes(app.id))
+
+  if (visible.length <= 1) return null
+
   return (
     <div className={`desktop-icons ${compact ? 'desktop-icons--compact' : ''}`}>
-      {APPS.map((app) => {
-        const locked = app.requiresMarket && !marketUnlocked
+      {visible.map((app) => {
         const active = openApps.includes(app.id)
-
         return (
           <button
             key={app.id}
-            className={`desktop-icons__app ${active ? 'desktop-icons__app--active' : ''} ${locked ? 'desktop-icons__app--locked' : ''}`}
-            onClick={() => !locked && onOpenApp(app.id)}
-            title={locked ? 'Verrouillé — terminez la Mission 1' : app.name}
-            disabled={locked}
+            type="button"
+            className={`desktop-icons__app ${active ? 'desktop-icons__app--active' : ''}`}
+            onClick={() => onOpenApp(app.id)}
+            title={app.name}
           >
-            <span className="desktop-icons__icon">{locked ? '🔒' : app.icon}</span>
+            <span className="desktop-icons__icon">{app.icon}</span>
             <span className="desktop-icons__label">{app.name}</span>
           </button>
         )

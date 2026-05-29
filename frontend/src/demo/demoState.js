@@ -8,7 +8,7 @@ const MISSION_DEFS = {
     description: 'Un relais non identifié émet un signal. Localisez-le et établissez contact.',
     primaryNode: 'relay_ghost',
     objectiveDefs: [
-      { id: 'read_files', label: 'Explorer les fichiers du terminal' },
+      { id: 'read_files', label: 'Lire les documents du terminal' },
       { id: 'scan_network', label: 'Cartographier le réseau (scan)' },
       { id: 'connect_relay', label: 'Connectez-vous à relay_ghost' },
     ],
@@ -43,18 +43,19 @@ const MISSION_DEFS = {
 export function createFreshDemoState() {
   return {
     player: { username: 'ghost_demo', bittek: 0, reputation: 0 },
-    unlocked_commands: ['help', 'clear', 'ls', 'open', 'status', 'sync'],
+    unlocked_commands: ['help', 'clear', 'files', 'open'],
     read_files: [],
     flags: {
       scan_completed: false,
       mission_1_complete: false,
+      note_read: false,
       probe_morgue: false,
       probe_used_satlink: false,
     },
     missions: {
       signal_fantome: {
         status: 'active',
-        currentObjective: 'Explorer les fichiers du terminal',
+        currentObjective: 'Lire le message laissé sur ce terminal',
         completedObjectives: [],
         rewardsClaimed: false,
       },
@@ -88,6 +89,7 @@ export function createFreshDemoState() {
     lastCommand: '',
     activeUiEffect: null,
     fakeGameOverUntil: null,
+    uiIntrosSeen: {},
     codexDiscovered: {},
   }
 }
@@ -307,6 +309,9 @@ export function toPublicState(save) {
     activeUiEffect: save.activeUiEffect || null,
     fakeGameOverActive: !!(save.fakeGameOverUntil && now < save.fakeGameOverUntil),
     seenEvents: save.seenEvents || [],
+    flags: save.flags || {},
+    read_files: save.read_files || [],
+    uiIntrosSeen: save.uiIntrosSeen || {},
     codex: buildCodexState(save),
   }
 }
@@ -326,47 +331,53 @@ export function getVisibleFiles(save) {
 }
 
 export const DEMO_FILES = {
-  'readme.txt': {
+  'note.txt': {
     node: 'local', visible_from_start: true,
-    description: "Fichier d'accueil",
+    description: 'Message laissé par un inconnu',
     content: [
       '╔══════════════════════════════════════════════════╗',
-      '║  ULTRATECH ONLINE — BRIEFING OPÉRATEUR           ║',
+      '║  MESSAGE NON SIGNÉ                                ║',
       '╚══════════════════════════════════════════════════╝',
       '',
-      'Bienvenue, opérateur.',
-      'Canal chiffré établi. Aucune trace externe détectée.',
-      'Commencez par lire system.log — des anomalies y sont signalées.',
+      'Opérateur,',
+      '',
+      'Si tu lis ceci, quelqu\'un t\'a laissé accéder à ce terminal.',
+      'UltraTech surveille tout. Reste discret.',
+      '',
+      'Commence par lister les documents :',
+      '>>> files <<<',
+      '',
+      'Puis ouvre le journal système quand il apparaîtra.',
     ],
   },
   'system.log': {
-    node: 'local', visible_from_start: true,
-    description: 'Journal système',
+    node: 'local', unlock_key: 'note_read',
+    description: 'Journal système — anomalies détectées',
     content: [
-      '[2026-05-28 02:14:33] WARN — Relais externe non identifié détecté',
-      '[2026-05-28 02:14:34] WARN — Signature : RELAY_GHOST',
-      '[2026-05-28 02:14:36] INFO — Analyse réseau requise avant toute connexion',
+      '[02:14:33] ALERTE — Signal inconnu détecté',
+      '[02:14:34] Signature : RELAY_GHOST',
+      '[02:14:36] Action requise : analyser le réseau',
       '',
-      '...pour cartographier les relais fantômes, lancer :',
-      '>>> SCAN <<<',
+      'Pour chercher des connexions cachées, tapez :',
+      '>>> scan <<<',
     ],
   },
   'toolkit_manifest.txt': {
-    node: 'local', visible_from_start: true,
-    description: 'Manifeste boîte à outils',
+    node: 'local', unlock_key: 'mission_1_complete',
+    description: 'Liste de programmes',
     content: [
-      'BOÎTE À OUTILS — run / install / uninstall',
-      'ls /programs · ls /inventory',
+      'BOÎTE À OUTILS — programmes spécialisés',
+      'Commandes : run · install · uninstall',
     ],
   },
   'ghost_relay.log': {
     node: 'local', unlock_key: 'scan_completed',
-    description: 'Log du relais fantôme',
+    description: 'Résultat de l\'analyse réseau',
     content: [
-      '[SCAN RESULT] Relais RELAY_GHOST localisé',
-      '[SCAN RESULT] Statut : EN ATTENTE DE CONNEXION',
+      '[RÉSULTAT] Relais RELAY_GHOST localisé',
+      '[RÉSULTAT] Statut : EN ATTENTE DE CONNEXION',
       '',
-      'Pour établir le lien :',
+      'Pour établir le lien, tapez :',
       '>>> connect relay_ghost <<<',
     ],
   },

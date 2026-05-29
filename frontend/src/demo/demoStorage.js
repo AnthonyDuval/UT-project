@@ -19,7 +19,9 @@ export function loadDemoSave() {
   try {
     const raw = localStorage.getItem(DEMO_SAVE_KEY)
     if (raw) {
-      return JSON.parse(raw)
+      const save = JSON.parse(raw)
+      migrateSave(save)
+      return save
     }
   } catch {
     /* reset on corruption */
@@ -27,6 +29,18 @@ export function loadDemoSave() {
   const initial = createFreshDemoState()
   saveDemoSave(initial)
   return initial
+}
+
+function migrateSave(save) {
+  save.flags = save.flags || {}
+  save.uiIntrosSeen = save.uiIntrosSeen || {}
+  if (!save.unlocked_commands.includes('files')) {
+    save.unlocked_commands.push('files')
+  }
+  if (save.read_files?.includes('readme.txt') && !save.read_files.includes('note.txt')) {
+    save.read_files.push('note.txt')
+    save.flags.note_read = true
+  }
 }
 
 export function saveDemoSave(save) {

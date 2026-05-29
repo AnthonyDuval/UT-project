@@ -50,6 +50,12 @@ import MysteryOverlay from './components/MysteryOverlay'
 
 import './App.css'
 
+import {
+  collectNewIntros,
+  computeUiProgression,
+  getIntroLines,
+} from './utils/uiProgression'
+
 
 
 function buildPostBootLines() {
@@ -64,17 +70,13 @@ function buildPostBootLines() {
 
     '',
 
-    '[SYS] Session sécurisée — identifiant opérateur validé',
+    '[SYS] Connexion sécurisée établie.',
 
-    '[SYS] Surveillance UltraTech : ACTIVE',
-
-    '[WARN] Toute action anormale augmentera votre TRACE',
+    '[SYS] Quelqu\'un vous a laissé accéder à ce terminal.',
 
     '',
 
-    '→ Tapez help pour lister les commandes de base.',
-
-    '→ Consultez les fichiers dans le panneau gauche.',
+    '→ Tapez help pour voir ce que vous pouvez faire.',
 
     '──────────────────────────────────────────────────────────────',
 
@@ -127,6 +129,8 @@ function App() {
   const bootDoneRef = useRef(false)
 
   const initDoneRef = useRef(false)
+
+  const uiIntrosHandledRef = useRef({})
 
 
 
@@ -191,6 +195,8 @@ function App() {
     setShowWelcome(false)
 
     setError(null)
+
+    uiIntrosHandledRef.current = {}
 
     gameOverTriggeredRef.current = false
 
@@ -322,17 +328,45 @@ function App() {
 
 
 
+  const appendIntroLines = useCallback((state) => {
+
+    const newIntros = collectNewIntros(state, uiIntrosHandledRef.current)
+
+    if (!newIntros.length) return
+
+    const lines = newIntros.flatMap((key) => getIntroLines(key))
+
+    uiIntrosHandledRef.current = {
+
+      ...uiIntrosHandledRef.current,
+
+      ...Object.fromEntries(newIntros.map((k) => [k, true])),
+
+    }
+
+    setTerminalLines((prev) => [...prev, '', ...lines, ''])
+
+  }, [])
+
+
+
   const handleStateUpdate = useCallback((state) => {
 
     setGameState(state)
 
+    appendIntroLines(state)
+
     if (state.gameOver) triggerGameOver(false)
 
-  }, [triggerGameOver])
+  }, [triggerGameOver, appendIntroLines])
 
 
 
   const handleOpenApp = (appId) => {
+
+    const ui = computeUiProgression(gameState)
+
+    if (!ui.unlockedApps.includes(appId)) return
 
     if (!openApps.includes(appId)) {
 
@@ -394,6 +428,8 @@ function App() {
 
       setGameState(result.state)
 
+      appendIntroLines(result.state)
+
       setError(null)
 
 
@@ -406,23 +442,13 @@ function App() {
 
         if (result.state?.codex?.discoveredCount > (gameState?.codex?.discoveredCount ?? 0)) {
 
-          if (!openApps.includes('codex')) {
-
-            appendTerminalLine('[SYS] Nouvelle entrée Codex — consultez registry://classified')
-
-          }
+          appendTerminalLine('[SYS] Nouvelle découverte enregistrée dans le Codex.')
 
         }
 
 
 
       if (result.state.gameOver && !result.state.fakeGameOverActive) triggerGameOver(false)
-
-      if (result.state.marketUnlocked && !openApps.includes('market')) {
-
-        appendTerminalLine('[SYS] Nouvelle app : BLACK MARKET disponible.')
-
-      }
 
       const lastLog = result.state.events_log?.[result.state.events_log.length - 1]
 
@@ -582,11 +608,17 @@ function App() {
 
   const operatorName = authUser?.username || 'GHOST'
 
-  const terminalTitle = gameState?.network?.connected
+  const ui = computeUiProgression(gameState)
 
-    ? `${gameState.network.currentNodeMeta.displayName} — TERMINAL SECURE SHELL`
+  const terminalTitle = ui.earlyGame
 
-    : `${operatorName}@ultratech — TERMINAL SECURE SHELL`
+    ? 'TERMINAL SÉCURISÉ'
+
+    : gameState?.network?.connected
+
+      ? `${gameState.network.currentNodeMeta.displayName} — TERMINAL`
+
+      : `${operatorName} — TERMINAL`
 
 
 
@@ -670,7 +702,7 @@ function App() {
 
   return (
 
-    <div className={`app app--theme-${networkTheme} ${gameOverActive ? 'app--game-over' : ''} ${mysteryEffect ? 'app--mystery-active' : ''}`}>
+    <div className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${mysteryEffect ? 'app--mystery-active' : ''}`}>
 
       <div className="app__immersion" aria-hidden="true">
 
@@ -708,11 +740,7 @@ function App() {
 
             onOpenApp={handleOpenApp}
 
-            onRunProgram={handleCommand}
-
             openApps={openApps}
-
-            marketUnlocked={gameState?.marketUnlocked}
 
           />
 
@@ -722,7 +750,7 @@ function App() {
 
         <div className="workspace">
 
-          <div className={`windows ${openApps.some((a) => ['market', 'journal', 'toolkit', 'chat', 'codex'].includes(a)) ? 'windows--split' : ''}`}>
+          <div className={`windows ${openApps.some((a) => ui.unlockedApps.includes(a) && a !== 'terminal') ? 'windows--split' : ''}`}>
 
             {error && (
 
@@ -764,9 +792,11 @@ function App() {
 
 
 
+            {ui.unlockedApps.includes('chat') && (
+
             <AppWindow
 
-              title="CANAL CLANDESTIN — chat://global"
+              title="CANAL CLANDESTIN"
 
               active={openApps.includes('chat')}
 
@@ -780,11 +810,15 @@ function App() {
 
             </AppWindow>
 
+            )}
 
+
+
+            {ui.unlockedApps.includes('toolkit') && (
 
             <AppWindow
 
-              title="TOOLKIT — /programs · /inventory"
+              title="BOÎTE À OUTILS"
 
               active={openApps.includes('toolkit')}
 
@@ -804,11 +838,15 @@ function App() {
 
             </AppWindow>
 
+            )}
 
+
+
+            {ui.unlockedApps.includes('journal') && (
 
             <AppWindow
 
-              title="JOURNAL DE MISSIONS — ops://mission_log"
+              title="JOURNAL DE MISSIONS"
 
               active={openApps.includes('journal')}
 
@@ -822,11 +860,15 @@ function App() {
 
             </AppWindow>
 
+            )}
 
+
+
+            {ui.unlockedApps.includes('codex') && (
 
             <AppWindow
 
-              title="CODEX — registry://classified"
+              title="CODEX — REGISTRE CLASSIFIÉ"
 
               active={openApps.includes('codex')}
 
@@ -840,11 +882,15 @@ function App() {
 
             </AppWindow>
 
+            )}
 
+
+
+            {ui.unlockedApps.includes('market') && (
 
             <AppWindow
 
-              title="BLACK MARKET — blacknode://market"
+              title="BLACK MARKET"
 
               active={openApps.includes('market')}
 
@@ -868,6 +914,8 @@ function App() {
 
             </AppWindow>
 
+            )}
+
           </div>
 
         </div>
@@ -878,15 +926,19 @@ function App() {
 
       <footer className="footer">
 
-        <span>UltraTech Corp. — Opérateur : {operatorName}</span>
+        <span>{ui.earlyGame ? 'Connexion sécurisée active' : `UltraTech Corp. — ${operatorName}`}</span>
 
         <div className="footer__right">
 
-          {inDemo && <FeedbackButton variant="ghost" />}
+          {inDemo && !ui.earlyGame && <FeedbackButton variant="ghost" />}
 
           <span className="footer__blink">
 
-            {gameState?.gameOver ? '● SESSION COMPROMISED' : '● SYSTÈME ACTIF — VOUS ÊTES OBSERVÉ'}
+            {gameState?.gameOver
+              ? '● SESSION COMPROMISE'
+              : ui.earlyGame
+                ? '● ligne ouverte'
+                : '● VOUS ÊTES OBSERVÉ'}
 
           </span>
 

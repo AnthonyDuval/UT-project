@@ -3,32 +3,28 @@ import './HowToPlayPanel.css'
 const STEPS = [
   {
     title: 'Tape help',
-    body: 'Liste les commandes déjà débloquées. D\'autres se cachent dans les fichiers — rien n\'est donné d\'emblée.',
+    body: 'Affiche ce que vous pouvez faire. De nouvelles actions apparaissent en explorant.',
   },
   {
-    title: 'Consulte les fichiers',
-    body: 'Utilise ls puis open [fichier] dans le panneau gauche ou le terminal. readme.txt et system.log sont le point de départ.',
+    title: 'Lis les documents',
+    body: 'Tapez files pour lister les documents, puis open note.txt pour les ouvrir.',
   },
   {
-    title: 'Trouve les commandes cachées',
-    body: 'Certaines actions (lire un log, scanner le réseau…) débloquent scan, connect, probe et d\'autres outils.',
+    title: 'Suis les indices',
+    body: 'Chaque document peut révéler une nouvelle commande. Pas besoin de tout deviner.',
   },
   {
-    title: 'Surveille la TRACE UltraTech',
-    body: 'Chaque action risquée augmente la jauge TRACE (0–100 %). À 100 % : Game Over. La barre rouge en haut te prévient.',
+    title: 'Reste discret',
+    body: 'UltraTech vous observe. Une jauge TRACE apparaît quand vous prenez des risques.',
   },
   {
-    title: 'Utilise le Black Market',
-    body: 'Après la Mission 1, achète des consommables anti-trace ou des programmes .exe pour réduire la menace.',
-  },
-  {
-    title: 'Cherche les secrets',
-    body: 'Certaines commandes ne figurent pas dans help. Les fichiers corrompus et une TRACE élevée révèlent parfois autre chose…',
+    title: 'Explorez progressivement',
+    body: 'Réseau, marché noir, programmes… tout se débloque au fil de l\'histoire.',
   },
 ]
 
 /**
- * Panneau « Comment jouer ? » — règles essentielles de l'alpha.
+ * Panneau d'aide optionnel — le jeu s'apprend surtout en jouant.
  */
 export default function HowToPlayPanel({ open, onClose }) {
   if (!open) return null
@@ -45,8 +41,8 @@ export default function HowToPlayPanel({ open, onClose }) {
         </header>
 
         <p className="howto__intro">
-          UltraTech Online est un terminal narratif : explore, infiltre des nœuds réseau
-          et reste sous le radar de la surveillance corporatiste.
+          Vous avez accès à un terminal sécurisé. Lisez, explorez, connectez-vous
+          à des signaux cachés — sans vous faire repérer.
         </p>
 
         <ol className="howto__list">
@@ -62,7 +58,7 @@ export default function HowToPlayPanel({ open, onClose }) {
         </ol>
 
         <footer className="howto__footer">
-          <p>Mission 1 — Signal Fantôme : lire les fichiers → scan → connect relay_ghost</p>
+          <p>Commencez par : help → files → open note.txt</p>
           <button type="button" className="howto__ok" onClick={onClose}>
             Compris
           </button>

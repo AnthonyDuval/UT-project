@@ -19,11 +19,49 @@ import {
   processMysteryTrace,
   stampUiEffectStart,
 } from './eventManager'
+import { updateMissionProgress } from './missionProgress'
 import {
   handleHiddenCommand,
   handleMysteryDisconnect,
   isHiddenCommand,
 } from './hiddenCommands'
+
+const COMMAND_DESC = {
+  help: 'Affiche les commandes disponibles.',
+  files: 'Liste les documents accessibles sur ce terminal.',
+  open: 'Ouvre un document — ex: open note.txt',
+  scan: 'Analyse le réseau à la recherche de connexions cachées.',
+  connect: 'Se connecte à une cible — ex: connect relay_ghost',
+  disconnect: 'Quitte la connexion en cours et revient au terminal local.',
+  clear: 'Efface l\'écran.',
+  run: 'Lance un programme — ex: run trace_wiper.exe',
+  probe: 'Explore les connexions depuis un relais orbital.',
+  status: 'Affiche votre statut d\'opérateur.',
+  sync: 'Synchronise la session locale.',
+  ls: 'Alias technique de files.',
+  programs: 'Liste les programmes installés.',
+  inventory: 'Liste les programmes en stock.',
+  market: 'Informations sur le marché clandestin.',
+}
+
+function finalizeCommand(save, output, extras = {}) {
+  const mission = updateMissionProgress(save)
+  if (mission.output.length) output = [...output, '', ...mission.output]
+  if (mission.narrative.length) output = [...output, ...mission.narrative]
+
+  const traceMsgs = traceMessages(save)
+  if (traceMsgs.length) output = [...output, '', ...traceMsgs]
+
+  stampUiEffectStart(save)
+  saveDemoSave(save)
+  return {
+    output,
+    clear_terminal: extras.clear_terminal || false,
+    state: toPublicState(save),
+    uiEffect: save.activeUiEffect,
+    autoLines: extras.autoLines || [],
+  }
+}
 
 function addTrace(save, amount) {
   if (amount <= 0 || save.gameOver) return []
@@ -65,16 +103,27 @@ function traceMessages(save) {
 
 function cmdHelp(save) {
   const lines = [
-    '╔══════════════════════════════════════════════════╗',
-    '║  ULTRATECH TERMINAL — AIDE                        ║',
-    '╚══════════════════════════════════════════════════╝',
-    '',
     'Commandes disponibles :',
+    '',
   ]
-  for (const name of [...save.unlocked_commands].sort()) {
-    lines.push(`  ${name}`)
+  const sorted = [...save.unlocked_commands].filter((c) => c !== 'ls').sort()
+  for (const name of sorted) {
+    const desc = COMMAND_DESC[name] || ''
+    lines.push(`  ${name.padEnd(12)} ${desc}`)
   }
-  lines.push('', '[SYS] Session chiffrée — progression enregistrée localement.')
+  return lines
+}
+
+function cmdFiles(save) {
+  const visible = getVisibleFiles(save)
+  if (!visible.length) {
+    return ['Aucun document accessible pour le moment.']
+  }
+  const lines = ['Documents disponibles :', '']
+  for (const name of visible) {
+    lines.push(`  • ${name.padEnd(20)} ${DEMO_FILES[name]?.description || ''}`)
+  }
+  lines.push('', 'Pour lire un document : open [nom]')
   return lines
 }
 
@@ -130,6 +179,9 @@ function cmdOpen(save, args) {
   const lines = [`=== ${name} ===`, '', ...file.content]
   if (!save.read_files.includes(name)) save.read_files.push(name)
 
+  if (name === 'note.txt') {
+    save.flags.note_read = true
+  }
   if (name === 'toolkit_manifest.txt') {
     for (const c of ['run', 'install', 'uninstall']) {
       if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
@@ -138,13 +190,13 @@ function cmdOpen(save, args) {
   }
   if (name === 'system.log' && !save.unlocked_commands.includes('scan')) {
     save.unlocked_commands.push('scan')
-    lines.push('', '[SYS] Fragment de commande récupéré : scan')
+    lines.push('', '[SYS] Nouvelle commande disponible : scan')
   }
   if (name === 'ghost_relay.log' && !save.unlocked_commands.includes('connect')) {
     for (const c of ['connect', 'disconnect']) {
       if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
     }
-    lines.push('', '[SYS] Protocole de connexion débloqué : connect [cible]')
+    lines.push('', '[SYS] Nouvelle commande disponible : connect [cible]')
   }
 
   const mystery = processMysteryFileOpen(save, name)
@@ -200,10 +252,9 @@ function cmdConnect(save, args) {
   }
 
   return [
-    '[NET] Establishing encrypted tunnel...',
-    `[NET] Connected to ${meta.name}`,
-    `[SYS] Sécurité ${meta.securityLevel} — trace x${meta.traceMultiplier}`,
-    '[INFO] ls · disconnect pour revenir.',
+    '[NET] Connexion chiffrée en cours…',
+    `[NET] Connecté à ${meta.name}`,
+    '[INFO] Vous êtes à l\'intérieur. Restez discret.',
   ]
 }
 
@@ -227,9 +278,9 @@ function cmdScan(save) {
   if (!save.discoveredNodes.includes('relay_ghost')) save.discoveredNodes.push('relay_ghost')
   addTrace(save, 15)
   return [
-    '[SCAN] Balayage réseau...',
-    '[SCAN] ANOMALIE : RELAY_GHOST',
-    '[SYS] ghost_relay.log disponible.',
+    '[SCAN] Analyse du réseau en cours…',
+    '[SCAN] Quelque chose répond — signal : RELAY_GHOST',
+    '[SYS] Nouveau document disponible — utilisez files',
   ]
 }
 
@@ -370,7 +421,7 @@ export function executeDemoCommand(command) {
     }
   }
 
-  if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear') {
+  if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear' && cmd !== 'ls') {
     addTrace(save, 2)
     saveDemoSave(save)
     return {
@@ -386,7 +437,8 @@ export function executeDemoCommand(command) {
   switch (cmd) {
     case 'help': output = cmdHelp(save); break
     case 'clear': clear_terminal = true; break
-    case 'ls': output = cmdLs(save, args); break
+    case 'files':
+    case 'ls': output = args.length ? cmdLs(save, args) : cmdFiles(save); break
     case 'open': output = cmdOpen(save, args); break
     case 'status': output = cmdStatus(save); break
     case 'connect': output = cmdConnect(save, args); break
@@ -406,9 +458,6 @@ export function executeDemoCommand(command) {
       output = [`[ERR] Commande '${cmd}' non implémentée en demo.`]
   }
 
-  const traceMsgs = traceMessages(save)
-  if (traceMsgs.length) output = [...output, '', ...traceMsgs]
-
   const postCmd = processMysteryAfterCommand(save, cmd)
   if (postCmd.autoLines.length) autoLines.push(...postCmd.autoLines)
   if (postCmd.uiEffect) save.activeUiEffect = postCmd.uiEffect
@@ -423,15 +472,7 @@ export function executeDemoCommand(command) {
     delete save._pendingMysteryLines
   }
 
-  stampUiEffectStart(save)
-  saveDemoSave(save)
-  return {
-    output,
-    clear_terminal,
-    state: toPublicState(save),
-    uiEffect: save.activeUiEffect,
-    autoLines,
-  }
+  return finalizeCommand(save, output, { clear_terminal, autoLines })
 }
 
 /** Tick session — événements temporels / hasard. */

@@ -1,11 +1,61 @@
 /**
- * Indices immersifs dérivés du journal de missions synchronisé.
+ * Objectifs et indices — langage simple, sans jargon technique.
  */
 export function getMissionObjective(state) {
   if (!state) {
     return {
-      title: 'Initialisation',
-      hint: 'Connexion au noyau UltraTech en cours…',
+      title: 'Connexion…',
+      hint: 'Établissement du lien sécurisé.',
+    }
+  }
+
+  const read = state.read_files || []
+  const flags = state.flags || {}
+  const unlocked = state.unlocked_commands || []
+  const m1 = state.missions?.signal_fantome
+
+  if (m1?.status === 'active') {
+    if (!read.includes('note.txt')) {
+      return {
+        title: 'Première piste',
+        hint: 'Tapez help pour voir ce que vous pouvez faire.',
+      }
+    }
+    if (!read.includes('system.log')) {
+      return {
+        title: 'Message reçu',
+        hint: 'Tapez files pour voir les documents, puis ouvrez le journal système.',
+      }
+    }
+    if (!unlocked.includes('scan')) {
+      return {
+        title: 'Anomalie détectée',
+        hint: 'Le journal système mentionne une action — relisez-le si besoin.',
+      }
+    }
+    if (!flags.scan_completed) {
+      return {
+        title: 'Signal fantôme',
+        hint: 'Quelque chose répond sur le réseau. Essayez : scan',
+      }
+    }
+    if (!read.includes('ghost_relay.log')) {
+      return {
+        title: 'Connexion trouvée',
+        hint: 'Un nouveau document est apparu — tapez files puis ouvrez-le.',
+      }
+    }
+    if (!unlocked.includes('connect')) {
+      return {
+        title: 'Relais identifié',
+        hint: 'Le document contient la prochaine étape.',
+      }
+    }
+    if (!flags.mission_1_complete) {
+      return {
+        title: 'Établir le contact',
+        hint: 'Connectez-vous au relais : connect relay_ghost',
+      }
     }
   }
 
@@ -13,27 +63,15 @@ export function getMissionObjective(state) {
   const current = journal?.currentMission
 
   if (!current) {
-    const completed = journal?.completedMissions?.length ?? 0
-    if (completed > 0) {
-      return {
-        title: 'Infiltration — Réseau clandestin',
-        hint: 'Missions disponibles terminées. Explorez les nœuds profonds — UltraTech renforce la surveillance.',
-      }
-    }
     return {
-      title: 'En attente',
-      hint: 'Aucune mission active. Tapez sync si l\'état semble incohérent.',
+      title: 'Infiltration en cours',
+      hint: 'Explorez le réseau. UltraTech vous observe.',
     }
   }
 
-  const pending = current.objectives?.filter((o) => !o.done) ?? []
-  const danger = state.network?.traceMultiplier > 1.5
-    ? ' — danger élevé sur ce segment.'
-    : ''
-
   return {
-    title: `${current.subtitle || 'Mission'} — ${current.title}`,
-    hint: `${current.currentObjective || pending[0]?.label || 'Continuez l\'infiltration.'}${danger}`,
+    title: current.title,
+    hint: current.currentObjective || 'Continuez l\'investigation.',
   }
 }
 

@@ -221,7 +221,100 @@
   }
 }
 
+.app--focus-terminal .sidebar {
+  width: 240px;
+}
+
+.app--focus-terminal .workspace {
+  padding: 1rem 1.5rem;
+}
+
+.app--focus-terminal .windows .app-window--terminal {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.topbar--minimal {
+  padding-inline: 1.25rem;
+}
+
+.topbar--minimal .topbar__stats {
+  display: none;
+}
+
+.statusbar--minimal {
+  padding: 1rem;
+  gap: 1.5rem;
+}
+
+.statusbar__files-tip {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0.35rem 0 0;
+}
+
+.statusbar__intro-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: var(--fs-xs);
+}
+
+.statusbar__intro-panel strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.06em;
+}
+
+.statusbar__intro-panel p {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.statusbar__intro-panel--trace {
+  border-color: rgba(230, 57, 70, 0.35);
+}
+
+.statusbar__intro-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red-primary);
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+  animation: blink 2s step-end infinite;
+}
+
+.statusbar__network-simple {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.statusbar__section--network-compact {
+  padding-top: 0;
+}
+
+.statusbar__file-action {
+  display: none;
+}
+
+.statusbar__journal-btn--market {
+  color: rgba(255, 180, 60, 0.85);
+  border-color: rgba(255, 180, 60, 0.25);
+}
+
 @media (max-width: 900px) {
+  .app--focus-terminal .sidebar {
+    width: 100%;
+    max-height: 220px;
+  }
+
   .desktop {
     flex-direction: column;
   }
