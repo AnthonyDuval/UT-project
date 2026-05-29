@@ -1,0 +1,224 @@
+{
+  "files": {
+    "readme.txt": {
+      "name": "readme.txt",
+      "description": "Fichier d'accueil du système",
+      "visible_from_start": true,
+      "unlock_key": null,
+      "content": [
+        "╔══════════════════════════════════════════════════╗",
+        "║  ULTRATECH ONLINE — TERMINAL OPÉRATEUR v3.7      ║",
+        "╚══════════════════════════════════════════════════╝",
+        "",
+        "Bienvenue, opérateur.",
+        "",
+        "Votre accès est limité. Explorez le système de fichiers.",
+        "Commencez par lire system.log — des anomalies y sont signalées.",
+        "",
+        "Commandes disponibles : help, ls, open, clear, status",
+        "",
+        "[SYS] Session enregistrée. Toute action est tracée.",
+        "",
+        "[SYS] Répertoires système : /programs · /inventory",
+        "[INFO] Consultez toolkit_manifest.txt pour la boîte à outils."
+      ]
+    },
+    "toolkit_manifest.txt": {
+      "name": "toolkit_manifest.txt",
+      "description": "Manifeste de la boîte à outils opérateur",
+      "visible_from_start": true,
+      "unlock_key": null,
+      "content": [
+        "╔══════════════════════════════════════════════════╗",
+        "║  BOÎTE À OUTILS — MANIFESTE OPÉRATEUR             ║",
+        "╚══════════════════════════════════════════════════╝",
+        "",
+        "/inventory — programmes .exe en stock (consommables ou à installer)",
+        "/programs  — programmes permanents installés",
+        "",
+        "Commandes :",
+        ">>> run [programme.exe]     — exécuter",
+        ">>> install [programme.exe] — installer (permanent)",
+        ">>> uninstall [programme.exe] — désinstaller",
+        "",
+        "ls /inventory  — lister le stock",
+        "ls /programs   — lister les installés",
+        "",
+        "[INFO] Programmes disponibles au BLACK MARKET.",
+        "[INFO] Certains .exe se trouvent sur les nœuds infiltrés."
+      ],
+      "on_read": {
+        "unlock_command": "run",
+        "unlock_commands": ["install", "uninstall"],
+        "message": "[SYS] Boîte à outils débloquée : run, install, uninstall"
+      }
+    },
+    "system.log": {
+      "name": "system.log",
+      "description": "Journal système",
+      "visible_from_start": true,
+      "unlock_key": null,
+      "content": [
+        "[2026-05-28 02:14:33] WARN — Relais externe non identifié détecté",
+        "[2026-05-28 02:14:34] WARN — Signature : RELAY_GHOST",
+        "[2026-05-28 02:14:35] ERR  — Impossible d'établir une connexion directe",
+        "[2026-05-28 02:14:36] INFO — Analyse réseau requise avant toute connexion",
+        "[2026-05-28 02:14:37] ----",
+        "[2026-05-28 02:14:38] NOTE interne (corrompue) :",
+        "...pour cartographier les relais fantômes, lancer :",
+        ">>> SCAN <<<",
+        "[2026-05-28 02:14:39] ----",
+        "[2026-05-28 02:14:40] Fin du journal."
+      ],
+      "on_read": {
+        "unlock_command": "scan",
+        "message": "[SYS] Fragment de commande récupéré : scan"
+      }
+    },
+    "notes.enc": {
+      "name": "notes.enc",
+      "description": "Notes chiffrées",
+      "visible_from_start": true,
+      "unlock_key": null,
+      "content": [
+        "████ ENCRYPTED ████",
+        "",
+        "Contenu illisible. Clé de déchiffrement manquante.",
+        "",
+        "Indice : un contact apparaîtra après la première connexion réussie."
+      ]
+    },
+    "ghost_relay.log": {
+      "name": "ghost_relay.log",
+      "description": "Log du relais fantôme",
+      "visible_from_start": false,
+      "unlock_key": "scan_completed",
+      "content": [
+        "[SCAN RESULT] Relais RELAY_GHOST localisé",
+        "[SCAN RESULT] Adresse : 10.0.0.ghost:4444",
+        "[SCAN RESULT] Statut : EN ATTENTE DE CONNEXION",
+        "",
+        "Pour établir le lien :",
+        ">>> connect relay_ghost <<<",
+        "",
+        "[!] Connexion non autorisée par défaut. Procédez à vos risques."
+      ],
+      "on_read": {
+        "unlock_command": "connect",
+        "message": "[SYS] Protocole de connexion débloqué : connect [cible]"
+      }
+    },
+    "nova_contact.dat": {
+      "name": "nova_contact.dat",
+      "description": "Contact débloqué après Mission 1",
+      "visible_from_start": false,
+      "unlock_key": "mission_1_complete",
+      "content": [
+        "╔══════════════════════════════════════════════════╗",
+        "║  CONTACT ÉTABLI — CODENAME: N0VA                  ║",
+        "╚══════════════════════════════════════════════════╝",
+        "",
+        "« Tu as entendu le signal. Bien joué, opérateur. »",
+        "",
+        "« UltraTech ne doit pas savoir que nous communiquons.",
+        "  Reste discret. D'autres missions arriveront. »",
+        "",
+        "— N0VA",
+        "",
+        "[RÉCOMPENSE] Mission 1 : Signal Fantôme — TERMINÉE",
+        "",
+        "market://blacknode",
+        "Accès clandestin — BLACK MARKET disponible sur le bureau.",
+        "",
+        "[NET] Relais SATLINK_03 détecté en orbite.",
+        "[NET] connect satlink_03 — après disconnect du relais."
+      ]
+    },
+    "satlink_manifest.dat": {
+      "name": "satlink_manifest.dat",
+      "description": "Manifeste orbital SATLINK_03",
+      "node": "satlink_03",
+      "visible_on_node": true,
+      "content": [
+        "[SATLINK_03] Manifeste de liaison orbital",
+        "[SATLINK_03] Segments adjacents : morgue_server, blackvault",
+        "",
+        "Outils opérateur recommandés :",
+        ">>> probe <<<",
+        ">>> disconnect <<<",
+        "",
+        "[!] BLACKVAULT protégé par firewall — bypass requis."
+      ],
+      "on_read": {
+        "unlock_command": "probe",
+        "unlock_commands": ["disconnect"],
+        "message": "[SYS] Outils réseau débloqués : probe, disconnect"
+      }
+    },
+    "nova_orbital_fragment.dat": {
+      "name": "nova_orbital_fragment.dat",
+      "description": "Fragment de transmission N0VA",
+      "node": "satlink_03",
+      "unlock_key": "probe_used_satlink",
+      "content": [
+        "╔══════════════════════════════════════════════════╗",
+        "║  FRAGMENT N0VA — CANAL ORBITAL                    ║",
+        "╚══════════════════════════════════════════════════╝",
+        "",
+        "« SATLINK_03 est la porte d'entrée. »",
+        "« Cartographie tout ce que tu peux voir. »",
+        "« BLACKVAULT te attend — mais ne te précipite pas. »",
+        "",
+        "— N0VA",
+        "",
+        "[SYS] Fragment N0VA récupéré et archivé."
+      ]
+    },
+    "morgue_sessions.log": {
+      "name": "morgue_sessions.log",
+      "description": "Archives de sessions terminées",
+      "node": "morgue_server",
+      "visible_on_node": true,
+      "content": [
+        "[MORGUE] Session archive #4471 — TERMINATED BY ULTRATECH",
+        "[MORGUE] Session archive #4472 — TRACE 100% — OPERATOR LOST",
+        "[MORGUE] Session archive #4473 — last words: « tell N0VA the vault is open »",
+        "",
+        "[WARN] Ces archives sont des avertissements. Restez discret."
+      ]
+    },
+    "vault_secrets.enc": {
+      "name": "vault_secrets.enc",
+      "description": "Fragment chiffré du BLACKVAULT",
+      "node": "blackvault",
+      "visible_on_node": true,
+      "content": [
+        "████ BLACKVAULT FRAGMENT ████",
+        "",
+        "...inject pour retarder la détection...",
+        "...spoof pour masquer la signature...",
+        "",
+        "[SYS] Outils létaux — usage à vos risques."
+      ],
+      "on_read": {
+        "unlock_command": "inject",
+        "unlock_commands": ["spoof"],
+        "message": "[SYS] Commandes létaux débloquées : inject, spoof"
+      }
+    },
+    "deepnode_whisper.txt": {
+      "name": "deepnode_whisper.txt",
+      "description": "Signal du vide",
+      "node": "deepnode_alpha",
+      "visible_on_node": true,
+      "content": [
+        "Tu es arrivé trop loin, opérateur.",
+        "",
+        "N0VA ne t'a pas envoyé ici.",
+        "UltraTech sait.",
+        "",
+        "— ???"
+      ]
+    }
+  }
+}

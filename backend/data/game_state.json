@@ -1,0 +1,88 @@
+{
+  "player": {
+    "username": "ghost_operative",
+    "bittek": 50,
+    "reputation": 1
+  },
+  "unlocked_commands": [
+    "help",
+    "clear",
+    "ls",
+    "open",
+    "status",
+    "sync",
+    "scan",
+    "connect"
+  ],
+  "read_files": [
+    "readme.txt",
+    "system.log",
+    "ghost_relay.log"
+  ],
+  "flags": {
+    "scan_completed": true,
+    "mission_1_complete": true,
+    "trace_located_event": false
+  },
+  "missions": {
+    "signal_fantome": {
+      "status": "completed",
+      "currentObjective": null,
+      "completedObjectives": [
+        "read_files",
+        "scan_network",
+        "connect_relay"
+      ],
+      "rewardsClaimed": true
+    },
+    "satlink_intrusion": {
+      "status": "active",
+      "currentObjective": "Connectez-vous à satlink_03",
+      "completedObjectives": [],
+      "rewardsClaimed": false
+    }
+  },
+  "seenEvents": [
+    "nova_contact"
+  ],
+  "marketAdvancedUnlocked": false,
+  "events_log": [
+    "[MISSION] Objectif accompli : Explorer les fichiers du terminal",
+    "[NET] Nœud découvert : relay_ghost",
+    "[SCAN] Relais RELAY_GHOST localisé.",
+    "[MISSION] Objectif accompli : Cartographier le réseau (scan)",
+    "[EVENT] N0VA — Contact établi via RELAY_GHOST.",
+    "[NET] Nœud découvert : satlink_03",
+    "[MISSION] Objectif accompli : Connectez-vous à relay_ghost",
+    "[MARKET] Acces BLACK MARKET debloque.",
+    "[MISSION] Signal Fantôme — TERMINÉE",
+    "[MISSION] Nouvelle mission : Intrusion Orbitale",
+    "[TRACE] Activite reseau inhabituelle detectee."
+  ],
+  "traceLevel": 42,
+  "trace_alerts_triggered": [
+    30
+  ],
+  "gameOver": false,
+  "inventory": [],
+  "activeEffects": [],
+  "marketUnlocked": true,
+  "traceReductionPassive": 0,
+  "currentNode": "relay_ghost",
+  "discoveredNodes": [
+    "local",
+    "relay_ghost",
+    "satlink_03"
+  ],
+  "hackedNodes": [
+    "relay_ghost"
+  ],
+  "programInventory": [
+    {
+      "programId": "trace_wiper",
+      "quantity": 1
+    }
+  ],
+  "installedPrograms": [],
+  "lootedProgramNodes": []
+}

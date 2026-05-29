@@ -1,0 +1,100 @@
+{
+  "commands": {
+    "help": {
+      "name": "help",
+      "description": "Affiche l'aide des commandes disponibles",
+      "basic": true,
+      "hidden_from_help": false
+    },
+    "clear": {
+      "name": "clear",
+      "description": "Efface l'écran du terminal",
+      "basic": true,
+      "hidden_from_help": false
+    },
+    "ls": {
+      "name": "ls",
+      "description": "Liste les fichiers accessibles",
+      "basic": true,
+      "hidden_from_help": false
+    },
+    "open": {
+      "name": "open",
+      "description": "Ouvre et lit un fichier (ex: open readme.txt)",
+      "basic": true,
+      "hidden_from_help": false
+    },
+    "status": {
+      "name": "status",
+      "description": "Affiche votre statut opérateur",
+      "basic": true,
+      "hidden_from_help": false
+    },
+    "scan": {
+      "name": "scan",
+      "description": "Analyse le réseau pour détecter les relais",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "connect": {
+      "name": "connect",
+      "description": "Établit une connexion à une cible (ex: connect relay_ghost)",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "disconnect": {
+      "name": "disconnect",
+      "description": "Ferme la connexion au nœud courant",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "probe": {
+      "name": "probe",
+      "description": "Sonde les segments réseau adjacents",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "bypass": {
+      "name": "bypass",
+      "description": "Contourne un firewall (ex: bypass blackvault)",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "inject": {
+      "name": "inject",
+      "description": "Injecte un payload dans le flux réseau",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "spoof": {
+      "name": "spoof",
+      "description": "Usurpe une identité réseau temporaire",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "sync": {
+      "name": "sync",
+      "description": "Synchronise la sauvegarde et corrige les incohérences",
+      "basic": true,
+      "hidden_from_help": true
+    },
+    "run": {
+      "name": "run",
+      "description": "Exécute un programme (ex: run trace_wiper.exe)",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "install": {
+      "name": "install",
+      "description": "Installe un programme permanent depuis /inventory",
+      "basic": false,
+      "hidden_from_help": true
+    },
+    "uninstall": {
+      "name": "uninstall",
+      "description": "Désinstalle un programme vers /inventory",
+      "basic": false,
+      "hidden_from_help": true
+    }
+  }
+}

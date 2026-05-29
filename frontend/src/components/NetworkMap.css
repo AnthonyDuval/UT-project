@@ -1,0 +1,166 @@
+.netmap {
+  position: relative;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  min-height: 120px;
+}
+
+.netmap--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 90px;
+}
+
+.netmap__placeholder {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.netmap__hint {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.netmap__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.netmap__node {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  position: relative;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.netmap__node--local {
+  border-left: 2px solid var(--text-muted);
+}
+
+.netmap__node--active {
+  color: var(--text-primary);
+  background: rgba(230, 57, 70, 0.06);
+  border-left: 2px solid var(--red-primary);
+}
+
+.netmap__node--hacked .netmap__dot {
+  box-shadow: 0 0 6px var(--success);
+}
+
+.netmap__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.netmap__node--low .netmap__dot { background: #4ade80; }
+.netmap__node--medium .netmap__dot { background: #facc15; }
+.netmap__node--high .netmap__dot { background: #fb923c; }
+.netmap__node--black .netmap__dot { background: #ef4444; animation: netmap-blink 1.5s ease-in-out infinite; }
+.netmap__node--unknown .netmap__dot { background: #a78bfa; animation: netmap-pulse 2s ease-in-out infinite; }
+
+.netmap__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.netmap__badge {
+  margin-left: auto;
+  color: var(--success);
+  font-size: 0.65rem;
+}
+
+.netmap__pulse {
+  position: absolute;
+  left: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--red-primary);
+  animation: netmap-ring 1.5s ease-out infinite;
+}
+
+.netmap__links {
+  padding-left: 0.75rem;
+}
+
+.netmap__link-line {
+  width: 2px;
+  height: 12px;
+  background: linear-gradient(to bottom, var(--border), transparent);
+  margin-left: 3px;
+}
+
+.netmap__remote {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 1px dashed var(--border);
+}
+
+.netmap--connected {
+  border-color: rgba(230, 57, 70, 0.35);
+}
+
+.netmap__packets {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.netmap__packet {
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  width: 4px;
+  height: 4px;
+  background: var(--red-primary);
+  border-radius: 50%;
+  animation: netmap-packet 2s linear infinite;
+  opacity: 0.7;
+}
+
+.netmap__packet--delay {
+  animation-delay: 1s;
+  background: #4ade80;
+}
+
+@keyframes netmap-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes netmap-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+}
+
+@keyframes netmap-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes netmap-packet {
+  0% { left: 0; opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { left: 100%; opacity: 0; }
+}

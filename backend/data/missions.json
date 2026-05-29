@@ -1,0 +1,85 @@
+{
+  "missions": {
+    "signal_fantome": {
+      "id": "signal_fantome",
+      "title": "Signal Fantôme",
+      "subtitle": "Mission 1",
+      "order": 1,
+      "description": "Un relais non identifié émet un signal. Localisez-le et établissez contact.",
+      "primaryNode": "relay_ghost",
+      "prerequisite": null,
+      "objectives": [
+        {
+          "id": "read_files",
+          "label": "Explorer les fichiers du terminal"
+        },
+        {
+          "id": "scan_network",
+          "label": "Cartographier le réseau (scan)"
+        },
+        {
+          "id": "connect_relay",
+          "label": "Connectez-vous à relay_ghost"
+        }
+      ],
+      "rewardsPreview": {
+        "bittek": 50,
+        "reputation": 1,
+        "summary": "Contact N0VA · BLACK MARKET · accès SATLINK_03"
+      },
+      "rewards": {
+        "bittek": 50,
+        "reputation": 1,
+        "unlockNodes": ["satlink_03"],
+        "unlockCommands": [],
+        "unlockFile": "nova_contact.dat",
+        "marketUnlock": true,
+        "eventId": "nova_contact"
+      }
+    },
+    "satlink_intrusion": {
+      "id": "satlink_intrusion",
+      "title": "Intrusion Orbitale",
+      "subtitle": "Mission 2",
+      "order": 2,
+      "description": "Pénétrez le relais orbital SATLINK_03 et cartographiez le réseau UltraTech.",
+      "primaryNode": "satlink_03",
+      "prerequisite": "signal_fantome",
+      "objectives": [
+        {
+          "id": "connect_satlink",
+          "label": "Connectez-vous à satlink_03"
+        },
+        {
+          "id": "use_probe",
+          "label": "Utilisez probe sur le segment orbital"
+        },
+        {
+          "id": "discover_nodes",
+          "label": "Découvrir morgue_server et blackvault"
+        },
+        {
+          "id": "open_satellite_file",
+          "label": "Ouvrir un fichier satellite"
+        },
+        {
+          "id": "nova_fragment",
+          "label": "Récupérer un fragment N0VA"
+        }
+      ],
+      "rewardsPreview": {
+        "bittek": 75,
+        "reputation": 1,
+        "summary": "Commande bypass · BLACK MARKET avancé"
+      },
+      "rewards": {
+        "bittek": 75,
+        "reputation": 1,
+        "unlockNodes": [],
+        "unlockCommands": ["bypass"],
+        "marketAdvancedUnlock": true,
+        "eventId": "satlink_intrusion_complete"
+      }
+    }
+  }
+}

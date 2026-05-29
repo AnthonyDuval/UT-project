@@ -1,0 +1,129 @@
+{
+  "nodes": {
+    "local": {
+      "id": "local",
+      "name": "LOCAL",
+      "displayName": "ghost_operative@ultratech",
+      "securityLevel": "LOW",
+      "securityNumeric": 1,
+      "description": "Terminal local de l'opérateur.",
+      "traceMultiplier": 1.0,
+      "theme": "default",
+      "discoverFromStart": true,
+      "connectRequirement": null,
+      "rewardBittek": 0,
+      "rewardReputation": 0,
+      "unlocksNodes": []
+    },
+    "relay_ghost": {
+      "id": "relay_ghost",
+      "name": "RELAY_GHOST",
+      "displayName": "ghost@relay_ghost",
+      "securityLevel": "LOW",
+      "securityNumeric": 1,
+      "description": "Relais abandonné. Point d'entrée du réseau clandestin.",
+      "traceMultiplier": 1.0,
+      "theme": "ghost",
+      "discoverFromStart": false,
+      "requiresScan": true,
+      "missionKey": "signal_fantome",
+      "connectRequirement": "scan_completed",
+      "rewardBittek": 0,
+      "rewardReputation": 0,
+      "unlocksNodes": ["satlink_03"],
+      "connectionLines": [
+        "[NET] Establishing encrypted tunnel...",
+        "[NET] Handshake: RELAY_GHOST",
+        "[NET] Route masked.",
+        "[NET] Connected to RELAY_GHOST"
+      ]
+    },
+    "satlink_03": {
+      "id": "satlink_03",
+      "name": "SATLINK_03",
+      "displayName": "ghost@satlink_03",
+      "securityLevel": "MEDIUM",
+      "securityNumeric": 2,
+      "description": "Satellite de liaison UltraTech — relais de données orbital.",
+      "traceMultiplier": 1.5,
+      "theme": "satlink",
+      "discoverFromStart": false,
+      "connectRequirement": "mission_1_complete",
+      "rewardBittek": 25,
+      "rewardReputation": 1,
+      "unlocksNodes": ["morgue_server", "blackvault"],
+      "connectionLines": [
+        "[NET] Establishing encrypted tunnel...",
+        "[NET] Orbital handshake initiated...",
+        "[NET] Route masked via 3 proxies...",
+        "[NET] Security scan... DELAYED",
+        "[NET] Connected to SATLINK_03 — trace x1.5"
+      ]
+    },
+    "morgue_server": {
+      "id": "morgue_server",
+      "name": "MORGUE_SERVER",
+      "displayName": "ghost@morgue_server",
+      "securityLevel": "HIGH",
+      "securityNumeric": 3,
+      "description": "Serveur morgue — archives de sessions terminées.",
+      "traceMultiplier": 2.0,
+      "theme": "morgue",
+      "discoverFromStart": false,
+      "connectRequirement": "probe_morgue",
+      "rewardBittek": 40,
+      "rewardReputation": 1,
+      "unlocksNodes": [],
+      "connectionLines": [
+        "[NET] Establishing encrypted tunnel...",
+        "[NET] Cold storage detected...",
+        "[NET] Bypassing session locks...",
+        "[NET] Connected to MORGUE_SERVER — trace x2.0"
+      ]
+    },
+    "blackvault": {
+      "id": "blackvault",
+      "name": "BLACKVAULT",
+      "displayName": "ghost@blackvault",
+      "securityLevel": "BLACK",
+      "securityNumeric": 4,
+      "description": "Coffre-fort numérique UltraTech. Accès létal.",
+      "traceMultiplier": 3.0,
+      "theme": "blackvault",
+      "discoverFromStart": false,
+      "connectRequirement": "bypass_blackvault",
+      "rewardBittek": 75,
+      "rewardReputation": 2,
+      "unlocksNodes": ["deepnode_alpha"],
+      "connectionLines": [
+        "[NET] Establishing encrypted tunnel...",
+        "[NET] BLACKVAULT firewall detected...",
+        "[NET] Injecting bypass payload...",
+        "[NET] !!! ULTRATECH ALERT DELAYED !!!",
+        "[NET] Connected to BLACKVAULT — trace x3.0"
+      ]
+    },
+    "deepnode_alpha": {
+      "id": "deepnode_alpha",
+      "name": "DEEPNODE_ALPHA",
+      "displayName": "???@deepnode_alpha",
+      "securityLevel": "UNKNOWN",
+      "securityNumeric": 5,
+      "description": "Nœud profond. Origine inconnue. N0VA refuse d'en parler.",
+      "traceMultiplier": 2.5,
+      "theme": "deep",
+      "discoverFromStart": false,
+      "connectRequirement": "hacked_blackvault",
+      "rewardBittek": 100,
+      "rewardReputation": 3,
+      "unlocksNodes": [],
+      "connectionLines": [
+        "[NET] Establishing encrypted tunnel...",
+        "[NET] Signal from void...",
+        "[NET] Identity spoofed.",
+        "[NET] Connected to DEEPNODE_ALPHA — trace x2.5",
+        "[NET] You should not be here."
+      ]
+    }
+  }
+}

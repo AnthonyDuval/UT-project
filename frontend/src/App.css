@@ -1,0 +1,291 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-dark);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(230, 57, 70, 0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(230, 57, 70, 0.04) 0%, transparent 40%);
+  position: relative;
+}
+
+/* Immersion — scanlines + vignette légères */
+.app__immersion {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9990;
+}
+
+.app__scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.025) 3px,
+    rgba(0, 0, 0, 0.025) 4px
+  );
+  opacity: 0.5;
+}
+
+.app__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+/* Micro-glitch rare sur toute l'UI */
+.app:not(.app--game-over)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9991;
+  opacity: 0;
+  background: rgba(255, 0, 30, 0.03);
+  animation: rare-glitch 12s steps(1) infinite;
+}
+
+@keyframes rare-glitch {
+  0%, 97%, 100% { opacity: 0; transform: none; }
+  97.5% { opacity: 1; transform: translateX(-2px); }
+  98% { opacity: 0; transform: translateX(2px); }
+}
+
+/* Loader */
+.app--loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.loader__text {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--red-primary);
+  letter-spacing: 0.35em;
+  text-shadow: 0 0 30px rgba(230, 57, 70, 0.6);
+}
+
+.loader__bar {
+  width: 320px;
+  height: 3px;
+  background: var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.loader__bar::after {
+  content: '';
+  position: absolute;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: var(--red-primary);
+  animation: scan 1.2s ease-in-out infinite;
+}
+
+.loader__sub {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+@keyframes scan {
+  0% { left: -50%; }
+  100% { left: 100%; }
+}
+
+.app--game-over {
+  filter: contrast(1.05);
+}
+
+.app--game-over .desktop,
+.app--game-over .footer {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Layout */
+.desktop {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  padding: 0.75rem;
+}
+
+.windows {
+  flex: 1;
+  display: flex;
+  gap: 0.75rem;
+  overflow: hidden;
+  min-width: 0;
+  position: relative;
+}
+
+.windows--split .app-window--terminal {
+  flex: 3;
+  min-width: 0;
+}
+
+.windows--split .app-window--secondary {
+  flex: 1;
+  min-width: 320px;
+  max-width: 420px;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-glow);
+  background: linear-gradient(180deg, var(--bg-panel) 0%, #08080a 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.error-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: rgba(230, 57, 70, 0.15);
+  border: 1px solid var(--red-dim);
+  color: var(--red-primary);
+  font-size: var(--fs-sm);
+}
+
+.error-banner button {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  padding: 0.4rem 0.85rem;
+  background: transparent;
+  color: var(--red-primary);
+  border: 1px solid var(--red-dim);
+  cursor: pointer;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.75rem;
+  min-height: 36px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+
+.footer__blink {
+  color: var(--red-primary);
+  animation: blink 2s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.35; }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --sidebar-w: 320px;
+    --ui-scale: 1.2;
+  }
+}
+
+@media (max-width: 900px) {
+  .desktop {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-height: 280px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .windows {
+    flex-direction: column;
+  }
+
+  .windows--split .app-window--secondary {
+    max-width: none;
+    max-height: 40vh;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --ui-scale: 1.5;
+    --sidebar-w: 420px;
+  }
+}
+
+/* Thèmes réseau — teinte légère selon le nœud connecté */
+.app--theme-ghost {
+  --red-primary: #7dd3fc;
+  --red-dim: #38bdf8;
+  --border-glow: rgba(125, 211, 252, 0.25);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(125, 211, 252, 0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(125, 211, 252, 0.05) 0%, transparent 40%);
+}
+
+.app--theme-satlink {
+  --red-primary: #fbbf24;
+  --red-dim: #f59e0b;
+  --border-glow: rgba(251, 191, 36, 0.25);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(251, 191, 36, 0.07) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(251, 191, 36, 0.04) 0%, transparent 40%);
+}
+
+.app--theme-morgue {
+  --red-primary: #94a3b8;
+  --red-dim: #64748b;
+  --border-glow: rgba(148, 163, 184, 0.2);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(100, 116, 139, 0.1) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(71, 85, 105, 0.06) 0%, transparent 40%);
+}
+
+.app--theme-blackvault {
+  --red-primary: #f87171;
+  --red-dim: #dc2626;
+  --border-glow: rgba(248, 113, 113, 0.35);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(220, 38, 38, 0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(127, 29, 29, 0.08) 0%, transparent 40%);
+}
+
+.app--theme-deep {
+  --red-primary: #c084fc;
+  --red-dim: #9333ea;
+  --border-glow: rgba(192, 132, 252, 0.3);
+  background-image:
+    radial-gradient(ellipse at 15% 40%, rgba(147, 51, 234, 0.1) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 15%, rgba(88, 28, 135, 0.08) 0%, transparent 40%);
+}

@@ -1,0 +1,110 @@
+{
+  "programs": {
+    "netscan": {
+      "id": "netscan",
+      "filename": "netscan.exe",
+      "name": "NetScan",
+      "description": "Analyseur réseau portable — détecte les relais fantômes.",
+      "type": "consumable",
+      "rarity": "common",
+      "installable": false,
+      "effect_description": "Exécute un scan réseau (équivalent à scan).",
+      "effect_type": "network_scan",
+      "trace_on_run": 12
+    },
+    "trace_wiper": {
+      "id": "trace_wiper",
+      "filename": "trace_wiper.exe",
+      "name": "Trace Wiper",
+      "description": "Effaceur de signatures numériques UltraTech.",
+      "type": "consumable",
+      "rarity": "common",
+      "installable": false,
+      "effect_description": "Réduit la TRACE de 15 points. Consommé à l'exécution.",
+      "effect_type": "reduce_trace",
+      "effect_value": 15,
+      "trace_on_run": 2
+    },
+    "ghostcloak": {
+      "id": "ghostcloak",
+      "filename": "ghostcloak.exe",
+      "name": "GhostCloak",
+      "description": "Brouilleur de flux réseau — atténue la traçabilité.",
+      "type": "consumable",
+      "rarity": "uncommon",
+      "installable": false,
+      "effect_description": "2 prochaines augmentations de TRACE réduites de moitié.",
+      "effect_type": "trace_halved",
+      "effect_value": 2,
+      "trace_on_run": 5
+    },
+    "packet_sniffer": {
+      "id": "packet_sniffer",
+      "filename": "packet_sniffer.exe",
+      "name": "Packet Sniffer",
+      "description": "Sniffer permanent — réduit passivement la TRACE.",
+      "type": "permanent",
+      "rarity": "rare",
+      "installable": true,
+      "effect_description": "Installé : -3% TRACE permanent. Run : aperçu du trafic réseau.",
+      "passive_effect_type": "passive_trace_reduction",
+      "passive_effect_value": 3,
+      "run_effect_type": "sniff_traffic",
+      "trace_on_run": 5
+    },
+    "sys_monitor": {
+      "id": "sys_monitor",
+      "filename": "sys_monitor.exe",
+      "name": "SysMonitor",
+      "description": "Suite de monitoring système clandestine.",
+      "type": "permanent",
+      "rarity": "epic",
+      "installable": true,
+      "effect_description": "Installé : -5% TRACE permanent. Run : rapport trace détaillé.",
+      "passive_effect_type": "passive_trace_reduction",
+      "passive_effect_value": 5,
+      "run_effect_type": "trace_report",
+      "trace_on_run": 0
+    },
+    "deep_probe": {
+      "id": "deep_probe",
+      "filename": "deep_probe.exe",
+      "name": "Deep Probe",
+      "description": "Sonde profonde récupérée sur segment orbital.",
+      "type": "consumable",
+      "rarity": "rare",
+      "installable": false,
+      "found_on_nodes": ["satlink_03"],
+      "effect_description": "Probe renforcé — cartographie avancée du nœud courant.",
+      "effect_type": "enhanced_probe",
+      "trace_on_run": 6
+    },
+    "vault_keygen": {
+      "id": "vault_keygen",
+      "filename": "vault_keygen.exe",
+      "name": "Vault KeyGen",
+      "description": "Générateur de clés — fragment BLACKVAULT.",
+      "type": "consumable",
+      "rarity": "epic",
+      "installable": false,
+      "found_on_nodes": ["blackvault"],
+      "effect_description": "Prépare un bypass firewall (blackvault).",
+      "effect_type": "bypass_helper",
+      "trace_on_run": 8
+    },
+    "relay_dumper": {
+      "id": "relay_dumper",
+      "filename": "relay_dumper.exe",
+      "name": "Relay Dumper",
+      "description": "Dump mémoire relais fantôme.",
+      "type": "consumable",
+      "rarity": "uncommon",
+      "installable": false,
+      "found_on_nodes": ["relay_ghost"],
+      "effect_description": "Extrait des logs cachés du relais. -8 TRACE.",
+      "effect_type": "reduce_trace",
+      "effect_value": 8,
+      "trace_on_run": 4
+    }
+  }
+}

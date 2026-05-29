@@ -1,0 +1,145 @@
+{
+  "items": {
+    "firewall_jetable": {
+      "id": "firewall_jetable",
+      "name": "Firewall Jetable",
+      "price": 30,
+      "rarity": "common",
+      "description": "Barrière réseau éphémère. Efface une partie de votre signature numérique.",
+      "effect": "Réduit la TRACE de 15 points. Usage unique.",
+      "type": "consumable",
+      "effect_type": "reduce_trace",
+      "effect_value": 15
+    },
+    "proxy_fantome": {
+      "id": "proxy_fantome",
+      "name": "Proxy Fantôme",
+      "price": 50,
+      "rarity": "uncommon",
+      "description": "Relais anonyme instable. UltraTech peine à vous suivre.",
+      "effect": "Réduit la TRACE de 25 points. Usage unique.",
+      "type": "consumable",
+      "effect_type": "reduce_trace",
+      "effect_value": 25
+    },
+    "brouilleur_nova": {
+      "id": "brouilleur_nova",
+      "name": "Brouilleur N0VA",
+      "price": 75,
+      "rarity": "rare",
+      "description": "Module de brouillage fourni par N0VA. Atténue les signaux de traçage.",
+      "effect": "Les 2 prochaines augmentations de TRACE sont réduites de moitié.",
+      "type": "consumable",
+      "effect_type": "trace_halved",
+      "effect_value": 2
+    },
+    "spoof_identite": {
+      "id": "spoof_identite",
+      "name": "Spoof d'Identité",
+      "price": 100,
+      "rarity": "epic",
+      "description": "Usurpation d'identité risquée. Efficace, mais UltraTech pourrait réagir.",
+      "effect": "Réduit la TRACE de 40 points. Déclenche une alerte UltraTech.",
+      "type": "consumable",
+      "effect_type": "reduce_trace_alert",
+      "effect_value": 40
+    },
+    "pack_firewall_basique": {
+      "id": "pack_firewall_basique",
+      "name": "Pack Firewall Basique",
+      "price": 120,
+      "rarity": "legendary",
+      "description": "Suite défensive permanente. Réduit toute nouvelle TRACE.",
+      "effect": "Passif permanent : toutes les augmentations de TRACE -5%.",
+      "type": "passive",
+      "effect_type": "passive_reduction",
+      "effect_value": 5
+    },
+    "trace_scrubber": {
+      "id": "trace_scrubber",
+      "name": "Trace Scrubber MK-II",
+      "price": 90,
+      "rarity": "rare",
+      "tier": "advanced",
+      "description": "Module avancé — efface les signatures réseau profondes.",
+      "effect": "Réduit la TRACE de 20 points. Usage unique.",
+      "type": "consumable",
+      "effect_type": "reduce_trace",
+      "effect_value": 20
+    },
+    "ghost_tunnel": {
+      "id": "ghost_tunnel",
+      "name": "Tunnel Fantôme",
+      "price": 150,
+      "rarity": "epic",
+      "tier": "advanced",
+      "description": "Relais orbital clandestin. Masque temporairement le multiplicateur de trace.",
+      "effect": "Prochaine connexion réseau : multiplicateur de trace /2.",
+      "type": "consumable",
+      "effect_type": "reduce_trace",
+      "effect_value": 10
+    },
+    "prog_netscan": {
+      "id": "prog_netscan",
+      "name": "NetScan v2.1",
+      "price": 35,
+      "rarity": "common",
+      "category": "program",
+      "programId": "netscan",
+      "description": "Analyseur réseau portable — alternative au scan natif.",
+      "effect": "Télécharge netscan.exe dans /inventory. Usage : run netscan.exe",
+      "type": "program",
+      "can_buy": true
+    },
+    "prog_trace_wiper": {
+      "id": "prog_trace_wiper",
+      "name": "Trace Wiper Pro",
+      "price": 40,
+      "rarity": "common",
+      "category": "program",
+      "programId": "trace_wiper",
+      "description": "Effaceur de signatures UltraTech.",
+      "effect": "Télécharge trace_wiper.exe — réduit la TRACE de 15 pts.",
+      "type": "program",
+      "can_buy": true
+    },
+    "prog_ghostcloak": {
+      "id": "prog_ghostcloak",
+      "name": "GhostCloak Suite",
+      "price": 65,
+      "rarity": "uncommon",
+      "category": "program",
+      "programId": "ghostcloak",
+      "description": "Brouilleur de flux réseau.",
+      "effect": "Télécharge ghostcloak.exe — 2 traces réduites de moitié.",
+      "type": "program",
+      "can_buy": true
+    },
+    "prog_packet_sniffer": {
+      "id": "prog_packet_sniffer",
+      "name": "Packet Sniffer",
+      "price": 95,
+      "rarity": "rare",
+      "tier": "advanced",
+      "category": "program",
+      "programId": "packet_sniffer",
+      "description": "Sniffer permanent installable.",
+      "effect": "Télécharge packet_sniffer.exe — -3% TRACE passif une fois installé.",
+      "type": "program",
+      "can_buy": true
+    },
+    "prog_sys_monitor": {
+      "id": "prog_sys_monitor",
+      "name": "SysMonitor Elite",
+      "price": 130,
+      "rarity": "epic",
+      "tier": "advanced",
+      "category": "program",
+      "programId": "sys_monitor",
+      "description": "Suite monitoring clandestine.",
+      "effect": "Télécharge sys_monitor.exe — -5% TRACE passif une fois installé.",
+      "type": "program",
+      "can_buy": true
+    }
+  }
+}

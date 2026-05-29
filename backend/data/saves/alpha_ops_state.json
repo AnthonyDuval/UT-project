@@ -1,0 +1,63 @@
+{
+  "player": {
+    "username": "alpha_ops",
+    "bittek": 100,
+    "reputation": 0
+  },
+  "unlocked_commands": [
+    "help",
+    "clear",
+    "ls",
+    "open",
+    "status",
+    "sync",
+    "run",
+    "install",
+    "uninstall"
+  ],
+  "read_files": [
+    "toolkit_manifest.txt"
+  ],
+  "flags": {
+    "scan_completed": false,
+    "mission_1_complete": false,
+    "trace_located_event": false
+  },
+  "missions": {
+    "signal_fantome": {
+      "status": "active",
+      "currentObjective": "Explorer les fichiers du terminal",
+      "completedObjectives": [],
+      "rewardsClaimed": false
+    },
+    "satlink_intrusion": {
+      "status": "locked",
+      "currentObjective": null,
+      "completedObjectives": [],
+      "rewardsClaimed": false
+    }
+  },
+  "seenEvents": [],
+  "marketAdvancedUnlocked": false,
+  "events_log": [],
+  "traceLevel": 0,
+  "trace_alerts_triggered": [],
+  "gameOver": false,
+  "inventory": [],
+  "activeEffects": [],
+  "marketUnlocked": false,
+  "traceReductionPassive": 0,
+  "currentNode": "local",
+  "discoveredNodes": [
+    "local"
+  ],
+  "hackedNodes": [],
+  "programInventory": [
+    {
+      "programId": "trace_wiper",
+      "quantity": 1
+    }
+  ],
+  "installedPrograms": [],
+  "lootedProgramNodes": []
+}

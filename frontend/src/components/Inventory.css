@@ -1,0 +1,123 @@
+.inventory {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.inventory__title {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--red-primary);
+  margin-bottom: 0.8rem;
+}
+
+.inventory__error {
+  font-size: 0.7rem;
+  color: var(--red-glow);
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--red-dim);
+  background: rgba(230, 57, 70, 0.08);
+  margin-bottom: 0.6rem;
+}
+
+.inventory__effects {
+  margin-bottom: 0.8rem;
+  padding: 0.5rem;
+  background: rgba(46, 204, 113, 0.05);
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.inventory__effects-label {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  color: var(--success);
+  margin-bottom: 0.4rem;
+}
+
+.inventory__effect {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-primary);
+}
+
+.inventory__effect-uses {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+}
+
+.inventory__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inventory__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.6rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+}
+
+.inventory__item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.inventory__rarity {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.inventory__rarity--common { color: var(--text-primary); }
+.inventory__rarity--uncommon { color: #6eb5ff; }
+.inventory__rarity--rare { color: #b86eff; }
+.inventory__rarity--epic { color: #ff9f43; }
+.inventory__rarity--legendary { color: var(--red-glow); }
+
+.inventory__qty {
+  margin-left: 0.4rem;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+}
+
+.inventory__item-effect {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+
+.inventory__use-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.35rem 0.7rem;
+  background: transparent;
+  color: var(--red-primary);
+  border: 1px solid var(--red-dim);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.inventory__use-btn:hover:not(:disabled) {
+  background: rgba(230, 57, 70, 0.15);
+  border-color: var(--red-primary);
+}
+
+.inventory__use-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.inventory__empty {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-style: italic;
+}

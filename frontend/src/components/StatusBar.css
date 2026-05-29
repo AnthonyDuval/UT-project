@@ -1,0 +1,408 @@
+.statusbar {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Objectif */
+.statusbar__objective {
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, rgba(230, 57, 70, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
+  border: 1px solid var(--border-glow);
+  border-left: 3px solid var(--red-primary);
+}
+
+.statusbar__objective-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.25em;
+  color: var(--red-primary);
+  margin-bottom: 0.5rem;
+}
+
+.statusbar__objective-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.statusbar__objective-hint {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* Avatar */
+.statusbar__operator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0;
+}
+
+.statusbar__avatar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #1a1a22 0%, #0a0a0d 100%);
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.statusbar__avatar-ring {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--red-dim);
+  opacity: 0.5;
+  animation: avatar-ring-pulse 3s ease-in-out infinite;
+}
+
+.statusbar__avatar-icon {
+  font-size: 2rem;
+  filter: grayscale(0.3) contrast(1.2);
+}
+
+.statusbar__avatar-status {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  background: var(--success);
+  border: 2px solid var(--bg-panel);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--success);
+}
+
+.statusbar__operator-id {
+  display: block;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statusbar__operator-role {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+@keyframes avatar-ring-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; box-shadow: 0 0 12px rgba(230, 57, 70, 0.3); }
+}
+
+/* Stats grid */
+.statusbar__stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.statusbar__stat-card {
+  padding: 0.75rem 0.9rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+}
+
+.statusbar__stat-label {
+  display: block;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.statusbar__stat-value {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statusbar__stat-value--bittek {
+  color: var(--red-primary);
+  text-shadow: 0 0 10px rgba(230, 57, 70, 0.3);
+}
+
+.statusbar__stat-value--net {
+  color: var(--cyan);
+  font-size: var(--fs-sm);
+}
+
+.statusbar__threat--low { color: var(--success); }
+.statusbar__threat--moderate { color: var(--warning); }
+.statusbar__threat--high { color: #ff6b6b; }
+.statusbar__threat--critical {
+  color: var(--red-glow);
+  animation: threat-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes threat-pulse {
+  50% { opacity: 0.7; }
+}
+
+/* UltraTech activity */
+.statusbar__ut-activity {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.statusbar__ut-activity--high,
+.statusbar__ut-activity--critical {
+  border-color: var(--red-dim);
+  color: var(--red-primary);
+  background: rgba(230, 57, 70, 0.06);
+}
+
+.statusbar__ut-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusbar__ut-activity--moderate .statusbar__ut-dot { background: var(--warning); }
+.statusbar__ut-activity--high .statusbar__ut-dot,
+.statusbar__ut-activity--critical .statusbar__ut-dot {
+  background: var(--red-glow);
+  animation: blink 1s step-end infinite;
+}
+
+.statusbar__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.statusbar__heading {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--red-primary);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.statusbar__mission {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statusbar__mission-title {
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+}
+
+.statusbar__badge {
+  display: inline-block;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.35rem 0.7rem;
+  width: fit-content;
+}
+
+.statusbar__badge--active {
+  color: var(--warning);
+  background: rgba(243, 156, 18, 0.12);
+  border: 1px solid rgba(243, 156, 18, 0.35);
+}
+
+.statusbar__badge--done {
+  color: var(--success);
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.35);
+}
+
+.statusbar__badge--market {
+  color: var(--red-primary);
+  background: rgba(230, 57, 70, 0.12);
+  border: 1px solid var(--red-dim);
+}
+
+.statusbar__passive {
+  font-size: var(--fs-xs);
+  color: var(--success);
+}
+
+/* Fichiers cliquables */
+.statusbar__files {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.statusbar__file {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-mono);
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.statusbar__file:hover {
+  border-color: var(--red-dim);
+  background: rgba(230, 57, 70, 0.08);
+  transform: translateX(4px);
+  box-shadow: -3px 0 0 var(--red-primary);
+}
+
+.statusbar__file-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.statusbar__file-name {
+  flex: 1;
+  font-size: var(--fs-sm);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusbar__file-action {
+  font-size: var(--fs-xs);
+  color: var(--red-dim);
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.statusbar__file:hover .statusbar__file-action {
+  opacity: 1;
+  color: var(--red-primary);
+}
+
+.statusbar__file--empty {
+  font-style: italic;
+  opacity: 0.5;
+  cursor: default;
+  padding: 0.5rem;
+  border: none;
+  background: none;
+}
+
+.statusbar__events {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.statusbar__event {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  padding: 0.4rem 0 0.4rem 0.65rem;
+  border-left: 2px solid var(--red-dim);
+  line-height: 1.45;
+}
+
+.statusbar__apps {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Network section */
+.statusbar__section--network {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+}
+
+.statusbar__network-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.statusbar__network-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.statusbar__network-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.statusbar__security--low { color: #4ade80; }
+.statusbar__security--medium { color: #facc15; }
+.statusbar__security--high { color: #fb923c; }
+.statusbar__security--black { color: #ef4444; }
+.statusbar__security--unknown { color: #a78bfa; }
+
+.statusbar__conn--active { color: var(--success); letter-spacing: 0.05em; }
+.statusbar__conn--idle { color: var(--text-muted); }
+
+.statusbar__stat-value--connected {
+  color: var(--red-primary);
+  text-shadow: 0 0 8px rgba(230, 57, 70, 0.4);
+}
+
+.statusbar__section--mission {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+}
+
+.statusbar__journal-btn {
+  margin-top: 0.65rem;
+  background: none;
+  border: none;
+  color: var(--red-dim);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.statusbar__section--toolkit {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  border-left: 2px solid rgba(125, 211, 252, 0.4);
+}
+
+.statusbar__journal-btn:hover {
+  color: var(--red-primary);
+}
+
+.statusbar__toolkit-hint {
+  margin-top: 0.5rem;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}

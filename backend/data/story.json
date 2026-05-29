@@ -1,0 +1,52 @@
+{
+  "missions": {
+    "signal_fantome": {
+      "id": "signal_fantome",
+      "title": "Mission 1 — Signal Fantôme",
+      "description": "Un relais non identifié émet un signal. Localisez-le et établissez contact.",
+      "reward_bittek": 50,
+      "reward_reputation": 1,
+      "unlock_file": "nova_contact.dat"
+    }
+  },
+  "events": {
+    "nova_contact": {
+      "id": "nova_contact",
+      "title": "ÉVÉNEMENT N0VA",
+      "lines": [
+        "",
+        "╔══════════════════════════════════════════════════╗",
+        "║  ⚠  CONNEXION INTERCEPTÉE — ORIGINE INCONNUE  ⚠  ║",
+        "╚══════════════════════════════════════════════════╝",
+        "",
+        "[RELAY_GHOST] Handshake réussi.",
+        "[RELAY_GHOST] Canal sécurisé ouvert.",
+        "",
+        ">>> MESSAGE ENTRANT <<<",
+        "",
+        "« Opérateur. Je suis N0VA.",
+        "  UltraTech surveille tout ce réseau.",
+        "  Tu viens de franchir une ligne.",
+        "  Ne t'arrête pas maintenant. »",
+        "",
+        "[SYS] Nouveau contact enregistré.",
+        "[SYS] Fichier débloqué : nova_contact.dat"
+      ]
+    },
+    "satlink_intrusion_complete": {
+      "id": "satlink_intrusion_complete",
+      "title": "MISSION 2 TERMINÉE",
+      "lines": [
+        "",
+        ">>> MESSAGE N0VA — CANAL ORBITAL <<<",
+        "",
+        "« Le segment orbital est cartographié. »",
+        "« BLACKVAULT t'attend. Utilise bypass quand tu seras prêt. »",
+        "",
+        "— N0VA",
+        "",
+        "[SYS] Mission 2 : Intrusion Orbitale — TERMINÉE"
+      ]
+    }
+  }
+}

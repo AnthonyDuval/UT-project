@@ -1,0 +1,153 @@
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #020203;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+  transition: opacity 0.6s ease;
+}
+
+.boot-screen--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-screen__scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.12) 2px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.boot-screen__noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+.boot-screen__logo-wrap {
+  text-align: center;
+  animation: boot-logo-in 1s ease-out;
+  z-index: 3;
+}
+
+.boot-screen__logo {
+  font-size: 4rem;
+  color: var(--red-primary);
+  text-shadow: 0 0 40px rgba(230, 57, 70, 0.8);
+  animation: boot-logo-pulse 2s ease-in-out infinite;
+  line-height: 1;
+}
+
+.boot-screen__title {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: 0.45em;
+  color: var(--text-primary);
+  margin-top: 0.5rem;
+  text-indent: 0.45em;
+}
+
+.boot-screen__subtitle {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.8em;
+  color: var(--red-primary);
+  text-indent: 0.8em;
+  margin-top: 0.3rem;
+}
+
+.boot-screen__console {
+  width: min(720px, 90vw);
+  min-height: 280px;
+  padding: 1.5rem 2rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 40px rgba(230, 57, 70, 0.08), inset 0 0 60px rgba(0, 0, 0, 0.5);
+  font-size: var(--fs-md);
+  line-height: 1.75;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: boot-console-in 0.5s ease forwards 1s;
+}
+
+.boot-screen__line {
+  animation: boot-line-in 0.15s ease-out;
+}
+
+.boot-screen__line--boot-warn { color: var(--warning); }
+.boot-screen__line--boot-error { color: var(--red-glow); }
+.boot-screen__line--boot-ok { color: var(--success); }
+.boot-screen__line--default { color: var(--text-dim); }
+
+.boot-screen__cursor {
+  color: var(--red-primary);
+  animation: cursor-blink 0.7s step-end infinite;
+}
+
+.boot-screen__progress {
+  width: min(720px, 90vw);
+  height: 6px;
+  background: #1a1a1f;
+  border: 1px solid var(--border);
+  position: relative;
+  z-index: 3;
+  opacity: 0;
+  animation: boot-console-in 0.5s ease forwards 1.2s;
+}
+
+.boot-screen__progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red-dim), var(--red-primary));
+  box-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
+  transition: width 0.1s linear;
+}
+
+.boot-screen__progress-text {
+  position: absolute;
+  right: 0;
+  top: -1.6rem;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes boot-logo-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes boot-logo-pulse {
+  0%, 100% { text-shadow: 0 0 40px rgba(230, 57, 70, 0.8); }
+  50% { text-shadow: 0 0 60px rgba(230, 57, 70, 1); }
+}
+
+@keyframes boot-console-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes boot-line-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes cursor-blink {
+  50% { opacity: 0; }
+}

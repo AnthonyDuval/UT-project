@@ -1,0 +1,16 @@
+{
+  "sessions": {
+    "_1YFsdnJ_xBMHef1z4BE65r-rC72GmYdko4SZbwW4Qc": {
+      "username": "alpha_ops",
+      "created_at": "2026-05-29T06:01:08.815784+00:00"
+    },
+    "cjPYzXDEMng5C6l28tBgShLH-lZOVyM0syN7ABIavko": {
+      "username": "beta_ops",
+      "created_at": "2026-05-29T06:01:08.835786+00:00"
+    },
+    "SAYtqLXIWoSR_UuTogfUfMAmfaO1akghKS1pTMzuE8M": {
+      "username": "alpha_ops",
+      "created_at": "2026-05-29T06:01:08.855290+00:00"
+    }
+  }
+}

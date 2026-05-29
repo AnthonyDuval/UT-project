@@ -1,0 +1,14 @@
+{
+  "messages": [
+    {
+      "username": "alpha_ops",
+      "timestamp": "2026-05-29T06:01:08.863290+00:00",
+      "message": "Hello network"
+    },
+    {
+      "username": "beta_ops",
+      "timestamp": "2026-05-29T06:01:08.864290+00:00",
+      "message": "Copy that"
+    }
+  ]
+}
