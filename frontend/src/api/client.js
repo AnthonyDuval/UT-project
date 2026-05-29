@@ -1,6 +1,6 @@
 /** Client API REST — backend FastAPI ou mode démo offline local */
 
-import { executeDemoCommand, getDemoState, loadAdvancedDemoGame, resetDemoGame, tickDemoMystery } from '../demo/demoEngine'
+import { executeDemoCommand, getDemoState, loadAdvancedDemoGame, markNovaIntroSeenDemo, resetDemoGame, tickDemoMystery } from '../demo/demoEngine'
 import { buyDemoItem, getDemoInventory, getDemoMarket, useDemoItem } from '../demo/demoMarket'
 import { loadDemoChat, saveDemoChat } from '../demo/demoStorage'
 
@@ -184,6 +184,13 @@ export async function tickMysteryEvents() {
     return demoDelay(tickDemoMystery())
   }
   return { state: null, autoLines: [], uiEffect: null }
+}
+
+export async function markNovaIntroSeen() {
+  if (DEMO_MODE) {
+    return demoDelay(markNovaIntroSeenDemo())
+  }
+  return { state: null }
 }
 
 export async function checkHealth() {

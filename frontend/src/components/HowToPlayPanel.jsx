@@ -2,29 +2,29 @@ import './HowToPlayPanel.css'
 
 const STEPS = [
   {
-    title: 'Tape help',
-    body: 'Affiche ce que vous pouvez faire. De nouvelles actions apparaissent en explorant.',
+    title: 'Lisez tout',
+    body: 'Documents, logs, archives corrompues. Les réponses sont dans le texte — pas dans un manuel.',
   },
   {
-    title: 'Lis les documents',
-    body: 'Tapez files pour lister les documents, puis open note.txt pour les ouvrir.',
+    title: 'Retenez les mots étranges',
+    body: 'Des noms interdits circulent dans les fichiers. Essayez-les au terminal.',
   },
   {
-    title: 'Suis les indices',
-    body: 'Chaque document peut révéler une nouvelle commande. Pas besoin de tout deviner.',
+    title: 'Observez les réactions',
+    body: 'Le système répond, se tait, ou ment. Chaque essai révèle quelque chose.',
   },
   {
-    title: 'Reste discret',
-    body: 'UltraTech vous observe. Une jauge TRACE apparaît quand vous prenez des risques.',
+    title: 'Restez discret',
+    body: 'UltraTech surveille. Plus vous forcez, plus la TRACE monte.',
   },
   {
-    title: 'Explorez progressivement',
-    body: 'Réseau, marché noir, programmes… tout se débloque au fil de l\'histoire.',
+    title: 'Faites confiance à personne',
+    body: 'N0VA, UltraTech, les logs effacés — tout le monde a un agenda.',
   },
 ]
 
 /**
- * Panneau d'aide optionnel — le jeu s'apprend surtout en jouant.
+ * Panneau d'aide optionnel — ton enquête, pas tutoriel technique.
  */
 export default function HowToPlayPanel({ open, onClose }) {
   if (!open) return null
@@ -41,8 +41,8 @@ export default function HowToPlayPanel({ open, onClose }) {
         </header>
 
         <p className="howto__intro">
-          Vous avez accès à un terminal sécurisé. Lisez, explorez, connectez-vous
-          à des signaux cachés — sans vous faire repérer.
+          Vous avez accès illégal à un terminal UltraTech. Ce n'est pas un cours
+          d'informatique — c'est une enquête dans un réseau interdit.
         </p>
 
         <ol className="howto__list">
@@ -58,7 +58,7 @@ export default function HowToPlayPanel({ open, onClose }) {
         </ol>
 
         <footer className="howto__footer">
-          <p>Commencez par : help → files → open note.txt</p>
+          <p>Commencez par lire ce qui traîne sur le terminal.</p>
           <button type="button" className="howto__ok" onClick={onClose}>
             Compris
           </button>

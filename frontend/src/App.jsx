@@ -16,6 +16,8 @@ import {
 
   tickMysteryEvents,
 
+  markNovaIntroSeen,
+
 } from './api/client'
 
 import Terminal from './components/Terminal'
@@ -48,6 +50,8 @@ import HowToPlayPanel from './components/HowToPlayPanel'
 
 import MysteryOverlay from './components/MysteryOverlay'
 
+import NovaEncounter from './components/NovaEncounter'
+
 import './App.css'
 
 import {
@@ -64,6 +68,18 @@ import {
 } from './utils/notifications'
 
 const MYSTERY_TICK_MS = 90000
+
+const NOVA_IDLE_MS = 30000
+
+const HORROR_UI_TYPES = new Set([
+  'pixel_mass',
+  'ultratech_watch',
+  'horror_ambient',
+  'phantom_node',
+  'ghost_typing',
+  'cursor_possession',
+  'fake_gameover',
+])
 
 
 
@@ -85,7 +101,7 @@ function buildPostBootLines() {
 
     '',
 
-    '→ Première action : tapez help',
+    '[???] Des fragments dorment dans la mémoire locale.',
 
     '──────────────────────────────────────────────────────────────',
 
@@ -112,6 +128,10 @@ function App() {
   const [howToOpen, setHowToOpen] = useState(false)
 
   const [mysteryEffect, setMysteryEffect] = useState(null)
+
+  const [terminalEffect, setTerminalEffect] = useState(null)
+
+  const [showNovaEncounter, setShowNovaEncounter] = useState(false)
 
 
 
@@ -141,6 +161,8 @@ function App() {
 
   const uiIntrosHandledRef = useRef({})
 
+  const lastActivityRef = useRef(Date.now())
+
   const appendCodexNotifications = useCallback((discoveries) => {
 
     if (!discoveries?.length) return
@@ -162,6 +184,44 @@ function App() {
     setTerminalLines((prev) => [...prev, '', ...lines, ''])
 
   }, [])
+
+
+
+  const bumpActivity = useCallback(() => {
+
+    lastActivityRef.current = Date.now()
+
+  }, [])
+
+
+
+  const handleNovaEncounterInteract = useCallback(async () => {
+
+    if (!(demoMode || isDemoMode())) return
+
+    try {
+
+      const result = await markNovaIntroSeen()
+
+      if (result?.state) setGameState(result.state)
+
+    } catch {
+
+      /* ignore */
+
+    }
+
+  }, [demoMode])
+
+
+
+  const handleNovaEncounterDismiss = useCallback(() => {
+
+    setShowNovaEncounter(false)
+
+    bumpActivity()
+
+  }, [bumpActivity])
 
 
 
@@ -465,6 +525,8 @@ function App() {
 
 
 
+    bumpActivity()
+
     setCommandLoading(true)
 
     setTerminalLines((prev) => [...prev, `> ${command}`])
@@ -502,6 +564,8 @@ function App() {
           setMysteryEffect(result.uiEffect || result.state.activeUiEffect)
 
         }
+
+        if (result.terminalEffect) setTerminalEffect(result.terminalEffect)
 
         if (result.newCodexDiscoveries?.length) {
 
@@ -625,6 +689,8 @@ function App() {
 
         if (result.uiEffect) setMysteryEffect(result.uiEffect)
 
+        if (result.terminalEffect) setTerminalEffect(result.terminalEffect)
+
         if (result.autoLines?.length) {
 
           setTerminalLines((prev) => [...prev, ...result.autoLines, ''])
@@ -648,6 +714,95 @@ function App() {
     return () => clearInterval(id)
 
   }, [inDemo, showWelcome, authenticated, loading, booting, appendCodexNotifications])
+
+
+
+  useEffect(() => {
+
+    if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
+
+    const onActivity = () => bumpActivity()
+
+    window.addEventListener('mousemove', onActivity, { passive: true })
+
+    window.addEventListener('mousedown', onActivity, { passive: true })
+
+    window.addEventListener('keydown', onActivity, { passive: true })
+
+    window.addEventListener('touchstart', onActivity, { passive: true })
+
+    return () => {
+
+      window.removeEventListener('mousemove', onActivity)
+
+      window.removeEventListener('mousedown', onActivity)
+
+      window.removeEventListener('keydown', onActivity)
+
+      window.removeEventListener('touchstart', onActivity)
+
+    }
+
+  }, [inDemo, showWelcome, authenticated, loading, booting, bumpActivity])
+
+
+
+  useEffect(() => {
+
+    if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
+
+    if (gameState?.novaIntroSeen) return undefined
+
+    const id = setInterval(() => {
+
+      if (gameState?.novaIntroSeen) return
+
+      if (showNovaEncounter) return
+
+      const critical =
+        gameOverActive
+        || howToOpen
+        || commandLoading
+        || terminalEffect
+        || gameState?.fakeGameOverActive
+        || mysteryEffect?.type === 'fake_gameover'
+        || (gameState?.gameOver && !gameState?.fakeGameOverActive)
+
+      if (critical) {
+
+        bumpActivity()
+
+        return
+
+      }
+
+      if (Date.now() - lastActivityRef.current >= NOVA_IDLE_MS) {
+
+        setShowNovaEncounter(true)
+
+      }
+
+    }, 1000)
+
+    return () => clearInterval(id)
+
+  }, [
+    inDemo,
+    showWelcome,
+    authenticated,
+    loading,
+    booting,
+    gameState?.novaIntroSeen,
+    gameState?.gameOver,
+    gameState?.fakeGameOverActive,
+    gameOverActive,
+    howToOpen,
+    commandLoading,
+    terminalEffect,
+    mysteryEffect,
+    showNovaEncounter,
+    bumpActivity,
+  ])
 
 
 
@@ -753,9 +908,15 @@ function App() {
 
 
 
+  const activeEffect = mysteryEffect || gameState?.activeUiEffect
+
+  const horrorActive = activeEffect && HORROR_UI_TYPES.has(activeEffect.type)
+
+
+
   return (
 
-    <div className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${mysteryEffect ? 'app--mystery-active' : ''}`}>
+    <div className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${activeEffect ? 'app--mystery-active' : ''} ${horrorActive ? 'app--horror-active' : ''}`}>
 
       <div className="app__immersion" aria-hidden="true">
 
@@ -838,6 +999,10 @@ function App() {
                 onCommand={handleCommand}
 
                 disabled={isLocked}
+
+                horrorEffect={terminalEffect}
+
+                onHorrorEffectDone={() => setTerminalEffect(null)}
 
               />
 
@@ -1005,8 +1170,16 @@ function App() {
 
 
 
+      <NovaEncounter
+        open={showNovaEncounter}
+        onInteract={handleNovaEncounterInteract}
+        onDismiss={handleNovaEncounterDismiss}
+      />
+
+
+
       <MysteryOverlay
-        effect={mysteryEffect || gameState?.activeUiEffect}
+        effect={activeEffect}
         onExpire={() => setMysteryEffect(null)}
       />
 

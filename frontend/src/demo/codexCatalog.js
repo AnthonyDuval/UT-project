@@ -84,7 +84,7 @@ export const CODEX_ENTRIES = {
   phantom_disconnect: {
     name: 'PHANTOM_DISCONNECT',
     description: 'Disconnect exécuté sans connexion active — pourtant un tunnel s\'est fermé « ailleurs ».',
-    nextHint: 'Les commandes réseau existent avant d\'être débloquées.',
+    nextHint: 'Les tunnels se ferment parfois avant même d\'être ouverts.',
     rarity: 'rare',
   },
   silent_observer: {
@@ -120,7 +120,7 @@ export const CODEX_ENTRIES = {
   memory_fragment: {
     name: 'MEMORY_FRAGMENT',
     description: 'Fragment mémoire : « N0VA is not a person. N0VA is a protocol. » Effacement UltraTech échoué.',
-    nextHint: 'Coordonnées mirror_relay mentionnées. Connectez-vous.',
+    nextHint: 'Les coordonnées mirror_relay apparaissent dans les débris mémoire.',
     rarity: 'rare',
   },
   unknown_signal: {

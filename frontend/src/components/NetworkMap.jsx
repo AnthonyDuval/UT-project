@@ -21,7 +21,7 @@ export default function NetworkMap({ network }) {
     return (
       <div className="netmap netmap--empty">
         <span className="netmap__placeholder">Aucun nœud détecté</span>
-        <span className="netmap__hint">Lancez scan pour cartographier</span>
+        <span className="netmap__hint">Le réseau garde encore des secrets</span>
       </div>
     )
   }

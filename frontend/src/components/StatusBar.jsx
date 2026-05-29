@@ -3,7 +3,7 @@ import { computeUiProgression } from '../utils/uiProgression'
 import './StatusBar.css'
 
 /**
- * Panneau latéral progressif — objectif, fichiers, systèmes débloqués au fil du jeu.
+ * Panneau latéral — objectif narratif et documents, sans tutoriel technique.
  */
 export default function StatusBar({
   state,
@@ -15,14 +15,11 @@ export default function StatusBar({
   const ui = computeUiProgression(state)
   const { visible_files } = state
   const objective = getMissionObjective(state)
-  const showFilesTip = state.tutorialFlags?.help
 
   return (
     <div className={`statusbar ${ui.earlyGame ? 'statusbar--minimal' : ''}`}>
       <div className="statusbar__objective">
-        <h2 className="statusbar__objective-label">
-          {objective.step > 0 ? `OBJECTIF · ${objective.step}/7` : 'OBJECTIF'}
-        </h2>
+        <h2 className="statusbar__objective-label">PISTE ACTUELLE</h2>
         <p className="statusbar__objective-title">{objective.title}</p>
         <p className="statusbar__objective-hint">{objective.hint}</p>
       </div>
@@ -47,9 +44,6 @@ export default function StatusBar({
             <li className="statusbar__file statusbar__file--empty">Aucun document</li>
           )}
         </ul>
-        {showFilesTip && (
-          <p className="statusbar__files-tip">Raccourci : files</p>
-        )}
       </div>
 
       {ui.showTrace && (

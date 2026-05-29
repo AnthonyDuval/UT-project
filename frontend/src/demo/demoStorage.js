@@ -38,6 +38,7 @@ function migrateSave(save) {
   save.codexNotified = save.codexNotified || {}
   save.eventLastTriggeredAt = save.eventLastTriggeredAt || {}
   save.tutorialFlags = save.tutorialFlags || {}
+  save.novaIntroSeen = save.novaIntroSeen ?? false
   for (const id of Object.keys(save.codexDiscovered)) {
     save.codexNotified[id] = true
   }

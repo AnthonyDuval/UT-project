@@ -3,6 +3,7 @@
  */
 
 import { MISSION_DEFS } from './demoState'
+import { syncMissionObjectiveText } from '../utils/missionHints'
 
 const NOVA_CONTACT_LINES = [
   '',
@@ -34,22 +35,8 @@ function objectiveDone(save, objectiveId) {
   return !!checks[objectiveId]
 }
 
-function refreshObjective(save, missionId) {
-  const def = MISSION_DEFS[missionId]
-  const m = save.missions[missionId]
-  if (!def || !m || m.status !== 'active') {
-    if (m) m.currentObjective = null
-    return
-  }
-
-  const completed = new Set(m.completedObjectives || [])
-  for (const obj of def.objectiveDefs) {
-    if (!completed.has(obj.id)) {
-      m.currentObjective = obj.label
-      return
-    }
-  }
-  m.currentObjective = null
+function refreshObjective(save) {
+  syncMissionObjectiveText(save)
 }
 
 function grantMissionRewards(save, missionId) {

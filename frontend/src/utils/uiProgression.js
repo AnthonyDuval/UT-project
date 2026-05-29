@@ -22,7 +22,7 @@ const INTRO_LINES = {
     '[SYS] BLACK MARKET — accès autorisé.',
   ],
   toolkit: [
-    '[SYS] Boîte à outils déverrouillée — programmes disponibles.',
+    '[SYS] Quelque chose a été laissé dans la boîte à outils.',
   ],
   codex: [
     '[REGISTRY] Entrée classifiée indexée dans le Codex.',

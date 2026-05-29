@@ -121,6 +121,29 @@
   50% { opacity: 0.3; }
 }
 
+.terminal--possessed {
+  border-color: rgba(230, 57, 70, 0.35);
+}
+
+.terminal__possession-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  background: radial-gradient(ellipse at 50% 100%, rgba(230, 57, 70, 0.08) 0%, transparent 60%);
+  animation: possession-pulse 1.2s ease-in-out infinite;
+}
+
+.terminal__input--possessed {
+  color: rgba(255, 120, 120, 0.95);
+  caret-color: rgba(255, 60, 60, 0.9);
+  text-shadow: 0 0 8px rgba(230, 57, 70, 0.35);
+}
+
+@keyframes possession-pulse {
+  50% { opacity: 0.6; }
+}
+
 @media (max-width: 900px) {
   .terminal__output,
   .terminal__input {
