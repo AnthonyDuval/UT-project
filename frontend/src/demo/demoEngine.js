@@ -20,7 +20,8 @@ import {
   processMysteryTrace,
   stampUiEffectStart,
 } from './eventManager'
-import { syncMissionObjectiveText } from '../utils/missionHints'
+import { getTerminalGuidanceHint, syncMissionObjectiveText } from '../utils/missionHints'
+import { getLocale } from '../i18n'
 import {
   handleHiddenCommand,
   handleMysteryDisconnect,
@@ -453,6 +454,7 @@ export function executeDemoCommand(command) {
       const behavior = processBehaviorAfterCommand(save, cmd)
       if (behavior.autoLines.length) autoLines.push(...behavior.autoLines)
       if (behavior.uiEffect) save.activeUiEffect = behavior.uiEffect
+      save.guidanceUnknownStreak = 0
       tryCharacterTransmission(save, 'secret_command')
       const mergedOut = hidden.silent ? behavior.autoLines : [...(hidden.output || []), ...autoLines]
       return finishCommand(save, mergedOut, {
@@ -473,13 +475,22 @@ export function executeDemoCommand(command) {
 
   if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear' && cmd !== 'ls') {
     addTrace(save, 2)
+    save.guidanceUnknownStreak = (save.guidanceUnknownStreak || 0) + 1
+    const output = [tx('terminal.unknown.command', { cmd }), ...traceMessages(save)]
+    if (save.guidanceUnknownStreak >= 3) {
+      save.guidanceUnknownStreak = 0
+      const hint = getTerminalGuidanceHint(toPublicState(save), getLocale())
+      if (hint) output.push('', hint)
+    }
     saveDemoSave(save)
     return {
-      output: [tx('terminal.unknown.command', { cmd }), ...traceMessages(save)],
+      output,
       clear_terminal: false,
       state: toPublicState(save),
     }
   }
+
+  save.guidanceUnknownStreak = 0
 
   let output = []
   let clear_terminal = false

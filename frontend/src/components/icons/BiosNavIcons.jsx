@@ -48,9 +48,24 @@ export function BrokerBiosIcon({ className = '' }) {
   )
 }
 
+/** Registre classifié / fragment mémoire — violet/cyan discret */
+export function CodexBiosIcon({ className = '' }) {
+  return (
+    <svg {...BASE} className={`bios-nav-svg bios-nav-svg--codex ${className}`}>
+      <rect x="2.5" y="2" width="11" height="12" stroke="currentColor" strokeWidth="0.9" />
+      <path d="M5 2 V5 H11 V2" stroke="currentColor" strokeWidth="0.7" />
+      <path d="M5 7.5 H11 M5 10 H8.5" stroke="currentColor" strokeWidth="0.65" opacity="0.65" />
+      <rect x="9.5" y="8.5" width="2.5" height="2.5" stroke="currentColor" strokeWidth="0.55" opacity="0.5" />
+      <path d="M1.5 8 L2.5 8 M13.5 8 L14.5 8" stroke="currentColor" strokeWidth="0.5" opacity="0.35" />
+      <path d="M8 14.5 V15.5" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
+    </svg>
+  )
+}
+
 export function BiosNavIcon({ type, className = '' }) {
   if (type === 'market') return <MarketBiosIcon className={className} />
   if (type === 'broker') return <BrokerBiosIcon className={className} />
+  if (type === 'codex') return <CodexBiosIcon className={className} />
   return <JournalBiosIcon className={className} />
 }
 

@@ -86,7 +86,7 @@ export default {
   },
 
   statusbar: {
-    currentLead: 'PISTE ACTUELLE',
+    currentLead: 'INDICE ACTIF',
     documents: 'DOCUMENTS',
     noDocuments: 'Aucun document',
     surveillance: 'Surveillance UltraTech',
@@ -97,7 +97,8 @@ export default {
     missionJournal: 'Journal de missions',
     blackMarket: 'Black Market',
     ghostBroker: 'Ghost Broker',
-    codex: 'Codex · {{progress}} →',
+    codex: 'Codex',
+    codexProgress: '{{progress}}',
   },
 
   windows: {
@@ -179,19 +180,19 @@ export default {
       },
       local_memory: {
         title: 'Mémoire locale',
-        hint: 'Des fragments dorment quelque part sur ce terminal.',
+        hint: 'Des fragments dorment dans la mémoire locale. Un fichier semble contenir une commande oubliée.',
       },
       unsigned_note: {
         title: 'Message non signé',
-        hint: 'Un document porte une note laissée par un inconnu.',
+        hint: 'Un document porte une note laissée par un inconnu — consultez les fichiers du terminal.',
       },
       relay_anomaly: {
         title: 'Anomalie RELAY_GHOST',
-        hint: 'Le journal système enregistre quelque chose qu\'UltraTech préfère taire.',
+        hint: 'Le journal système enregistre RELAY_GHOST. Un ancien opérateur y a laissé une trace.',
       },
       ghost_operator: {
         title: 'Opérateur fantôme',
-        hint: 'Le dernier opérateur ayant utilisé SCAN sur ce relais a disparu.',
+        hint: 'Le relais fantôme attend une analyse. Un ancien log mentionne SCAN.',
       },
       network_response: {
         title: 'Réponse du réseau',
@@ -199,7 +200,7 @@ export default {
       },
       active_relay: {
         title: 'Relais actif',
-        hint: 'Les anciens opérateurs traversaient les nœuds clandestins en silence.',
+        hint: 'Un signal dort dans relay_ghost. Les opérateurs utilisaient CONNECT pour le traverser.',
       },
     },
     m2: {
@@ -240,6 +241,28 @@ export default {
     },
   },
 
+  guidance: {
+    terminal: {
+      connection: '[???] Quelqu\'un vous a ouvert une porte. Le terminal attend.',
+      m1_signal_incoming: '[???] Des fragments dorment dans la mémoire locale — commencez par les fichiers.',
+      m1_local_memory: '[SYS] Un document local semble contenir une commande oubliée.',
+      m1_unsigned_note: '[NOTE] Le message non signé pointe vers d\'autres fragments — lisez system.log.',
+      m1_relay_anomaly: '[LOG] RELAY_GHOST apparaît dans le journal. Un opérateur y a laissé une trace.',
+      m1_ghost_operator: '[RELAY] Le relais fantôme attend une analyse. Un ancien log mentionne SCAN.',
+      m1_network_response: '[CAPTURE] L\'analyse a répondu. Un nouveau fragment attend dans les documents.',
+      m1_active_relay: '[RELAY] Un signal dort dans relay_ghost. Les opérateurs utilisaient CONNECT.',
+      m2_orbital_channel: '[ORBIT] SATLINK_03 attend — les opérateurs traversaient les relais avec CONNECT.',
+      m2_orbital_channel_nova: '[N0VA] SATLINK_03 — quelque chose attend de l\'autre côté du relais.',
+      m2_orbital_segment: '[NET] Le tunnel est ouvert. Explorez le relais orbital.',
+      m2_erased_cartographer: '[LOG] Le cartographe effacé mentionnait PROBE dans ses dernières lignes.',
+      m2_orbital_manifest: '[FILE] Un manifeste traîne sur le relais — lisez ce qu\'UltraTech cache.',
+      m2_forbidden_segments: '[MAP] Deux segments interdits apparaissent — cartographiez le réseau.',
+      m2_orbital_fragment: '[RELAY] Quelqu\'un a laissé une trace sur ce segment orbital.',
+      m2_orbital_fragment_nova: '[N0VA] Un fragment attend sur le relais — récupérez-le.',
+      infiltration: '[SYS] Le réseau garde encore des secrets. UltraTech observe.',
+    },
+  },
+
   missions: {
     signal_fantome: {
       title: 'Signal Fantôme',
@@ -275,6 +298,7 @@ export default {
     title: 'JOURNAL DE MISSIONS',
     subtitle: 'Dossier d\'enquête interdit — fragments récupérés depuis un terminal UltraTech',
     activeMission: 'Mission active',
+    activeLead: 'Indice actif',
     allComplete: 'Toutes les missions disponibles sont terminées.',
     noActive: 'Aucune mission active — infiltration libre.',
     objectivesCount: '{{progress}} objectifs',

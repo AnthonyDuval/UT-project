@@ -86,7 +86,7 @@ export default {
   },
 
   statusbar: {
-    currentLead: 'CURRENT LEAD',
+    currentLead: 'ACTIVE LEAD',
     documents: 'DOCUMENTS',
     noDocuments: 'No documents',
     surveillance: 'UltraTech surveillance',
@@ -97,7 +97,8 @@ export default {
     missionJournal: 'Mission journal',
     blackMarket: 'Black Market',
     ghostBroker: 'Ghost Broker',
-    codex: 'Codex · {{progress}} →',
+    codex: 'Codex',
+    codexProgress: '{{progress}}',
   },
 
   windows: {
@@ -179,19 +180,19 @@ export default {
       },
       local_memory: {
         title: 'Local memory',
-        hint: 'Fragments sleep somewhere on this terminal.',
+        hint: 'Fragments sleep in local memory. A file seems to hold a forgotten command.',
       },
       unsigned_note: {
         title: 'Unsigned message',
-        hint: 'A document carries a note left by a stranger.',
+        hint: 'A document carries a stranger\'s note — browse the terminal files.',
       },
       relay_anomaly: {
         title: 'RELAY_GHOST anomaly',
-        hint: 'The system log records something UltraTech would rather hide.',
+        hint: 'The system log records RELAY_GHOST. A former operator left a trace there.',
       },
       ghost_operator: {
         title: 'Ghost operator',
-        hint: 'The last operator who used SCAN on this relay vanished.',
+        hint: 'The ghost relay awaits analysis. An old log mentions SCAN.',
       },
       network_response: {
         title: 'Network response',
@@ -199,7 +200,7 @@ export default {
       },
       active_relay: {
         title: 'Active relay',
-        hint: 'Old operators crossed clandestine nodes in silence.',
+        hint: 'A signal sleeps in relay_ghost. Operators used CONNECT to cross it.',
       },
     },
     m2: {
@@ -240,6 +241,28 @@ export default {
     },
   },
 
+  guidance: {
+    terminal: {
+      connection: '[???] Someone opened a door for you. The terminal is waiting.',
+      m1_signal_incoming: '[???] Fragments sleep in local memory — start with the files.',
+      m1_local_memory: '[SYS] A local document seems to hold a forgotten command.',
+      m1_unsigned_note: '[NOTE] The unsigned message points to other fragments — read system.log.',
+      m1_relay_anomaly: '[LOG] RELAY_GHOST appears in the log. An operator left a trace there.',
+      m1_ghost_operator: '[RELAY] The ghost relay awaits analysis. An old log mentions SCAN.',
+      m1_network_response: '[CAPTURE] The scan answered. A new fragment waits in the documents.',
+      m1_active_relay: '[RELAY] A signal sleeps in relay_ghost. Operators used CONNECT.',
+      m2_orbital_channel: '[ORBIT] SATLINK_03 waits — operators crossed relays with CONNECT.',
+      m2_orbital_channel_nova: '[N0VA] SATLINK_03 — something waits on the other side.',
+      m2_orbital_segment: '[NET] The tunnel is open. Explore the orbital relay.',
+      m2_erased_cartographer: '[LOG] The erased cartographer mentioned PROBE in their last lines.',
+      m2_orbital_manifest: '[FILE] A manifest lingers on the relay — read what UltraTech hides.',
+      m2_forbidden_segments: '[MAP] Two forbidden segments appear — map the network.',
+      m2_orbital_fragment: '[RELAY] Someone left a trace on this orbital segment.',
+      m2_orbital_fragment_nova: '[N0VA] A fragment waits on the relay — recover it.',
+      infiltration: '[SYS] The network still holds secrets. UltraTech is watching.',
+    },
+  },
+
   missions: {
     signal_fantome: {
       title: 'Ghost Signal',
@@ -275,6 +298,7 @@ export default {
     title: 'MISSION JOURNAL',
     subtitle: 'Forbidden investigation dossier — fragments recovered from an UltraTech terminal',
     activeMission: 'Active mission',
+    activeLead: 'Active lead',
     allComplete: 'All available missions are complete.',
     noActive: 'No active mission — free infiltration.',
     objectivesCount: '{{progress}} objectives',

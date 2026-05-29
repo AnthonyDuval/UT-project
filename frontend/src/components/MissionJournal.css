@@ -112,6 +112,42 @@
   line-height: 1.5;
 }
 
+.mjournal__active-lead {
+  margin-top: 0.55rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 2px solid rgba(110, 181, 204, 0.45);
+}
+
+.mjournal__active-lead-label {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: rgba(140, 200, 220, 0.75);
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.mjournal__active-lead strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.mjournal__active-lead p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.mjournal--compact .mjournal__active-lead {
+  margin-bottom: 0.65rem;
+}
+
 /* Mission cards grid */
 .mjournal__grid {
   display: flex;

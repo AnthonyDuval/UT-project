@@ -1,7 +1,7 @@
 import { getMissionObjective } from '../utils/missionHints'
 import { computeUiProgression } from '../utils/uiProgression'
 import { useLanguage } from '../i18n/LanguageProvider'
-import { JournalBiosIcon, MarketBiosIcon, BrokerBiosIcon } from './icons/BiosNavIcons'
+import { JournalBiosIcon, MarketBiosIcon, BrokerBiosIcon, CodexBiosIcon } from './icons/BiosNavIcons'
 import './icons/BiosNavIcons.css'
 import './StatusBar.css'
 
@@ -124,10 +124,17 @@ export default function StatusBar({
         <div className="statusbar__section">
           <button
             type="button"
-            className="statusbar__journal-btn statusbar__journal-btn--codex"
+            className="bios-nav-btn bios-nav-btn--codex"
             onClick={() => onOpenApp?.('codex')}
           >
-            {t('statusbar.codex', { progress: state.codex?.progressLabel ?? '0/18' })}
+            <span className="bios-nav-icon bios-nav-icon--codex">
+              <CodexBiosIcon />
+            </span>
+            <span className="bios-nav-btn__label">
+              {t('statusbar.codex')}
+              <span className="bios-nav-btn__meta">{t('statusbar.codexProgress', { progress: state.codex?.progressLabel ?? '0/18' })}</span>
+            </span>
+            <span className="bios-nav-btn__arrow" aria-hidden>→</span>
           </button>
         </div>
       )}

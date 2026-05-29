@@ -11,6 +11,7 @@ import {
   localizeJournal,
   parseRewardModules,
 } from '../i18n/locales'
+import { getMissionObjective } from '../utils/missionHints'
 import './MissionJournal.css'
 
 function ZoomIcon() {
@@ -254,12 +255,17 @@ function MissionCard({ mission, isHighlighted, onInspect, t }) {
  * Journal de missions — dossier d'enquête UltraTech / BIOS clandestin.
  */
 export default function MissionJournal({ journal, gameState, compact = false }) {
-  const { t } = useLanguage()
+  const { t, locale } = useLanguage()
   const [detailMission, setDetailMission] = useState(null)
 
   const localized = useMemo(
     () => localizeJournal(journal, t, gameState),
     [journal, t, gameState],
+  )
+
+  const activeLead = useMemo(
+    () => getMissionObjective(gameState, locale),
+    [gameState, locale],
   )
 
   if (!localized) {
@@ -285,6 +291,11 @@ export default function MissionJournal({ journal, gameState, compact = false }) 
                 <h3 className="mjournal__title">{currentMission.title}</h3>
               </div>
               <StatusBadge status="active" t={t} />
+            </div>
+            <div className="mjournal__active-lead">
+              <span className="mjournal__active-lead-label">{t('missionJournal.activeLead')}</span>
+              <strong>{activeLead.title}</strong>
+              <p>{activeLead.hint}</p>
             </div>
             <p className="mjournal__objective">{currentMission.currentObjective}</p>
             <div className="mjournal__progress-bar">
@@ -318,7 +329,10 @@ export default function MissionJournal({ journal, gameState, compact = false }) 
           <div>
             <span className="mjournal__active-label">{t('missionJournal.activeMission')}</span>
             <strong>{currentMission.title}</strong>
-            <p>{currentMission.currentObjective}</p>
+            <div className="mjournal__active-lead">
+              <span className="mjournal__active-lead-label">{t('missionJournal.activeLead')}</span>
+              <p>{activeLead.hint}</p>
+            </div>
           </div>
         </div>
       )}

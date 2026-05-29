@@ -129,6 +129,71 @@
   background: rgba(200, 120, 50, 0.15);
 }
 
+.bios-nav-btn--broker::before {
+  background: rgba(200, 120, 50, 0.15);
+}
+
+.bios-nav-btn--codex::before {
+  background: rgba(150, 120, 220, 0.15);
+}
+
+.bios-nav-icon--codex {
+  color: rgba(160, 140, 220, 0.78);
+  filter: drop-shadow(0 0 3px rgba(140, 110, 200, 0.22));
+  animation: bios-codex-idle-glitch 14s step-end infinite;
+}
+
+@keyframes bios-codex-idle-glitch {
+  0%, 93%, 100% { transform: translate(0); opacity: 1; }
+  94% { transform: translate(0.4px, 0); opacity: 0.82; }
+  95% { transform: translate(-0.4px, 0); opacity: 0.92; }
+  96% { transform: translate(0); opacity: 1; }
+}
+
+.bios-nav-btn--codex {
+  color: rgba(175, 155, 220, 0.88);
+  border-color: rgba(140, 110, 200, 0.14);
+}
+
+.bios-nav-btn--codex:hover {
+  background: rgba(140, 110, 200, 0.07);
+  border-color: rgba(160, 130, 220, 0.32);
+  color: rgba(195, 175, 240, 0.96);
+}
+
+.bios-nav-btn--codex:hover .bios-nav-icon--codex {
+  color: rgba(190, 170, 245, 0.95);
+  filter: drop-shadow(0 0 5px rgba(150, 120, 220, 0.38));
+}
+
+.bios-nav-btn--codex:hover .bios-nav-btn__arrow {
+  opacity: 0.85;
+  transform: translateX(2px);
+}
+
+.bios-nav-btn__meta {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+  margin-top: 0.12rem;
+}
+
+.desktop-icons__app--bios.desktop-icons__app--codex:hover {
+  border-color: rgba(150, 120, 220, 0.35);
+  background: rgba(140, 110, 200, 0.06);
+  box-shadow: 0 0 12px rgba(140, 110, 200, 0.08);
+}
+
+.desktop-icons__app--bios.desktop-icons__app--codex.desktop-icons__app--active {
+  border-color: rgba(160, 130, 220, 0.45);
+  background: rgba(140, 110, 200, 0.08);
+}
+
+.desktop-icons__app--bios.desktop-icons__app--codex.desktop-icons__app--active .desktop-icons__label {
+  color: rgba(195, 175, 240, 0.95);
+}
+
 .bios-nav-icon--broker {
   color: rgba(200, 120, 60, 0.8);
   filter: drop-shadow(0 0 3px rgba(200, 90, 40, 0.2));

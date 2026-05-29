@@ -115,6 +115,7 @@ export function createFreshDemoState() {
     horrorFlags: {},
     connectedSinceMs: null,
     novaIntroSeen: false,
+    guidanceUnknownStreak: 0,
     seenTransmissions: [],
     activeCharacterTransmission: null,
     characterTransmissionLastAt: 0,

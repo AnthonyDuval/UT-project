@@ -109,6 +109,18 @@ export function getThreatLevel(traceLevel = 0, locale) {
   return { label: translate('threat.low'), className: 'low' }
 }
 
+/** Indice terminal RP — après commandes inconnues répétées. */
+export function getTerminalGuidanceHint(state, locale) {
+  const key = getMissionObjectiveKey(state)
+  if (typeof key !== 'string' || !key.startsWith('objectives.')) return null
+
+  const translate = getTranslator(locale ?? getLocale())
+  const hintPath = key.replace('objectives.', '').replace(/\./g, '_')
+  const hint = translate(`guidance.terminal.${hintPath}`)
+  if (!hint || hint === `guidance.terminal.${hintPath}`) return null
+  return hint
+}
+
 /** Sync mission objective text from investigation state. */
 export function syncMissionObjectiveText(save) {
   const obj = getMissionObjective({

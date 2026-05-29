@@ -1,4 +1,4 @@
-import { JournalBiosIcon, MarketBiosIcon, BrokerBiosIcon } from './icons/BiosNavIcons'
+import { JournalBiosIcon, MarketBiosIcon, BrokerBiosIcon, CodexBiosIcon } from './icons/BiosNavIcons'
 import './icons/BiosNavIcons.css'
 import './Desktop.css'
 
@@ -7,7 +7,7 @@ const APPS = [
   { id: 'journal', name: 'Journal', icon: 'bios-journal', label: 'Journal de missions' },
   { id: 'chat', name: 'Canal', icon: '💬' },
   { id: 'toolkit', name: 'ToolKit', icon: '💾' },
-  { id: 'codex', name: 'Codex', icon: '📜' },
+  { id: 'codex', name: 'Codex', icon: 'bios-codex', label: 'Codex' },
   { id: 'market', name: 'BLACK MARKET', icon: 'bios-market', label: 'Black Market' },
   { id: 'broker', name: 'GHOST BROKER', icon: 'bios-broker', label: 'Ghost Broker' },
 ]
@@ -34,6 +34,13 @@ function AppIcon({ app }) {
       </span>
     )
   }
+  if (app.icon === 'bios-codex') {
+    return (
+      <span className="desktop-icons__icon bios-nav-icon bios-nav-icon--codex">
+        <CodexBiosIcon />
+      </span>
+    )
+  }
   return <span className="desktop-icons__icon">{app.icon}</span>
 }
 
@@ -49,7 +56,7 @@ export default function Desktop({ openApps, onOpenApp, unlockedApps = ['terminal
     <div className={`desktop-icons ${compact ? 'desktop-icons--compact' : ''}`}>
       {visible.map((app) => {
         const active = openApps.includes(app.id)
-        const isBios = app.icon === 'bios-journal' || app.icon === 'bios-market' || app.icon === 'bios-broker'
+        const isBios = app.icon === 'bios-journal' || app.icon === 'bios-market' || app.icon === 'bios-broker' || app.icon === 'bios-codex'
 
         return (
           <button
@@ -62,6 +69,7 @@ export default function Desktop({ openApps, onOpenApp, unlockedApps = ['terminal
               app.icon === 'bios-journal' ? 'desktop-icons__app--journal' : '',
               app.icon === 'bios-market' ? 'desktop-icons__app--market' : '',
               app.icon === 'bios-broker' ? 'desktop-icons__app--broker' : '',
+              app.icon === 'bios-codex' ? 'desktop-icons__app--codex' : '',
             ].filter(Boolean).join(' ')}
             onClick={() => onOpenApp(app.id)}
             title={app.label || app.name}

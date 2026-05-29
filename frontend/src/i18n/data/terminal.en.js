@@ -79,8 +79,9 @@ export default {
     lines: [
       '[SCAN] Scanning local network…',
       '[SCAN] Abnormal response — RELAY_GHOST signature',
+      '[SCAN] The relay only speaks to operators who scan first.',
       '[???] Someone is listening. So are you.',
-      '[SYS] Fragment captured in local memory.',
+      '[SYS] Fragment captured : ghost_relay.log',
     ],
   },
 
