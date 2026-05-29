@@ -1,4 +1,4 @@
-import { getMissionObjective } from '../utils/missionHints'
+import { getNextLead } from '../utils/nextLead'
 import { computeUiProgression } from '../utils/uiProgression'
 import { useLanguage } from '../i18n/LanguageProvider'
 import { JournalBiosIcon, MarketBiosIcon, BrokerBiosIcon, CodexBiosIcon } from './icons/BiosNavIcons'
@@ -19,14 +19,21 @@ export default function StatusBar({
 
   const ui = computeUiProgression(state)
   const { visible_files } = state
-  const objective = getMissionObjective(state, locale)
+  const nextLead = getNextLead(state, locale)
 
   return (
     <div className={`statusbar ${ui.earlyGame ? 'statusbar--minimal' : ''}`}>
       <div className="statusbar__objective">
-        <h2 className="statusbar__objective-label">{t('statusbar.currentLead')}</h2>
-        <p className="statusbar__objective-title">{objective.title}</p>
-        <p className="statusbar__objective-hint">{objective.hint}</p>
+        <div className="statusbar__objective-head">
+          <h2 className="statusbar__objective-label">{t('statusbar.nextLeadLabel')}</h2>
+          {nextLead.step && nextLead.total ? (
+            <span className="statusbar__step-badge">
+              {t('missionJournal.stepProgress', { step: nextLead.step, total: nextLead.total })}
+            </span>
+          ) : null}
+        </div>
+        <p className="statusbar__objective-title">{nextLead.title}</p>
+        <p className="statusbar__objective-hint">{nextLead.lead}</p>
       </div>
 
       <div className="statusbar__section statusbar__section--files">

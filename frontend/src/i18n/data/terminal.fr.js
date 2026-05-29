@@ -82,6 +82,7 @@ export default {
       '[SCAN] Le relais ne parle qu\'aux opérateurs qui scannent d\'abord.',
       '[???] Quelqu\'un écoute. Vous aussi.',
       '[SYS] Fragment capturé : ghost_relay.log',
+      '[RELAY] Procédure non standard : CONNECT relay_ghost',
     ],
   },
 
@@ -126,6 +127,12 @@ export default {
   unknown: {
     command: '[ERR] Commande inconnue : \'{{cmd}}\'',
     notImplemented: '[ERR] Commande \'{{cmd}}\' non implémentée en demo.',
+    flavors: [
+      '[SHELL] Le shell ignore cette requête : \'{{cmd}}\'',
+      '[SYS] Aucune procédure reconnue pour \'{{cmd}}\'',
+      '[ERR] Cette commande n\'existe pas ici.',
+      '[TRACE] UltraTech a enregistré cette tentative : \'{{cmd}}\'',
+    ],
   },
 
   install: {

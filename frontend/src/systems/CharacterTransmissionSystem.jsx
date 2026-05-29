@@ -2,6 +2,8 @@
  * CharacterTransmissionSystem — présences réseau rares, une à la fois.
  */
 
+import { isPlayerStuckForTransmission } from '../utils/playerStuck'
+
 export const CHARACTER_IDS = {
   ECHO_17: 'echo_17',
   VEIL: 'veil',
@@ -28,6 +30,7 @@ const CHARACTERS = {
       'transmissions.echo17.messages.1',
       'transmissions.echo17.messages.2',
     ],
+    hintMessageKeys: ['transmissions.echo17.hints.0'],
   },
   [CHARACTER_IDS.VEIL]: {
     id: CHARACTER_IDS.VEIL,
@@ -39,6 +42,7 @@ const CHARACTERS = {
       'transmissions.veil.messages.1',
       'transmissions.veil.messages.2',
     ],
+    hintMessageKeys: ['transmissions.veil.hints.0'],
   },
   [CHARACTER_IDS.MORSE]: {
     id: CHARACTER_IDS.MORSE,
@@ -50,6 +54,7 @@ const CHARACTERS = {
       'transmissions.morse.messages.1',
       'transmissions.morse.messages.2',
     ],
+    hintMessageKeys: ['transmissions.morse.hints.0'],
   },
   [CHARACTER_IDS.ABSENT]: {
     id: CHARACTER_IDS.ABSENT,
@@ -72,6 +77,7 @@ const CHARACTERS = {
       'transmissions.nova.messages.1',
       'transmissions.nova.messages.2',
     ],
+    hintMessageKeys: ['transmissions.nova.hints.0'],
   },
 }
 
@@ -180,7 +186,7 @@ function pickWeightedCharacter(weights) {
   return entries[entries.length - 1][0]
 }
 
-function pickMessage(character, save) {
+function pickMessage(character, save, { preferHints = false } = {}) {
   const seen = save.seenTransmissions || []
   const seenCounts = {}
   for (const entry of seen) {
@@ -188,9 +194,13 @@ function pickMessage(character, save) {
     if (id) seenCounts[id] = (seenCounts[id] || 0) + 1
   }
 
-  const candidates = character.messageKeys.map((key, idx) => ({
+  const poolKeys = preferHints && character.hintMessageKeys?.length
+    ? character.hintMessageKeys
+    : character.messageKeys
+
+  const candidates = poolKeys.map((key, idx) => ({
     key,
-    id: `${character.id}_${idx}`,
+    id: `${character.id}_hint_${idx}`,
   })).filter(({ id }) => {
     if ((seenCounts[id] || 0) >= 2) return false
     const recent = seen.find((entry) => {
@@ -219,7 +229,9 @@ export function fireCharacterTransmission(save, characterId, source = 'random') 
   const character = CHARACTERS[characterId]
   if (!character || !isCharacterEligible(characterId, save)) return null
 
-  const picked = pickMessage(character, save)
+  const picked = pickMessage(character, save, {
+    preferHints: isPlayerStuckForTransmission(save),
+  })
   const durationMs = randomDurationMs()
 
   ensureCharacterTransmissionState(save)

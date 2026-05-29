@@ -40,6 +40,16 @@ function migrateSave(save) {
   save.tutorialFlags = save.tutorialFlags || {}
   save.novaIntroSeen = save.novaIntroSeen ?? false
   save.guidanceUnknownStreak = save.guidanceUnknownStreak || 0
+  if (!save.playerGuidance) {
+    save.playerGuidance = {
+      unknownStreak: save.guidanceUnknownStreak || 0,
+      lastProgressAt: Date.now(),
+      lastStageId: null,
+      uselessRepeat: { cmd: '', count: 0 },
+      lastStuckHintAt: 0,
+      stuckTier: 0,
+    }
+  }
   save.seenTransmissions = save.seenTransmissions || []
   save.characterTransmissionLastAt = save.characterTransmissionLastAt || 0
   if (save.activeCharacterTransmission === undefined) save.activeCharacterTransmission = null

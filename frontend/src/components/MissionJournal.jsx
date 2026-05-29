@@ -11,7 +11,7 @@ import {
   localizeJournal,
   parseRewardModules,
 } from '../i18n/locales'
-import { getMissionObjective } from '../utils/missionHints'
+import { getNextLead } from '../utils/nextLead'
 import './MissionJournal.css'
 
 function ZoomIcon() {
@@ -264,7 +264,7 @@ export default function MissionJournal({ journal, gameState, compact = false }) 
   )
 
   const activeLead = useMemo(
-    () => getMissionObjective(gameState, locale),
+    () => getNextLead(gameState, locale),
     [gameState, locale],
   )
 
@@ -293,9 +293,16 @@ export default function MissionJournal({ journal, gameState, compact = false }) 
               <StatusBadge status="active" t={t} />
             </div>
             <div className="mjournal__active-lead">
-              <span className="mjournal__active-lead-label">{t('missionJournal.activeLead')}</span>
+              <div className="mjournal__active-lead-head">
+                <span className="mjournal__active-lead-label">{t('missionJournal.nextLead')}</span>
+                {activeLead.step && activeLead.total ? (
+                  <span className="mjournal__step-badge">
+                    {t('missionJournal.stepProgress', { step: activeLead.step, total: activeLead.total })}
+                  </span>
+                ) : null}
+              </div>
               <strong>{activeLead.title}</strong>
-              <p>{activeLead.hint}</p>
+              <p>{activeLead.lead}</p>
             </div>
             <p className="mjournal__objective">{currentMission.currentObjective}</p>
             <div className="mjournal__progress-bar">
@@ -330,8 +337,15 @@ export default function MissionJournal({ journal, gameState, compact = false }) 
             <span className="mjournal__active-label">{t('missionJournal.activeMission')}</span>
             <strong>{currentMission.title}</strong>
             <div className="mjournal__active-lead">
-              <span className="mjournal__active-lead-label">{t('missionJournal.activeLead')}</span>
-              <p>{activeLead.hint}</p>
+              <div className="mjournal__active-lead-head">
+                <span className="mjournal__active-lead-label">{t('missionJournal.nextLead')}</span>
+                {activeLead.step && activeLead.total ? (
+                  <span className="mjournal__step-badge">
+                    {t('missionJournal.stepProgress', { step: activeLead.step, total: activeLead.total })}
+                  </span>
+                ) : null}
+              </div>
+              <p>{activeLead.lead}</p>
             </div>
           </div>
         </div>

@@ -20,8 +20,18 @@ import {
   processMysteryTrace,
   stampUiEffectStart,
 } from './eventManager'
-import { getTerminalGuidanceHint, syncMissionObjectiveText } from '../utils/missionHints'
+import { syncMissionObjectiveText, getTerminalGuidanceHint } from '../utils/missionHints'
 import { getLocale } from '../i18n'
+import {
+  checkPlayerStuck,
+  recordUnknownCommand,
+  resetUnknownStreak,
+  recordUselessCommand,
+  getStuckTerminalHint,
+  markStuckHintShown,
+  canEmitIdleStuckHint,
+  touchProgress,
+} from '../utils/playerStuck'
 import {
   handleHiddenCommand,
   handleMysteryDisconnect,
@@ -58,6 +68,46 @@ function trackTutorial(save, cmd, args) {
   if (cmd === 'scan') save.tutorialFlags.scan = true
   if (cmd === 'connect') save.tutorialFlags.connect = true
   syncMissionObjectiveText(save)
+  touchProgress(save)
+}
+
+function pickUnknownCommandLine(cmd) {
+  const flavors = txRaw('terminal.unknown.flavors')
+  if (Array.isArray(flavors) && flavors.length) {
+    const line = flavors[Math.floor(Math.random() * flavors.length)]
+    return line.replace(/\{\{cmd\}\}/g, cmd)
+  }
+  return tx('terminal.unknown.command', { cmd })
+}
+
+function appendStuckHint(save, output, level = 'firm') {
+  const stuck = checkPlayerStuck(save)
+  if (!stuck?.stuck) return output
+  const hint = getStuckTerminalHint(save, stuck, getLocale())
+    || getTerminalGuidanceHint(toPublicState(save), getLocale(), level)
+  if (hint) {
+    output.push('', hint)
+    markStuckHintShown(save, stuck.level)
+  }
+  return output
+}
+
+function cmdHelp(save) {
+  const sorted = [...save.unlocked_commands].filter((c) => c !== 'ls').sort()
+  const lines = [
+    tx('terminal.help.header'),
+    '',
+    ...sorted.map((name) => `  ${name}`),
+    '',
+    tx('terminal.help.footer'),
+  ]
+  const stuck = checkPlayerStuck(save)
+  if (stuck?.stuck) {
+    lines.push('', tx('guidance.stuck.help'))
+    const hint = getStuckTerminalHint(save, stuck, getLocale())
+    if (hint) lines.push(hint)
+  }
+  return lines
 }
 
 function tryCharacterTransmission(save, trigger = 'random') {
@@ -87,7 +137,10 @@ function finalizeCommand(save, output, extras = {}) {
   const mission = updateMissionProgress(save)
   if (mission.output.length) output = [...output, '', ...mission.output]
   if (mission.narrative.length) output = [...output, ...mission.narrative]
-  if (mission.output.length) tryCharacterTransmission(save, 'mission_progress')
+  if (mission.output.length) {
+    touchProgress(save)
+    tryCharacterTransmission(save, 'mission_progress')
+  }
 
   const traceMsgs = traceMessages(save)
   if (traceMsgs.length) output = [...output, '', ...traceMsgs]
@@ -136,17 +189,6 @@ function traceMessages(save) {
     return [tx('terminal.trace.critical')]
   }
   return []
-}
-
-function cmdHelp(save) {
-  const sorted = [...save.unlocked_commands].filter((c) => c !== 'ls').sort()
-  return [
-    tx('terminal.help.header'),
-    '',
-    ...sorted.map((name) => `  ${name}`),
-    '',
-    tx('terminal.help.footer'),
-  ]
 }
 
 function cmdFiles(save) {
@@ -248,6 +290,7 @@ function cmdOpen(save, args) {
   }
 
   syncMissionObjectiveText(save)
+  touchProgress(save)
 
   const mystery = processMysteryFileOpen(save, name)
   const horror = processHorrorFileOpen(save, name)
@@ -294,6 +337,7 @@ function cmdConnect(save, args) {
   trackHorrorConnection(save)
   addTrace(save, 15)
   syncMissionObjectiveText(save)
+  touchProgress(save)
 
   if (target === 'relay_ghost') tryCharacterTransmission(save, 'ghost_node')
 
@@ -328,8 +372,12 @@ function cmdScan(save) {
   }
   save.flags.scan_completed = true
   if (!save.discoveredNodes.includes('relay_ghost')) save.discoveredNodes.push('relay_ghost')
+  for (const c of ['connect', 'disconnect']) {
+    if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
+  }
   addTrace(save, 15)
   syncMissionObjectiveText(save)
+  touchProgress(save)
   return txRaw('terminal.scan.lines') || []
 }
 
@@ -455,6 +503,7 @@ export function executeDemoCommand(command) {
       if (behavior.autoLines.length) autoLines.push(...behavior.autoLines)
       if (behavior.uiEffect) save.activeUiEffect = behavior.uiEffect
       save.guidanceUnknownStreak = 0
+      resetUnknownStreak(save)
       tryCharacterTransmission(save, 'secret_command')
       const mergedOut = hidden.silent ? behavior.autoLines : [...(hidden.output || []), ...autoLines]
       return finishCommand(save, mergedOut, {
@@ -475,12 +524,12 @@ export function executeDemoCommand(command) {
 
   if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear' && cmd !== 'ls') {
     addTrace(save, 2)
-    save.guidanceUnknownStreak = (save.guidanceUnknownStreak || 0) + 1
-    const output = [tx('terminal.unknown.command', { cmd }), ...traceMessages(save)]
-    if (save.guidanceUnknownStreak >= 3) {
-      save.guidanceUnknownStreak = 0
-      const hint = getTerminalGuidanceHint(toPublicState(save), getLocale())
-      if (hint) output.push('', hint)
+    recordUnknownCommand(save)
+    recordUselessCommand(save, cmd)
+    let output = [pickUnknownCommandLine(cmd), ...traceMessages(save)]
+    if (save.playerGuidance?.unknownStreak >= 3) {
+      resetUnknownStreak(save)
+      output = appendStuckHint(save, output, 'firm')
     }
     saveDemoSave(save)
     return {
@@ -490,7 +539,7 @@ export function executeDemoCommand(command) {
     }
   }
 
-  save.guidanceUnknownStreak = 0
+  resetUnknownStreak(save)
 
   let output = []
   let clear_terminal = false
@@ -568,12 +617,23 @@ export function tickDemoMystery() {
   }
   if (result.terminalEffect) save._pendingTerminalEffect = result.terminalEffect
   stampUiEffectStart(save)
+
+  const stuckAutoLines = []
+  const stuck = checkPlayerStuck(save)
+  if (stuck?.stuck && stuck.reason === 'idle' && canEmitIdleStuckHint(save)) {
+    const hint = getStuckTerminalHint(save, stuck, getLocale())
+    if (hint) {
+      stuckAutoLines.push(hint)
+      markStuckHintShown(save, 'soft')
+    }
+  }
+
   saveDemoSave(save)
   const newCodexDiscoveries = consumePendingCodexDiscoveries(save)
   saveDemoSave(save)
   return {
     state: toPublicState(save),
-    autoLines: result.autoLines,
+    autoLines: [...(result.autoLines || []), ...stuckAutoLines],
     uiEffect: save.activeUiEffect,
     cinematic: save.activeCinematic || null,
     terminalEffect: result.terminalEffect || null,

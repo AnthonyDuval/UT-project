@@ -120,13 +120,21 @@
   border-left: 2px solid rgba(110, 181, 204, 0.45);
 }
 
+.mjournal__active-lead-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
 .mjournal__active-lead-label {
   display: block;
   font-size: 0.62rem;
   letter-spacing: 0.14em;
   color: rgba(140, 200, 220, 0.75);
   text-transform: uppercase;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0;
 }
 
 .mjournal__active-lead strong {
