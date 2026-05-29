@@ -100,7 +100,7 @@ export function processMysteryEvents(save, ctx) {
   for (const event of MYSTERY_EVENTS) {
     if (event.once && save.seenEvents.includes(event.id)) continue
 
-    const cooldownMs = event.cooldownMs ?? (event.once ? 0 : 120000)
+    const cooldownMs = event.cooldownMs ?? (event.once ? 0 : 180000)
     if (cooldownMs > 0) {
       const lastAt = save.eventLastTriggeredAt[event.id]
       if (lastAt && Date.now() - lastAt < cooldownMs) continue

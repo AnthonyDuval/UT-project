@@ -24,6 +24,7 @@ export function isUnlocked(save, entryId) {
 
 function queueCodexDiscovery(save, entryId) {
   save._pendingCodexDiscoveries = save._pendingCodexDiscoveries || []
+  if (save._pendingCodexDiscoveries.some((e) => e.id === entryId)) return
   save._pendingCodexDiscoveries.push({
     id: entryId,
     name: CODEX_ENTRIES[entryId].name,

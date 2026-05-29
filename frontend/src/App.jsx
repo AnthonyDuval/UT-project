@@ -56,6 +56,15 @@ import {
   getIntroLines,
 } from './utils/uiProgression'
 
+import {
+  notificationKey,
+  resetNotificationCache,
+  seedNotifications,
+  shouldShowNotification,
+} from './utils/notifications'
+
+const MYSTERY_TICK_MS = 90000
+
 
 
 function buildPostBootLines() {
@@ -76,7 +85,7 @@ function buildPostBootLines() {
 
     '',
 
-    '→ Tapez help pour voir ce que vous pouvez faire.',
+    '→ Première action : tapez help',
 
     '──────────────────────────────────────────────────────────────',
 
@@ -136,17 +145,21 @@ function App() {
 
     if (!discoveries?.length) return
 
-    setTerminalLines((prev) => [
+    const lines = []
 
-      ...prev,
+    for (const entry of discoveries) {
 
-      '',
+      const key = notificationKey('codex', entry.id)
 
-      ...discoveries.map((entry) => `[CODEX] ${entry.name} — ajouté au registre.`),
+      if (!shouldShowNotification(key)) continue
 
-      '',
+      lines.push(`[CODEX] ${entry.name} — ajouté au registre.`)
 
-    ])
+    }
+
+    if (!lines.length) return
+
+    setTerminalLines((prev) => [...prev, '', ...lines, ''])
 
   }, [])
 
@@ -166,6 +179,30 @@ function App() {
 
 
 
+  const seedNotificationState = useCallback((state) => {
+
+    if (!state) return
+
+    const keys = []
+
+    for (const entry of state.codex?.entries || []) {
+
+      if (entry.discovered) keys.push(notificationKey('codex', entry.id))
+
+    }
+
+    for (const [id] of Object.entries(state.uiIntrosSeen || {})) {
+
+      keys.push(notificationKey('intro', id))
+
+    }
+
+    seedNotifications(keys)
+
+  }, [])
+
+
+
   const loadGame = useCallback(async () => {
 
     setLoading(true)
@@ -175,6 +212,8 @@ function App() {
       const state = await fetchGameState()
 
       setGameState(state)
+
+      seedNotificationState(state)
 
       if (state.gameOver) triggerGameOver(true)
 
@@ -194,7 +233,7 @@ function App() {
 
     }
 
-  }, [triggerGameOver])
+  }, [triggerGameOver, seedNotificationState])
 
 
 
@@ -215,6 +254,8 @@ function App() {
     setError(null)
 
     uiIntrosHandledRef.current = {}
+
+    resetNotificationCache()
 
     gameOverTriggeredRef.current = false
 
@@ -352,15 +393,19 @@ function App() {
 
     if (!newIntros.length) return
 
-    const lines = newIntros.flatMap((key) => getIntroLines(key))
+    const lines = []
 
-    uiIntrosHandledRef.current = {
+    for (const key of newIntros) {
 
-      ...uiIntrosHandledRef.current,
+      if (!shouldShowNotification(notificationKey('intro', key))) continue
 
-      ...Object.fromEntries(newIntros.map((k) => [k, true])),
+      lines.push(...getIntroLines(key))
+
+      uiIntrosHandledRef.current[key] = true
 
     }
+
+    if (!lines.length) return
 
     setTerminalLines((prev) => [...prev, '', ...lines, ''])
 
@@ -598,7 +643,7 @@ function App() {
 
       }
 
-    }, 45000)
+    }, MYSTERY_TICK_MS)
 
     return () => clearInterval(id)
 

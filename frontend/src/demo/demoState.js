@@ -55,7 +55,7 @@ export function createFreshDemoState() {
     missions: {
       signal_fantome: {
         status: 'active',
-        currentObjective: 'Lire le message laissé sur ce terminal',
+        currentObjective: 'Tapez help dans le terminal',
         completedObjectives: [],
         rewardsClaimed: false,
       },
@@ -90,6 +90,7 @@ export function createFreshDemoState() {
     activeUiEffect: null,
     fakeGameOverUntil: null,
     uiIntrosSeen: {},
+    tutorialFlags: {},
     codexDiscovered: {},
     codexNotified: {},
     eventLastTriggeredAt: {},
@@ -314,6 +315,7 @@ export function toPublicState(save) {
     flags: save.flags || {},
     read_files: save.read_files || [],
     uiIntrosSeen: save.uiIntrosSeen || {},
+    tutorialFlags: save.tutorialFlags || {},
     codex: buildCodexState(save),
   }
 }
@@ -343,13 +345,11 @@ export const DEMO_FILES = {
       '',
       'Opérateur,',
       '',
-      'Si tu lis ceci, quelqu\'un t\'a laissé accéder à ce terminal.',
-      'UltraTech surveille tout. Reste discret.',
+      'Quelqu\'un vous a laissé accéder à ce terminal.',
+      'UltraTech ne doit pas le savoir.',
       '',
-      'Commence par lister les documents :',
-      '>>> files <<<',
-      '',
-      'Puis ouvre le journal système quand il apparaîtra.',
+      'Commencez par taper :',
+      '>>> help <<<',
     ],
   },
   'system.log': {

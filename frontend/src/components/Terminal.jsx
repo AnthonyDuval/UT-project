@@ -3,7 +3,7 @@ import { getLineClass } from '../utils/lineStyle'
 import './Terminal.css'
 
 /**
- * Terminal immersif — coeur du jeu, coloration intelligente, CRT discret.
+ * Terminal immersif — caret natif, aligné après le texte tapé.
  */
 export default function Terminal({ lines, onCommand, disabled }) {
   const [input, setInput] = useState('')
@@ -52,22 +52,20 @@ export default function Terminal({ lines, onCommand, disabled }) {
 
       <form className="terminal__input-row" onSubmit={handleSubmit}>
         <span className="terminal__prompt">ghost@ultratech:~$</span>
-        <div className="terminal__input-wrap">
+        {disabled ? (
+          <span className="terminal__locked">▌ SESSION VERROUILLÉE</span>
+        ) : (
           <input
             ref={inputRef}
             className="terminal__input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={disabled}
-            placeholder={disabled ? '▌ SESSION VERROUILLÉE' : ''}
             autoComplete="off"
             spellCheck="false"
-            style={{ width: `${Math.max(input.length, 1)}ch` }}
+            aria-label="Commande terminal"
           />
-          {!disabled && <span className="terminal__cursor" aria-hidden="true">▌</span>}
-        </div>
-        {disabled && <span className="terminal__cursor terminal__cursor--wait" aria-hidden="true">▌</span>}
+        )}
       </form>
     </div>
   )

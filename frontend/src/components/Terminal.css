@@ -15,7 +15,6 @@
     inset 0 0 80px rgba(0, 0, 0, 0.6);
 }
 
-/* Effet CRT très discret */
 .terminal__crt {
   position: absolute;
   inset: 0;
@@ -54,12 +53,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Coloration intelligente */
-.line--command {
-  color: #fff;
-  font-weight: 600;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
-}
+.line--command { color: #fff; font-weight: 600; text-shadow: 0 0 8px rgba(255, 255, 255, 0.15); }
 .line--banner { color: var(--red-primary); font-weight: 600; }
 .line--error { color: var(--red-glow); }
 .line--trace { color: #ff6b6b; }
@@ -86,24 +80,8 @@
   flex-shrink: 0;
   position: relative;
   z-index: 2;
-  gap: 0.6rem;
+  gap: 0.5rem;
   overflow: hidden;
-  text-align: left;
-}
-
-.terminal__input-wrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-}
-
-.terminal__input-wrap::-webkit-scrollbar {
-  display: none;
 }
 
 .terminal__prompt {
@@ -117,10 +95,8 @@
 }
 
 .terminal__input {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 1ch;
-  max-width: 100%;
+  flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   outline: none;
@@ -128,41 +104,21 @@
   font-family: var(--font-mono);
   font-size: var(--fs-terminal);
   text-align: left;
-  caret-color: transparent;
+  caret-color: var(--red-glow);
   padding: 0;
   margin: 0;
 }
 
-.terminal__input::placeholder {
+.terminal__locked {
   color: var(--text-dim);
-  opacity: 0.45;
-  font-size: var(--fs-sm);
-}
-
-.terminal__input:disabled {
-  flex: 1;
-  width: auto !important;
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.terminal__cursor {
-  color: var(--red-glow);
-  font-size: var(--fs-terminal);
-  font-weight: 700;
-  line-height: 1;
-  animation: cursor-blink 0.65s step-end infinite;
-  text-shadow: 0 0 8px rgba(255, 45, 61, 0.8);
-  flex-shrink: 0;
-  margin-left: -1px;
-}
-
-.terminal__cursor--wait {
   opacity: 0.5;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  animation: cursor-blink 0.65s step-end infinite;
 }
 
 @keyframes cursor-blink {
-  50% { opacity: 0; }
+  50% { opacity: 0.3; }
 }
 
 @media (max-width: 900px) {
@@ -172,5 +128,17 @@
   }
   .terminal__prompt {
     font-size: var(--fs-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal__line {
+    animation: none;
+  }
+  .terminal__crt {
+    opacity: 0.25;
+  }
+  .terminal__locked {
+    animation: none;
   }
 }

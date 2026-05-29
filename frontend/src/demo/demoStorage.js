@@ -37,6 +37,7 @@ function migrateSave(save) {
   save.codexDiscovered = save.codexDiscovered || {}
   save.codexNotified = save.codexNotified || {}
   save.eventLastTriggeredAt = save.eventLastTriggeredAt || {}
+  save.tutorialFlags = save.tutorialFlags || {}
   for (const id of Object.keys(save.codexDiscovered)) {
     save.codexNotified[id] = true
   }

@@ -7,6 +7,22 @@
 
 ---
 
+## Versionning & archives
+
+Ne **jamais** committer ni inclure dans un zip de distribution :
+
+- `node_modules/` · `frontend/node_modules/`
+- `frontend/dist/`
+- `backend/venv/` · `__pycache__/` · `*.pyc`
+
+Ces chemins sont listés dans [`.gitignore`](.gitignore). Pour créer une archive propre :
+
+```powershell
+git archive -o UT-Project.zip HEAD
+```
+
+---
+
 ## Jouer en ligne (Netlify)
 
 **Lien alpha :** [https://ut-project.netifly.app](https://ut-project.netifly.app)
@@ -15,16 +31,15 @@
 
 | Bouton | Action |
 |--------|--------|
-| **Entrer dans la démo** | Reprend la sauvegarde locale existante |
-| **Nouvelle partie** | Mission 1 — Signal Fantôme, TRACE 0, terminal local |
-| **Démo avancée** | Showcase : SATLINK_03, Black Market, Mission 2 |
-| **Comment jouer ?** | Guide rapide (help, fichiers, TRACE, market) |
+| **OUVRIR LA BÊTA TEST** | Reprend ou démarre la session locale |
+| **Réinitialiser la sauvegarde** | Nouvelle partie — Mission 1 |
 
-### En jeu (mode démo)
+Le jeu guide le débutant pas à pas dans le terminal (`help` → `files` → `open note.txt` → `scan` → …).
 
-- **Reset Demo** — Recommence depuis la Mission 1 (efface la sauvegarde locale)
-- **Démo Avancée** — Charge l'état showcase
-- **Signaler un bug / Donner un avis** — Feedback (mailto ou liens configurables)
+### En jeu
+
+- **Reset** — Recommence depuis la Mission 1
+- **? Aide** — Guide optionnel (le tutoriel principal se fait en jouant)
 
 ---
 

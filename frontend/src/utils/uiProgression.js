@@ -83,7 +83,8 @@ export function computeUiProgression(state) {
     || state.read_files?.includes('toolkit_manifest.txt')
   const codexReady = (state.codex?.discoveredCount ?? 0) > 0
   const chatReady = m1Done || state.network?.connected
-  const journalReady = m1Progress > 0 || m1Done
+  const journalReady = m1Done
+  const showApps = m1Done || state.marketUnlocked || toolkitReady
 
   return {
     earlyGame: isEarlyGame(state),
@@ -98,7 +99,7 @@ export function computeUiProgression(state) {
     showEvents: (state.events_log?.length ?? 0) > 2 || (state.traceLevel ?? 0) >= 30,
     showJournal: journalReady,
     showOperator: scanDone || state.network?.connected,
-    showApps: journalReady || state.marketUnlocked || toolkitReady,
+    showApps: showApps,
     showMissionDetail: m1Progress > 0,
     unlockedApps: [
       'terminal',

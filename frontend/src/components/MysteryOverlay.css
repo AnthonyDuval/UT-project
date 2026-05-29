@@ -142,3 +142,29 @@
 @keyframes mystery-scan-pulse {
   50% { opacity: 0.22; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .mystery-overlay,
+  .mystery-overlay--glitch,
+  .mystery-overlay--glitch::after,
+  .mystery-overlay--scanlines,
+  .mystery-fake-death,
+  .mystery-fake-death span:first-child,
+  .mystery-notify {
+    animation: none !important;
+  }
+
+  .mystery-overlay--scanlines {
+    opacity: 0.12;
+  }
+}
+
+@media (max-width: 900px) {
+  .mystery-overlay--glitch::after {
+    animation: none;
+  }
+
+  .mystery-fake-death span:first-child {
+    animation: none;
+  }
+}

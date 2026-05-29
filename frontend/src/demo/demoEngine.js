@@ -44,6 +44,29 @@ const COMMAND_DESC = {
   market: 'Informations sur le marché clandestin.',
 }
 
+function trackTutorial(save, cmd, args) {
+  save.tutorialFlags = save.tutorialFlags || {}
+  if (cmd === 'help') save.tutorialFlags.help = true
+  if (cmd === 'files' || cmd === 'ls') save.tutorialFlags.files = true
+  if (cmd === 'open' && args[0]?.toLowerCase() === 'note.txt') save.tutorialFlags.open_note = true
+  if (cmd === 'scan') save.tutorialFlags.scan = true
+  if (cmd === 'connect') save.tutorialFlags.connect = true
+
+  const m1 = save.missions?.signal_fantome
+  if (m1?.status === 'active') {
+    const read = save.read_files || []
+    const flags = save.flags || {}
+    const t = save.tutorialFlags
+    if (!t.help) m1.currentObjective = 'Tapez help'
+    else if (!t.files) m1.currentObjective = 'Tapez files'
+    else if (!read.includes('note.txt')) m1.currentObjective = 'Tapez open note.txt'
+    else if (!read.includes('system.log')) m1.currentObjective = 'Tapez open system.log'
+    else if (!flags.scan_completed) m1.currentObjective = 'Tapez scan'
+    else if (!read.includes('ghost_relay.log')) m1.currentObjective = 'Tapez open ghost_relay.log'
+    else if (!flags.mission_1_complete) m1.currentObjective = 'Tapez connect relay_ghost'
+  }
+}
+
 function finishCommand(save, output, extras = {}) {
   stampUiEffectStart(save)
   saveDemoSave(save)
@@ -380,6 +403,7 @@ export function executeDemoCommand(command) {
   if (!cmd) return { output: [], clear_terminal: false, state: toPublicState(save) }
 
   save.lastCommand = command.trim()
+  trackTutorial(save, cmd, args)
 
   let uiEffect = null
   let autoLines = []

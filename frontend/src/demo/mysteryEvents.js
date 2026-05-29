@@ -6,8 +6,9 @@ export const MYSTERY_EVENTS = [
   {
     id: 'ambient_watch',
     once: true,
-    chance: 0.12,
-    conditions: { type: 'tick', minSessionSec: 90, maxTrace: 40 },
+    chance: 0.08,
+    cooldownMs: 300000,
+    conditions: { type: 'tick', minSessionSec: 120, maxTrace: 40 },
     effects: {
       log: '[SYS] Processus inconnu consulté votre session.',
       uiEffect: { type: 'scanlines', duration: 2500 },
@@ -100,8 +101,8 @@ export const MYSTERY_EVENTS = [
     id: 'mission1_idle_nova',
     once: false,
     chance: 0.08,
-    cooldownMs: 180000,
-    conditions: { type: 'tick', minSessionSec: 120, mission: 'signal_fantome', missionStatus: 'active' },
+    cooldownMs: 300000,
+    conditions: { type: 'tick', minSessionSec: 180, mission: 'signal_fantome', missionStatus: 'active' },
     effects: {
       autoLines: ['[???] ...entends-tu le signal sous le bruit ?'],
       uiEffect: { type: 'scanlines', duration: 2000 },
@@ -111,8 +112,8 @@ export const MYSTERY_EVENTS = [
     id: 'random_terminal_echo',
     once: false,
     chance: 0.06,
-    cooldownMs: 240000,
-    conditions: { type: 'tick', minSessionSec: 180, minCommands: 8 },
+    cooldownMs: 360000,
+    conditions: { type: 'tick', minSessionSec: 240, minCommands: 12 },
     effects: {
       autoLines: ['> ls', '[AUTO] Répertoire courant : /home/ghost_demo/'],
       log: '[EVENT] Entrée terminal non initiée.',
