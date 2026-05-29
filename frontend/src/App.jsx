@@ -7,6 +7,7 @@ import {
   getAuthToken,
   isDemoMode,
   logoutUser,
+  loadAdvancedDemo,
   resetGame,
   sendCommand,
 } from './api/client'
@@ -244,27 +245,50 @@ function App() {
     handleCommand(`open ${filename}`)
   }
 
+  const applyGameReload = useCallback((result, extraLine) => {
+    setGameState(result.state)
+    setTerminalLines([
+      ...buildPostBootLines(authUser?.username || 'ghost_demo', demoMode || isDemoMode()),
+      extraLine || result.message || '[SYS] Sauvegarde rechargée.',
+      '',
+    ])
+    setError(null)
+    setGameOverActive(false)
+    setGameOverSkipToFinal(false)
+    gameOverTriggeredRef.current = false
+    setOpenApps(['terminal'])
+    bootDoneRef.current = true
+    setBooting(false)
+  }, [authUser, demoMode])
+
   const handleReset = async (skipConfirm = false) => {
-    if (!skipConfirm && !window.confirm('Réinitialiser la sauvegarde ? Toute progression sera perdue.')) {
+    const inDemo = demoMode || isDemoMode()
+    const confirmMsg = inDemo
+      ? 'Recommencer la démo depuis la Mission 1 ? Toute progression sera perdue.'
+      : 'Réinitialiser la sauvegarde ? Toute progression sera perdue.'
+    if (!skipConfirm && !window.confirm(confirmMsg)) {
       return
     }
 
     try {
       const result = await resetGame()
-      setGameState(result.state)
-      setTerminalLines([
-        ...buildPostBootLines(authUser?.username || 'operateur', demoMode),
-        demoMode ? '[DEMO] Sauvegarde locale réinitialisée.' : '[SYS] Sauvegarde réinitialisée.',
-        '',
-      ])
-      setError(null)
-      setGameOverActive(false)
-      setGameOverSkipToFinal(false)
-      gameOverTriggeredRef.current = false
-      setOpenApps(['terminal'])
+      applyGameReload(result, inDemo ? result.message : '[SYS] Sauvegarde réinitialisée.')
     } catch (err) {
       if (err.code === 'UNAUTHORIZED') handleLogout()
       else setError(`Erreur reset : ${err.message}`)
+    }
+  }
+
+  const handleLoadAdvancedDemo = async (skipConfirm = false) => {
+    if (!skipConfirm && !window.confirm('Charger la démo avancée ? Votre progression actuelle sera remplacée.')) {
+      return
+    }
+
+    try {
+      const result = await loadAdvancedDemo()
+      applyGameReload(result, result.message)
+    } catch (err) {
+      setError(`Erreur démo avancée : ${err.message}`)
     }
   }
 
@@ -329,6 +353,7 @@ function App() {
       <TopBar
         state={gameState}
         onReset={handleReset}
+        onLoadAdvancedDemo={handleLoadAdvancedDemo}
         onLogout={handleLogout}
         username={authUser?.username}
         demoMode={inDemo}

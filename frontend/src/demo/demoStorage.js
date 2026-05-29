@@ -2,9 +2,18 @@
  * Persistance localStorage pour le mode démo.
  */
 
-import { createInitialDemoState } from './demoState'
+import { createAdvancedDemoState, createFreshDemoState } from './demoState'
 
 const DEMO_SAVE_KEY = 'ut_demo_save'
+const DEMO_CHAT_KEY = 'ut_demo_chat'
+
+export const DEMO_STORAGE_KEYS = [DEMO_SAVE_KEY, DEMO_CHAT_KEY]
+
+export function clearAllDemoStorage() {
+  for (const key of DEMO_STORAGE_KEYS) {
+    localStorage.removeItem(key)
+  }
+}
 
 export function loadDemoSave() {
   try {
@@ -15,7 +24,7 @@ export function loadDemoSave() {
   } catch {
     /* reset on corruption */
   }
-  const initial = createInitialDemoState()
+  const initial = createFreshDemoState()
   saveDemoSave(initial)
   return initial
 }
@@ -24,24 +33,36 @@ export function saveDemoSave(save) {
   localStorage.setItem(DEMO_SAVE_KEY, JSON.stringify(save))
 }
 
+/** Reset = nouvelle partie Mission 1 (état frais). */
 export function resetDemoSave() {
-  const initial = createInitialDemoState()
+  clearAllDemoStorage()
+  const initial = createFreshDemoState()
   saveDemoSave(initial)
   return initial
 }
 
+/** Charge la démo avancée (showcase). */
+export function loadAdvancedDemoSave() {
+  clearAllDemoStorage()
+  const advanced = createAdvancedDemoState()
+  saveDemoSave(advanced)
+  return advanced
+}
+
 export function loadDemoChat() {
   try {
-    const raw = localStorage.getItem('ut_demo_chat')
+    const raw = localStorage.getItem(DEMO_CHAT_KEY)
     if (raw) return JSON.parse(raw)
   } catch { /* ignore */ }
   return [
-    { username: 'nova_shadow', timestamp: new Date(Date.now() - 3600000).toISOString(), message: 'Quelqu\'un sur SATLINK_03 ?' },
-    { username: 'relay_ghost', timestamp: new Date(Date.now() - 1800000).toISOString(), message: 'UltraTech renforce la surveillance. Restez discrets.' },
     { username: 'sys', timestamp: new Date(Date.now() - 600000).toISOString(), message: '[DEMO] Canal local — messages non synchronisés.' },
   ]
 }
 
 export function saveDemoChat(messages) {
-  localStorage.setItem('ut_demo_chat', JSON.stringify(messages.slice(-100)))
+  localStorage.setItem(DEMO_CHAT_KEY, JSON.stringify(messages.slice(-100)))
+}
+
+export function resetDemoChat() {
+  localStorage.removeItem(DEMO_CHAT_KEY)
 }

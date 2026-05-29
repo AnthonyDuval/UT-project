@@ -1,8 +1,93 @@
 /**
- * État initial du mode démo — sauvegarde fictive riche et jouable.
+ * États démo — partie fraîche (Mission 1) vs démo avancée (showcase).
  */
 
-export function createInitialDemoState() {
+const MISSION_DEFS = {
+  signal_fantome: {
+    id: 'signal_fantome',
+    title: 'Signal Fantôme',
+    subtitle: 'Mission 1',
+    description: 'Un relais non identifié émet un signal. Localisez-le et établissez contact.',
+    primaryNode: 'relay_ghost',
+    objectiveDefs: [
+      { id: 'read_files', label: 'Explorer les fichiers du terminal' },
+      { id: 'scan_network', label: 'Cartographier le réseau (scan)' },
+      { id: 'connect_relay', label: 'Connectez-vous à relay_ghost' },
+    ],
+    rewardsPreview: {
+      bittek: 50,
+      reputation: 1,
+      summary: 'Contact N0VA · BLACK MARKET · accès SATLINK_03',
+    },
+  },
+  satlink_intrusion: {
+    id: 'satlink_intrusion',
+    title: 'Intrusion Orbitale',
+    subtitle: 'Mission 2',
+    description: 'Pénétrez le relais orbital SATLINK_03 et cartographiez le réseau UltraTech.',
+    primaryNode: 'satlink_03',
+    objectiveDefs: [
+      { id: 'connect_satlink', label: 'Connectez-vous à satlink_03' },
+      { id: 'use_probe', label: 'Utilisez probe sur le segment orbital' },
+      { id: 'discover_nodes', label: 'Découvrir morgue_server et blackvault' },
+      { id: 'open_satellite_file', label: 'Ouvrir un fichier satellite' },
+      { id: 'nova_fragment', label: 'Récupérer un fragment N0VA' },
+    ],
+    rewardsPreview: {
+      bittek: 75,
+      reputation: 1,
+      summary: 'Commande bypass · BLACK MARKET avancé',
+    },
+  },
+}
+
+/** Nouvelle partie démo — Mission 1, terminal local, TRACE à 0. */
+export function createFreshDemoState() {
+  return {
+    player: { username: 'ghost_demo', bittek: 0, reputation: 0 },
+    unlocked_commands: ['help', 'clear', 'ls', 'open', 'status', 'sync'],
+    read_files: [],
+    flags: {
+      scan_completed: false,
+      mission_1_complete: false,
+      probe_morgue: false,
+      probe_used_satlink: false,
+    },
+    missions: {
+      signal_fantome: {
+        status: 'active',
+        currentObjective: 'Explorer les fichiers du terminal',
+        completedObjectives: [],
+        rewardsClaimed: false,
+      },
+      satlink_intrusion: {
+        status: 'locked',
+        currentObjective: null,
+        completedObjectives: [],
+        rewardsClaimed: false,
+      },
+    },
+    events_log: ['[DEMO] Session locale — aucune connexion serveur'],
+    traceLevel: 0,
+    trace_alerts_triggered: [],
+    gameOver: false,
+    marketUnlocked: false,
+    marketAdvancedUnlocked: false,
+    inventory: [],
+    activeEffects: [],
+    traceReductionPassive: 0,
+    currentNode: 'local',
+    discoveredNodes: ['local'],
+    hackedNodes: [],
+    programInventory: [{ programId: 'trace_wiper', quantity: 1 }],
+    installedPrograms: [],
+    lootedProgramNodes: [],
+    seenEvents: [],
+  }
+}
+
+/** Démo avancée — showcase rapide des fonctionnalités. */
+export function createAdvancedDemoState() {
   return {
     player: { username: 'ghost_demo', bittek: 250, reputation: 3 },
     unlocked_commands: [
@@ -32,7 +117,7 @@ export function createInitialDemoState() {
       },
     },
     events_log: [
-      '[DEMO] Session locale — aucune connexion serveur',
+      '[DEMO] Démo avancée — toutes les fonctionnalités débloquées',
       '[NET] Connecté à SATLINK_03',
       '[MISSION] Signal Fantôme — TERMINÉE',
       '[SCAN] Relais RELAY_GHOST localisé.',
@@ -61,68 +146,53 @@ export function createInitialDemoState() {
   }
 }
 
-export function buildMissionJournal(save) {
+function buildMissionListItem(missionId, save) {
+  const def = MISSION_DEFS[missionId]
+  const m = save.missions[missionId] || {}
+  const objectives = def.objectiveDefs.map((o) => ({
+    ...o,
+    done: (m.completedObjectives || []).includes(o.id),
+  }))
+  const done = objectives.filter((o) => o.done).length
   return {
-    currentMission: {
-      id: 'satlink_intrusion',
-      title: 'Intrusion Orbitale',
-      subtitle: 'Mission 2',
-      description: 'Pénétrez le relais orbital SATLINK_03 et cartographiez le réseau UltraTech.',
-      primaryNode: 'satlink_03',
-      status: 'active',
-      currentObjective: save.missions.satlink_intrusion.currentObjective,
-      objectives: [
-        { id: 'connect_satlink', label: 'Connectez-vous à satlink_03', done: true },
-        { id: 'use_probe', label: 'Utilisez probe sur le segment orbital', done: false },
-        { id: 'discover_nodes', label: 'Découvrir morgue_server et blackvault', done: true },
-        { id: 'open_satellite_file', label: 'Ouvrir un fichier satellite', done: true },
-        { id: 'nova_fragment', label: 'Récupérer un fragment N0VA', done: false },
-      ],
-      progress: '3/5',
-      progressRatio: 0.6,
-      rewardsPreview: {
-        bittek: 75,
-        reputation: 1,
-        summary: 'Commande bypass · BLACK MARKET avancé',
-      },
-      rewardsClaimed: false,
-    },
-    currentMissionId: 'satlink_intrusion',
-    missions: [
-      {
-        id: 'signal_fantome',
-        title: 'Signal Fantôme',
-        subtitle: 'Mission 1',
-        status: 'completed',
-        progress: '3/3',
-        objectives: [
-          { id: 'read_files', label: 'Explorer les fichiers', done: true },
-          { id: 'scan_network', label: 'Cartographier le réseau', done: true },
-          { id: 'connect_relay', label: 'Connectez-vous à relay_ghost', done: true },
-        ],
-      },
-      {
-        id: 'satlink_intrusion',
-        title: 'Intrusion Orbitale',
-        subtitle: 'Mission 2',
-        status: 'active',
-        currentObjective: save.missions.satlink_intrusion.currentObjective,
-        progress: '3/5',
-        progressRatio: 0.6,
-        objectives: [
-          { id: 'connect_satlink', label: 'Connectez-vous à satlink_03', done: true },
-          { id: 'use_probe', label: 'Utilisez probe', done: false },
-          { id: 'discover_nodes', label: 'Découvrir morgue_server et blackvault', done: true },
-          { id: 'open_satellite_file', label: 'Ouvrir un fichier satellite', done: true },
-          { id: 'nova_fragment', label: 'Récupérer un fragment N0VA', done: false },
-        ],
-        rewardsPreview: { bittek: 75, reputation: 1, summary: 'bypass · BLACK MARKET avancé' },
-      },
-    ],
-    completedMissions: [
-      { id: 'signal_fantome', title: 'Signal Fantôme', status: 'completed', progress: '3/3' },
-    ],
-    seenEvents: save.seenEvents,
+    id: missionId,
+    title: def.title,
+    subtitle: def.subtitle,
+    description: def.description,
+    primaryNode: def.primaryNode,
+    status: m.status,
+    currentObjective: m.currentObjective,
+    progress: `${done}/${objectives.length}`,
+    progressRatio: objectives.length ? done / objectives.length : 0,
+    objectives,
+    rewardsPreview: def.rewardsPreview,
+    rewardsClaimed: m.rewardsClaimed ?? false,
+  }
+}
+
+export function buildMissionJournal(save) {
+  const m1 = save.missions.signal_fantome
+  const m2 = save.missions.satlink_intrusion
+  const missions = [
+    buildMissionListItem('signal_fantome', save),
+    buildMissionListItem('satlink_intrusion', save),
+  ]
+  const completedMissions = missions.filter((m) => m.status === 'completed')
+
+  let currentMissionId = null
+  if (m2?.status === 'active') currentMissionId = 'satlink_intrusion'
+  else if (m1?.status === 'active') currentMissionId = 'signal_fantome'
+
+  const currentMission = currentMissionId
+    ? missions.find((m) => m.id === currentMissionId)
+    : null
+
+  return {
+    currentMission,
+    currentMissionId,
+    missions,
+    completedMissions,
+    seenEvents: save.seenEvents || [],
   }
 }
 
@@ -197,7 +267,6 @@ export function buildProgramToolkit(save) {
   }
 }
 
-/** Convertit la sauvegarde interne en état public (format API). */
 export function toPublicState(save) {
   const visible = getVisibleFiles(save)
   return {
@@ -222,9 +291,8 @@ export function toPublicState(save) {
 export function getVisibleFiles(save) {
   const visible = []
   const node = save.currentNode
-  const files = DEMO_FILES
 
-  for (const [name, meta] of Object.entries(files)) {
+  for (const [name, meta] of Object.entries(DEMO_FILES)) {
     const fileNode = meta.node || 'local'
     if (fileNode !== node) continue
     if (meta.visible_from_start) visible.push(name)
@@ -245,7 +313,19 @@ export const DEMO_FILES = {
       '',
       'Bienvenue, opérateur ghost_demo.',
       'Cette session fonctionne sans serveur backend.',
-      'Explorez le terminal, les nœuds et le BLACK MARKET.',
+      'Commencez par lire system.log — des anomalies y sont signalées.',
+    ],
+  },
+  'system.log': {
+    node: 'local', visible_from_start: true,
+    description: 'Journal système',
+    content: [
+      '[2026-05-28 02:14:33] WARN — Relais externe non identifié détecté',
+      '[2026-05-28 02:14:34] WARN — Signature : RELAY_GHOST',
+      '[2026-05-28 02:14:36] INFO — Analyse réseau requise avant toute connexion',
+      '',
+      '...pour cartographier les relais fantômes, lancer :',
+      '>>> SCAN <<<',
     ],
   },
   'toolkit_manifest.txt': {
@@ -254,6 +334,17 @@ export const DEMO_FILES = {
     content: [
       'BOÎTE À OUTILS — run / install / uninstall',
       'ls /programs · ls /inventory',
+    ],
+  },
+  'ghost_relay.log': {
+    node: 'local', unlock_key: 'scan_completed',
+    description: 'Log du relais fantôme',
+    content: [
+      '[SCAN RESULT] Relais RELAY_GHOST localisé',
+      '[SCAN RESULT] Statut : EN ATTENTE DE CONNEXION',
+      '',
+      'Pour établir le lien :',
+      '>>> connect relay_ghost <<<',
     ],
   },
   'nova_contact.dat': {
@@ -283,4 +374,4 @@ export const DEMO_FILES = {
   },
 }
 
-export { NODE_META, PROGRAMS }
+export { NODE_META, PROGRAMS, MISSION_DEFS }

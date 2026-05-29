@@ -4,14 +4,14 @@ import './TopBar.css'
 /**
  * Barre supérieure — stats joueur, mission active et jauge de traque.
  */
-export default function TopBar({ state, onReset, onLogout, username, demoMode }) {
+export default function TopBar({ state, onReset, onLoadAdvancedDemo, onLogout, username, demoMode }) {
   const player = state?.player
-  const mission = state?.missions?.signal_fantome
+  const currentMission = state?.missionJournal?.currentMission
   const traceLevel = state?.traceLevel ?? 0
 
-  const missionLabel = mission?.completed
-    ? 'Signal Fantôme ✓'
-    : 'Signal Fantôme'
+  const missionLabel = currentMission
+    ? `${currentMission.title}${currentMission.status === 'completed' ? ' ✓' : ''}`
+    : '—'
 
   return (
     <header className="topbar">
@@ -37,7 +37,7 @@ export default function TopBar({ state, onReset, onLogout, username, demoMode })
           <span className="topbar__stat-label">Mission</span>
           <span
             className={`topbar__stat-value ${
-              mission?.completed ? 'topbar__stat-value--done' : ''
+              currentMission?.status === 'completed' ? 'topbar__stat-value--done' : ''
             }`}
           >
             {missionLabel}
@@ -54,6 +54,15 @@ export default function TopBar({ state, onReset, onLogout, username, demoMode })
         {!demoMode && (
           <button className="btn-logout" onClick={onLogout} title="Déconnexion">
             ⏻ Déconnexion
+          </button>
+        )}
+        {demoMode && (
+          <button
+            className="btn-advanced-demo"
+            onClick={onLoadAdvancedDemo}
+            title="Charger la démo avancée"
+          >
+            ⚡ Démo Avancée
           </button>
         )}
         <button className="btn-reset" onClick={onReset} title="Reset sauvegarde">

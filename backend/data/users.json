@@ -9,6 +9,11 @@
       "username": "vander",
       "password_hash": "9e64f73b38d07b734219e24c5e6b2da6$3bd1b70e0d47f1379d22dda5ec1bc40ceb0a1301a0a1065501c1b913c7bfbd24",
       "created_at": "2026-05-29T06:47:31.013369+00:00"
+    },
+    "vander5": {
+      "username": "vander5",
+      "password_hash": "973df4520ed3fbbc848064e56c444d11$3c830cb686939b783c2c7d01867dcbcfe041d918d12546bedf3836033dcc0092",
+      "created_at": "2026-05-29T06:50:54.751282+00:00"
     }
   }
 }

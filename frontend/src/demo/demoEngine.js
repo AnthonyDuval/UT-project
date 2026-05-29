@@ -9,7 +9,7 @@ import {
   getVisibleFiles,
   toPublicState,
 } from './demoState'
-import { loadDemoSave, resetDemoSave, saveDemoSave } from './demoStorage'
+import { loadDemoSave, loadAdvancedDemoSave, resetDemoSave, saveDemoSave } from './demoStorage'
 
 function addTrace(save, amount) {
   if (amount <= 0 || save.gameOver) return
@@ -110,6 +110,16 @@ function cmdOpen(save, args) {
       if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
     }
     lines.push('', '[SYS] Boîte à outils : run, install, uninstall')
+  }
+  if (name === 'system.log' && !save.unlocked_commands.includes('scan')) {
+    save.unlocked_commands.push('scan')
+    lines.push('', '[SYS] Fragment de commande récupéré : scan')
+  }
+  if (name === 'ghost_relay.log' && !save.unlocked_commands.includes('connect')) {
+    for (const c of ['connect', 'disconnect']) {
+      if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
+    }
+    lines.push('', '[SYS] Protocole de connexion débloqué : connect [cible]')
   }
   return lines
 }
@@ -315,5 +325,16 @@ export function getDemoState() {
 
 export function resetDemoGame() {
   const save = resetDemoSave()
-  return { message: 'Sauvegarde demo réinitialisée.', state: toPublicState(save) }
+  return {
+    message: '[DEMO] Nouvelle partie — Mission 1 : Signal Fantôme.',
+    state: toPublicState(save),
+  }
+}
+
+export function loadAdvancedDemoGame() {
+  const save = loadAdvancedDemoSave()
+  return {
+    message: '[DEMO] Démo avancée chargée — SATLINK_03, BLACK MARKET, missions débloquées.',
+    state: toPublicState(save),
+  }
 }
