@@ -4,7 +4,7 @@ import './TopBar.css'
 /**
  * Barre supérieure — stats joueur, mission active et jauge de traque.
  */
-export default function TopBar({ state, onReset, onLogout, username }) {
+export default function TopBar({ state, onReset, onLogout, username, demoMode }) {
   const player = state?.player
   const mission = state?.missions?.signal_fantome
   const traceLevel = state?.traceLevel ?? 0
@@ -49,13 +49,15 @@ export default function TopBar({ state, onReset, onLogout, username }) {
 
       <div className="topbar__actions">
         {username && (
-          <span className="topbar__user">{username}</span>
+          <span className="topbar__user">{username}{demoMode ? ' [demo]' : ''}</span>
         )}
-        <button className="btn-logout" onClick={onLogout} title="Déconnexion">
-          ⏻ Déconnexion
-        </button>
+        {!demoMode && (
+          <button className="btn-logout" onClick={onLogout} title="Déconnexion">
+            ⏻ Déconnexion
+          </button>
+        )}
         <button className="btn-reset" onClick={onReset} title="Reset sauvegarde">
-          ↺ Reset Save
+          ↺ {demoMode ? 'Reset Demo' : 'Reset Save'}
         </button>
       </div>
     </header>

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  checkHealth,
+  detectApi,
   fetchGameState,
   fetchMe,
   getAuthToken,
+  isDemoMode,
   logoutUser,
   resetGame,
   sendCommand,
@@ -19,28 +20,37 @@ import MissionJournal from './components/MissionJournal'
 import ProgramToolkit from './components/ProgramToolkit'
 import GlobalChat from './components/GlobalChat'
 import AuthScreen from './components/AuthScreen'
+import DemoBanner from './components/DemoBanner'
 import './App.css'
 
-function buildPostBootLines(username) {
-  return [
+function buildPostBootLines(username, demo = false) {
+  const lines = [
     '╔══════════════════════════════════════════════════════════════╗',
     '║       ULTRATECH ONLINE — TERMINAL OPÉRATEUR v3.7             ║',
     '╚══════════════════════════════════════════════════════════════╝',
     '',
     `[SYS] Session établie — opérateur : ${username}`,
+  ]
+  if (demo) {
+    lines.push('[DEMO] Mode offline — sauvegarde locale active.')
+    lines.push('[DEMO] Aucune connexion serveur — explorez librement.')
+  }
+  lines.push(
     '[SYS] Surveillance UltraTech : ACTIVE',
     '[WARN] Toute action anormale augmentera votre TRACE',
     '',
     '→ Tapez help pour lister les commandes de base.',
     '→ Consultez les fichiers dans le panneau gauche.',
     '──────────────────────────────────────────────────────────────',
-  ]
+  )
+  return lines
 }
 
 function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [authUser, setAuthUser] = useState(null)
   const [authChecking, setAuthChecking] = useState(true)
+  const [demoMode, setDemoMode] = useState(false)
 
   const [gameState, setGameState] = useState(null)
   const [terminalLines, setTerminalLines] = useState([])
@@ -121,8 +131,21 @@ function App() {
   }, [loadGame])
 
   useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
+    async function init() {
+      setAuthChecking(true)
+      const offline = await detectApi()
+      if (offline) {
+        setDemoMode(true)
+        setAuthUser({ username: 'ghost_demo' })
+        setAuthenticated(true)
+        await loadGame('ghost_demo')
+        setAuthChecking(false)
+        return
+      }
+      await checkAuth()
+    }
+    init()
+  }, [checkAuth, loadGame])
 
   const handleAuthenticated = useCallback(async (result) => {
     setAuthUser({ username: result.username })
@@ -134,8 +157,11 @@ function App() {
     if (bootDoneRef.current) return
     bootDoneRef.current = true
     setBooting(false)
-    setTerminalLines(buildPostBootLines(authUser?.username || gameState?.player?.username || 'operateur'))
-  }, [authUser, gameState])
+    setTerminalLines(buildPostBootLines(
+      authUser?.username || gameState?.player?.username || 'operateur',
+      demoMode || isDemoMode(),
+    ))
+  }, [authUser, gameState, demoMode])
 
   const appendTerminalLine = useCallback((line) => {
     setTerminalLines((prev) => [...prev, line])
@@ -209,8 +235,8 @@ function App() {
       const result = await resetGame()
       setGameState(result.state)
       setTerminalLines([
-        ...buildPostBootLines(authUser?.username || 'operateur'),
-        '[SYS] Sauvegarde réinitialisée.',
+        ...buildPostBootLines(authUser?.username || 'operateur', demoMode),
+        demoMode ? '[DEMO] Sauvegarde locale réinitialisée.' : '[SYS] Sauvegarde réinitialisée.',
         '',
       ])
       setError(null)
@@ -240,7 +266,7 @@ function App() {
         <div className="loader">
           <span className="loader__text">ULTRATECH ONLINE</span>
           <span className="loader__bar" />
-          <span className="loader__sub">Vérification des identifiants...</span>
+          <span className="loader__sub">Initialisation du terminal...</span>
         </div>
       </div>
     )
@@ -274,7 +300,15 @@ function App() {
         <div className="app__vignette" />
       </div>
 
-      <TopBar state={gameState} onReset={handleReset} onLogout={handleLogout} username={authUser?.username} />
+      {demoMode && <DemoBanner />}
+
+      <TopBar
+        state={gameState}
+        onReset={handleReset}
+        onLogout={handleLogout}
+        username={authUser?.username}
+        demoMode={demoMode}
+      />
 
       <main className="desktop">
         <aside className="sidebar">
@@ -316,7 +350,7 @@ function App() {
               onClose={() => handleCloseApp('chat')}
               variant="secondary"
             >
-              <GlobalChat username={authUser?.username} disabled={isLocked} />
+              <GlobalChat username={authUser?.username} disabled={isLocked} demoMode={demoMode} />
             </AppWindow>
 
             <AppWindow

@@ -1,7 +1,28 @@
-/** Client API REST — communication avec le backend FastAPI multijoueur */
+/** Client API REST — backend FastAPI ou mode démo offline local */
 
-const API_BASE = 'http://127.0.0.1:8000/api'
+import { executeDemoCommand, getDemoState, resetDemoGame } from '../demo/demoEngine'
+import { buyDemoItem, getDemoInventory, getDemoMarket, useDemoItem } from '../demo/demoMarket'
+import { loadDemoChat, saveDemoChat } from '../demo/demoStorage'
+
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://127.0.0.1:8000/api'
 const TOKEN_KEY = 'ut_auth_token'
+
+let DEMO_MODE = false
+
+export function isDemoMode() {
+  return DEMO_MODE
+}
+
+/** Teste /api/health — active DEMO_MODE si backend inaccessible. */
+export async function detectApi() {
+  const ok = await checkHealth()
+  DEMO_MODE = !ok
+  return DEMO_MODE
+}
+
+function demoDelay(result) {
+  return new Promise((resolve) => setTimeout(() => resolve(result), 80))
+}
 
 export function getAuthToken() {
   return localStorage.getItem(TOKEN_KEY)
@@ -61,6 +82,9 @@ async function apiFetch(endpoint, options = {}) {
 // ─── Auth ───────────────────────────────────────────────────────────────────
 
 export async function registerUser(username, password) {
+  if (DEMO_MODE) {
+    throw new Error('Inscription indisponible en mode démo offline.')
+  }
   const result = await apiFetch('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
@@ -70,6 +94,9 @@ export async function registerUser(username, password) {
 }
 
 export async function loginUser(username, password) {
+  if (DEMO_MODE) {
+    throw new Error('Connexion indisponible en mode démo offline.')
+  }
   const result = await apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
@@ -79,6 +106,7 @@ export async function loginUser(username, password) {
 }
 
 export async function logoutUser() {
+  if (DEMO_MODE) return
   try {
     await apiFetch('/auth/logout', { method: 'POST' })
   } finally {
@@ -87,16 +115,25 @@ export async function logoutUser() {
 }
 
 export async function fetchMe() {
+  if (DEMO_MODE) {
+    return demoDelay({ username: 'ghost_demo' })
+  }
   return apiFetch('/auth/me')
 }
 
 // ─── Jeu ────────────────────────────────────────────────────────────────────
 
 export async function fetchGameState() {
+  if (DEMO_MODE) {
+    return demoDelay(getDemoState())
+  }
   return apiFetch('/state')
 }
 
 export async function sendCommand(command) {
+  if (DEMO_MODE) {
+    return demoDelay(executeDemoCommand(command))
+  }
   return apiFetch('/command', {
     method: 'POST',
     body: JSON.stringify({ command }),
@@ -104,6 +141,9 @@ export async function sendCommand(command) {
 }
 
 export async function resetGame() {
+  if (DEMO_MODE) {
+    return demoDelay(resetDemoGame())
+  }
   return apiFetch('/reset', { method: 'POST' })
 }
 
@@ -119,10 +159,16 @@ export async function checkHealth() {
 }
 
 export async function fetchMarket() {
+  if (DEMO_MODE) {
+    return demoDelay(getDemoMarket())
+  }
   return apiFetch('/market')
 }
 
 export async function buyMarketItem(itemId) {
+  if (DEMO_MODE) {
+    return demoDelay(buyDemoItem(itemId))
+  }
   return apiFetch('/market/buy', {
     method: 'POST',
     body: JSON.stringify({ itemId }),
@@ -130,10 +176,16 @@ export async function buyMarketItem(itemId) {
 }
 
 export async function fetchInventory() {
+  if (DEMO_MODE) {
+    return demoDelay(getDemoInventory())
+  }
   return apiFetch('/inventory')
 }
 
 export async function useInventoryItem(itemId) {
+  if (DEMO_MODE) {
+    return demoDelay(useDemoItem(itemId))
+  }
   return apiFetch('/inventory/use', {
     method: 'POST',
     body: JSON.stringify({ itemId }),
@@ -143,10 +195,23 @@ export async function useInventoryItem(itemId) {
 // ─── Chat ───────────────────────────────────────────────────────────────────
 
 export async function fetchChat() {
+  if (DEMO_MODE) {
+    return demoDelay({ messages: loadDemoChat() })
+  }
   return apiFetch('/chat')
 }
 
 export async function sendChatMessage(message) {
+  if (DEMO_MODE) {
+    const messages = loadDemoChat()
+    messages.push({
+      username: 'ghost_demo',
+      timestamp: new Date().toISOString(),
+      message,
+    })
+    saveDemoChat(messages)
+    return demoDelay({ ok: true })
+  }
   return apiFetch('/chat/send', {
     method: 'POST',
     body: JSON.stringify({ message }),

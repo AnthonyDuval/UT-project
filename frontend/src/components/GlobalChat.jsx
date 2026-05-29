@@ -7,7 +7,7 @@ const POLL_INTERVAL_MS = 3000
 /**
  * Canal clandestin global — polling toutes les 3 secondes.
  */
-export default function GlobalChat({ username, disabled }) {
+export default function GlobalChat({ username, disabled, demoMode }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -68,7 +68,9 @@ export default function GlobalChat({ username, disabled }) {
     <div className="gchat">
       <header className="gchat__header">
         <h2 className="gchat__title">CANAL CLANDESTIN GLOBAL</h2>
-        <span className="gchat__status">● LIVE — polling 3s</span>
+        <span className="gchat__status">
+          {demoMode ? '● LOCAL — canal simulé' : '● LIVE — polling 3s'}
+        </span>
       </header>
 
       {error && <div className="gchat__error">{error}</div>}
