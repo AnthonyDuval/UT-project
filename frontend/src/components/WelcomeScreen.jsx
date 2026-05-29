@@ -1,85 +1,61 @@
-import { useState } from 'react'
-import HowToPlayPanel from './HowToPlayPanel'
-import FeedbackButton from './FeedbackButton'
 import './WelcomeScreen.css'
 
 /**
- * Écran d'accueil alpha — avant d'entrer dans la démo offline.
+ * Écran d'accueil — portail clandestin avant ouverture du terminal.
  */
-export default function WelcomeScreen({
-  loading,
-  onContinue,
-  onNewGame,
-  onAdvanced,
-}) {
-  const [howToOpen, setHowToOpen] = useState(false)
-
+export default function WelcomeScreen({ loading, onOpenBeta, onReset }) {
   return (
     <div className="welcome">
       <div className="welcome__immersion" aria-hidden="true">
+        <div className="welcome__grid" />
         <div className="welcome__scanlines" />
         <div className="welcome__vignette" />
       </div>
 
       <div className="welcome__container">
         <header className="welcome__header">
-          <span className="welcome__logo" aria-hidden="true">◈</span>
+          <div className="welcome__sigil" aria-hidden="true">
+            <span className="welcome__sigil-ring" />
+            <span className="welcome__sigil-core">◈</span>
+          </div>
           <h1 className="welcome__title">ULTRATECH ONLINE</h1>
-          <p className="welcome__tagline">Prototype alpha — mode démo offline</p>
-          <p className="welcome__pitch">
-            Jeu narratif de hacking en terminal. Infiltrez le réseau UltraTech,
-            survivez à la TRACE et découvrez les secrets de N0VA.
-          </p>
+          <p className="welcome__subtitle">Connexion réseau détectée.</p>
         </header>
 
         <div className="welcome__actions">
           <button
             type="button"
             className="welcome__btn welcome__btn--primary"
-            onClick={onContinue}
+            onClick={onOpenBeta}
             disabled={loading}
           >
-            {loading ? 'Chargement…' : 'Entrer dans la démo'}
+            {loading ? (
+              <>
+                <span className="welcome__btn-pulse" aria-hidden="true" />
+                Établissement du lien…
+              </>
+            ) : (
+              'OUVRIR LA BÊTA TEST'
+            )}
           </button>
-          <p className="welcome__hint">Reprendre votre sauvegarde locale</p>
 
           <button
             type="button"
-            className="welcome__btn welcome__btn--secondary"
-            onClick={onNewGame}
+            className="welcome__btn welcome__btn--reset"
+            onClick={onReset}
             disabled={loading}
           >
-            Nouvelle partie
-          </button>
-          <p className="welcome__hint">Mission 1 — Signal Fantôme · TRACE 0</p>
-
-          <button
-            type="button"
-            className="welcome__btn welcome__btn--advanced"
-            onClick={onAdvanced}
-            disabled={loading}
-          >
-            Démo avancée
-          </button>
-          <p className="welcome__hint">Showcase — SATLINK, Black Market, Mission 2</p>
-
-          <button
-            type="button"
-            className="welcome__btn welcome__btn--ghost"
-            onClick={() => setHowToOpen(true)}
-            disabled={loading}
-          >
-            Comment jouer ?
+            Réinitialiser la sauvegarde
           </button>
         </div>
 
         <footer className="welcome__footer">
-          <FeedbackButton variant="ghost" />
-          <span className="welcome__version">Alpha 0.1 · Demo Offline · Netlify</span>
+          <span className="welcome__status">
+            <span className="welcome__status-dot" aria-hidden="true" />
+            Canal chiffré · accès restreint
+          </span>
         </footer>
       </div>
-
-      <HowToPlayPanel open={howToOpen} onClose={() => setHowToOpen(false)} />
     </div>
   )
 }

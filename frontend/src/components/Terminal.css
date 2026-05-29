@@ -79,6 +79,7 @@
 .terminal__input-row {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   padding: 1rem 1.75rem;
   border-top: 1px solid var(--border-glow);
   background: linear-gradient(180deg, #0a0a0d 0%, #050506 100%);
@@ -86,6 +87,23 @@
   position: relative;
   z-index: 2;
   gap: 0.6rem;
+  overflow: hidden;
+  text-align: left;
+}
+
+.terminal__input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.terminal__input-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .terminal__prompt {
@@ -94,19 +112,25 @@
   font-size: var(--fs-md);
   user-select: none;
   white-space: nowrap;
+  flex-shrink: 0;
   text-shadow: 0 0 10px rgba(230, 57, 70, 0.4);
 }
 
 .terminal__input {
-  flex: 1;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 1ch;
+  max-width: 100%;
   background: transparent;
   border: none;
   outline: none;
   color: #fff;
   font-family: var(--font-mono);
   font-size: var(--fs-terminal);
+  text-align: left;
   caret-color: transparent;
-  min-width: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .terminal__input::placeholder {
@@ -116,16 +140,21 @@
 }
 
 .terminal__input:disabled {
+  flex: 1;
+  width: auto !important;
   opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .terminal__cursor {
   color: var(--red-glow);
   font-size: var(--fs-terminal);
   font-weight: 700;
+  line-height: 1;
   animation: cursor-blink 0.65s step-end infinite;
   text-shadow: 0 0 8px rgba(255, 45, 61, 0.8);
   flex-shrink: 0;
+  margin-left: -1px;
 }
 
 .terminal__cursor--wait {

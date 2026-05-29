@@ -55,7 +55,7 @@ export function loadDemoChat() {
     if (raw) return JSON.parse(raw)
   } catch { /* ignore */ }
   return [
-    { username: 'sys', timestamp: new Date(Date.now() - 600000).toISOString(), message: '[DEMO] Canal local — messages non synchronisés.' },
+    { username: 'sys', timestamp: new Date(Date.now() - 600000).toISOString(), message: '[SYS] Canal clandestin — fréquence verrouillée.' },
   ]
 }
 

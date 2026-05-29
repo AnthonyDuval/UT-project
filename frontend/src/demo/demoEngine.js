@@ -66,7 +66,7 @@ function traceMessages(save) {
 function cmdHelp(save) {
   const lines = [
     '╔══════════════════════════════════════════════════╗',
-    '║  ULTRATECH TERMINAL — AIDE [DEMO]                 ║',
+    '║  ULTRATECH TERMINAL — AIDE                        ║',
     '╚══════════════════════════════════════════════════╝',
     '',
     'Commandes disponibles :',
@@ -74,7 +74,7 @@ function cmdHelp(save) {
   for (const name of [...save.unlocked_commands].sort()) {
     lines.push(`  ${name}`)
   }
-  lines.push('', '[DEMO] Session locale — progression sauvegardée dans le navigateur.')
+  lines.push('', '[SYS] Session chiffrée — progression enregistrée localement.')
   return lines
 }
 
@@ -159,7 +159,7 @@ function cmdStatus(save) {
   const net = NODE_META[save.currentNode] || NODE_META.local
   return [
     '╔══════════════════════════════════════════════════╗',
-    '║  STATUT OPÉRATEUR [DEMO]                          ║',
+    '║  STATUT OPÉRATEUR                                 ║',
     '╚══════════════════════════════════════════════════╝',
     '',
     `  Identifiant  : ${save.player.username}`,
@@ -172,7 +172,7 @@ function cmdStatus(save) {
     `    • Sécurité     : ${net.securityLevel}`,
     `    • Trace mult.  : x${net.traceMultiplier}`,
     '',
-    '  [DEMO] Sauvegarde locale active.',
+    '  [SYS] Canal sécurisé — données chiffrées.',
   ]
 }
 
@@ -460,7 +460,7 @@ export function getDemoState() {
 export function resetDemoGame() {
   const save = resetDemoSave()
   return {
-    message: '[DEMO] Nouvelle partie — Mission 1 : Signal Fantôme.',
+    message: '[SYS] Sauvegarde réinitialisée — Mission 1 : Signal Fantôme.',
     state: toPublicState(save),
   }
 }

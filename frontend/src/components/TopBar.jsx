@@ -4,7 +4,7 @@ import './TopBar.css'
 /**
  * Barre supérieure — stats joueur, mission active et jauge de traque.
  */
-export default function TopBar({ state, onReset, onLoadAdvancedDemo, onOpenHowTo, onLogout, username, demoMode }) {
+export default function TopBar({ state, onReset, onOpenHowTo, username }) {
   const player = state?.player
   const currentMission = state?.missionJournal?.currentMission
   const traceLevel = state?.traceLevel ?? 0
@@ -49,33 +49,17 @@ export default function TopBar({ state, onReset, onLoadAdvancedDemo, onOpenHowTo
 
       <div className="topbar__actions">
         {username && (
-          <span className="topbar__user">{username}{demoMode ? ' [demo]' : ''}</span>
+          <span className="topbar__user">{username}</span>
         )}
-        {!demoMode && (
-          <button className="btn-logout" onClick={onLogout} title="Déconnexion">
-            ⏻ Déconnexion
-          </button>
-        )}
-        {demoMode && (
-          <button
-            className="btn-howto"
-            onClick={onOpenHowTo}
-            title="Comment jouer"
-          >
-            ? Aide
-          </button>
-        )}
-        {demoMode && (
-          <button
-            className="btn-advanced-demo"
-            onClick={onLoadAdvancedDemo}
-            title="Charger la démo avancée"
-          >
-            ⚡ Démo Avancée
-          </button>
-        )}
+        <button
+          className="btn-howto"
+          onClick={onOpenHowTo}
+          title="Comment jouer"
+        >
+          ? Aide
+        </button>
         <button className="btn-reset" onClick={onReset} title="Reset sauvegarde">
-          ↺ {demoMode ? 'Reset Demo' : 'Reset Save'}
+          ↺ Reset
         </button>
       </div>
     </header>

@@ -7,13 +7,14 @@ const BOOT_SEQUENCE = [
   { text: '[CHECK] Encryption module........... OK', delay: 800 },
   { text: '[CHECK] Network stack............... WARN', delay: 1200, className: 'boot-warn' },
   { text: '[AUTH]  Operator clearance.......... DENIED', delay: 1600, className: 'boot-error' },
-  { text: '[AUTH]  Override ghost_operative.... ACCEPTED', delay: 2100, className: 'boot-ok' },
-  { text: '[NET]   SecOps monitoring........... ACTIVE', delay: 2600, className: 'boot-warn' },
-  { text: '[NET]   Relay scan module........... STANDBY', delay: 3000 },
-  { text: '[WARN]  Unauthorized access logged', delay: 3400, className: 'boot-error' },
-  { text: '[WARN]  Trace subsystem armed', delay: 3800, className: 'boot-warn' },
-  { text: '[SYS]   Session tunnel established', delay: 4200, className: 'boot-ok' },
-  { text: '[SYS]   Terminal ready — awaiting input', delay: 4600, className: 'boot-ok' },
+  { text: '[AUTH]  Clearance override.......... ACCEPTED', delay: 2100, className: 'boot-ok' },
+  { text: '[LOAD]  Session locale.............. MOUNTED', delay: 2400, className: 'boot-ok' },
+  { text: '[NET]   SecOps monitoring........... ACTIVE', delay: 2800, className: 'boot-warn' },
+  { text: '[NET]   Relay scan module........... STANDBY', delay: 3200 },
+  { text: '[WARN]  Unauthorized access logged', delay: 3600, className: 'boot-error' },
+  { text: '[WARN]  Trace subsystem armed', delay: 4000, className: 'boot-warn' },
+  { text: '[SYS]   Session tunnel established', delay: 4400, className: 'boot-ok' },
+  { text: '[SYS]   Terminal ready — awaiting input', delay: 4800, className: 'boot-ok' },
 ]
 
 /**
@@ -38,7 +39,7 @@ export default function BootScreen({ onComplete }) {
     })
 
     timers.push(
-      setTimeout(() => setPhase('done'), 1200 + 5200)
+      setTimeout(() => setPhase('done'), 1200 + 5400)
     )
 
     const progInterval = setInterval(() => {
@@ -50,7 +51,7 @@ export default function BootScreen({ onComplete }) {
         clearInterval(progInterval)
         setProgress(100)
         setTimeout(onComplete, 600)
-      }, 1200 + 5400)
+      }, 1200 + 5600)
     )
 
     return () => {

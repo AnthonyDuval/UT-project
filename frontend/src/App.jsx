@@ -8,15 +8,7 @@ import {
 
   fetchGameState,
 
-  fetchMe,
-
-  getAuthToken,
-
   isDemoMode,
-
-  logoutUser,
-
-  loadAdvancedDemo,
 
   resetGame,
 
@@ -48,11 +40,7 @@ import ProgramToolkit from './components/ProgramToolkit'
 
 import GlobalChat from './components/GlobalChat'
 
-import AuthScreen from './components/AuthScreen'
-
 import WelcomeScreen from './components/WelcomeScreen'
-
-import DemoBanner from './components/DemoBanner'
 
 import FeedbackButton from './components/FeedbackButton'
 
@@ -64,9 +52,9 @@ import './App.css'
 
 
 
-function buildPostBootLines(username, demo = false) {
+function buildPostBootLines() {
 
-  const lines = [
+  return [
 
     '╔══════════════════════════════════════════════════════════════╗',
 
@@ -76,19 +64,7 @@ function buildPostBootLines(username, demo = false) {
 
     '',
 
-    `[SYS] Session établie — opérateur : ${username}`,
-
-  ]
-
-  if (demo) {
-
-    lines.push('[DEMO] Mode offline — sauvegarde locale active.')
-
-    lines.push('[DEMO] Aucune connexion serveur — explorez librement.')
-
-  }
-
-  lines.push(
+    '[SYS] Session sécurisée — identifiant opérateur validé',
 
     '[SYS] Surveillance UltraTech : ACTIVE',
 
@@ -102,9 +78,7 @@ function buildPostBootLines(username, demo = false) {
 
     '──────────────────────────────────────────────────────────────',
 
-  )
-
-  return lines
+  ]
 
 }
 
@@ -170,42 +144,6 @@ function App() {
 
 
 
-  const handleLogout = useCallback(async () => {
-
-    try {
-
-      await logoutUser()
-
-    } catch {
-
-      /* token cleared in client */
-
-    }
-
-    setAuthenticated(false)
-
-    setAuthUser(null)
-
-    setGameState(null)
-
-    setTerminalLines([])
-
-    setBooting(false)
-
-    setLoading(false)
-
-    bootDoneRef.current = false
-
-    gameOverTriggeredRef.current = false
-
-    setGameOverActive(false)
-
-    setOpenApps(['terminal'])
-
-  }, [])
-
-
-
   const loadGame = useCallback(async () => {
 
     setLoading(true)
@@ -226,19 +164,7 @@ function App() {
 
     } catch (err) {
 
-      if (isDemoMode() || demoMode) {
-
-        setError(`Impossible de charger la démo (${err.message})`)
-
-      } else if (err.code === 'UNAUTHORIZED') {
-
-        await handleLogout()
-
-      } else {
-
-        setError(`Impossible de charger la sauvegarde (${err.message})`)
-
-      }
+      setError(`Impossible de charger la session (${err.message})`)
 
     } finally {
 
@@ -246,7 +172,7 @@ function App() {
 
     }
 
-  }, [triggerGameOver, handleLogout, demoMode])
+  }, [triggerGameOver])
 
 
 
@@ -258,7 +184,7 @@ function App() {
 
     setDemoMode(true)
 
-    setAuthUser({ username: 'ghost_demo' })
+    setAuthUser({ username: 'GHOST' })
 
     setAuthenticated(true)
 
@@ -312,73 +238,35 @@ function App() {
 
 
 
-  const openWelcomeScreen = useCallback(() => {
+  const handleWelcomeReset = useCallback(async () => {
 
-    enableDemoMode()
-
-    setDemoMode(true)
-
-    setShowWelcome(true)
-
-    setAuthenticated(false)
-
-    setAuthUser(null)
-
-    setGameState(null)
-
-    setTerminalLines([])
-
-    setBooting(false)
-
-    setLoading(false)
-
-    bootDoneRef.current = false
-
-  }, [])
-
-
-
-  const checkAuth = useCallback(async () => {
-
-    if (isDemoMode()) return
-
-    setAuthChecking(true)
-
-    const token = getAuthToken()
-
-    if (!token) {
-
-      setAuthenticated(false)
-
-      setAuthChecking(false)
+    if (!window.confirm('Réinitialiser la sauvegarde ? Toute progression sera perdue.')) {
 
       return
 
     }
 
+    setWelcomeLoading(true)
+
+    enableDemoMode()
+
+    setDemoMode(true)
+
     try {
 
-      const user = await fetchMe()
+      await resetGame()
 
-      setAuthUser(user)
+    } catch (err) {
 
-      setAuthenticated(true)
-
-      await loadGame()
-
-    } catch {
-
-      setAuthenticated(false)
-
-      setAuthUser(null)
+      setError(err.message)
 
     } finally {
 
-      setAuthChecking(false)
+      setWelcomeLoading(false)
 
     }
 
-  }, [loadGame])
+  }, [])
 
 
 
@@ -394,39 +282,21 @@ function App() {
 
       setAuthChecking(true)
 
-      const offline = await detectApi()
+      await detectApi()
 
-      if (offline) {
+      enableDemoMode()
 
-        openWelcomeScreen()
+      setDemoMode(true)
 
-        setAuthChecking(false)
+      setShowWelcome(true)
 
-        return
-
-      }
-
-      await checkAuth()
+      setAuthChecking(false)
 
     }
 
     init()
 
-  }, [checkAuth, openWelcomeScreen])
-
-
-
-  const handleAuthenticated = useCallback(async (result) => {
-
-    if (isDemoMode()) return
-
-    setAuthUser({ username: result.username })
-
-    setAuthenticated(true)
-
-    await loadGame()
-
-  }, [loadGame])
+  }, [])
 
 
 
@@ -438,15 +308,9 @@ function App() {
 
     setBooting(false)
 
-    setTerminalLines(buildPostBootLines(
+    setTerminalLines(buildPostBootLines())
 
-      authUser?.username || gameState?.player?.username || 'operateur',
-
-      demoMode || isDemoMode(),
-
-    ))
-
-  }, [authUser, gameState, demoMode])
+  }, [])
 
 
 
@@ -570,19 +434,7 @@ function App() {
 
     } catch (err) {
 
-      if (isDemoMode()) {
-
-        /* pas de déconnexion en mode démo */
-
-      } else if (err.code === 'UNAUTHORIZED') {
-
-        handleLogout()
-
-      } else {
-
-        setTerminalLines((prev) => [...prev, `[ERR] ${err.message}`, ''])
-
-      }
+      setTerminalLines((prev) => [...prev, `[ERR] ${err.message}`, ''])
 
     } finally {
 
@@ -616,7 +468,7 @@ function App() {
 
     setTerminalLines([
 
-      ...buildPostBootLines(authUser?.username || 'ghost_demo', demoMode || isDemoMode()),
+      ...buildPostBootLines(),
 
       extraLine || result.message || '[SYS] Sauvegarde rechargée.',
 
@@ -638,21 +490,13 @@ function App() {
 
     setBooting(false)
 
-  }, [authUser, demoMode])
+  }, [])
 
 
 
   const handleReset = async (skipConfirm = false) => {
 
-    const inDemo = demoMode || isDemoMode()
-
-    const confirmMsg = inDemo
-
-      ? 'Recommencer la démo depuis la Mission 1 ? Toute progression sera perdue.'
-
-      : 'Réinitialiser la sauvegarde ? Toute progression sera perdue.'
-
-    if (!skipConfirm && !window.confirm(confirmMsg)) {
+    if (!skipConfirm && !window.confirm('Réinitialiser la sauvegarde ? Toute progression sera perdue.')) {
 
       return
 
@@ -664,39 +508,11 @@ function App() {
 
       const result = await resetGame()
 
-      applyGameReload(result, inDemo ? result.message : '[SYS] Sauvegarde réinitialisée.')
+      applyGameReload(result, '[SYS] Sauvegarde réinitialisée — Mission 1.')
 
     } catch (err) {
 
-      if (err.code === 'UNAUTHORIZED') handleLogout()
-
-      else setError(`Erreur reset : ${err.message}`)
-
-    }
-
-  }
-
-
-
-  const handleLoadAdvancedDemo = async (skipConfirm = false) => {
-
-    if (!skipConfirm && !window.confirm('Charger la démo avancée ? Votre progression actuelle sera remplacée.')) {
-
-      return
-
-    }
-
-
-
-    try {
-
-      const result = await loadAdvancedDemo()
-
-      applyGameReload(result, result.message)
-
-    } catch (err) {
-
-      setError(`Erreur démo avancée : ${err.message}`)
+      setError(`Erreur reset : ${err.message}`)
 
     }
 
@@ -764,7 +580,7 @@ function App() {
 
   const networkTheme = gameState?.network?.currentNodeMeta?.theme ?? 'default'
 
-  const operatorName = gameState?.player?.username || authUser?.username || 'operateur'
+  const operatorName = authUser?.username || 'GHOST'
 
   const terminalTitle = gameState?.network?.connected
 
@@ -786,7 +602,7 @@ function App() {
 
           <span className="loader__bar" />
 
-          <span className="loader__sub">Initialisation du terminal...</span>
+          <span className="loader__sub">Connexion réseau détectée…</span>
 
         </div>
 
@@ -806,29 +622,9 @@ function App() {
 
         loading={welcomeLoading}
 
-        onContinue={() => launchDemoGame(null)}
+        onOpenBeta={() => launchDemoGame(null)}
 
-        onNewGame={() => launchDemoGame(() => resetGame())}
-
-        onAdvanced={() => launchDemoGame(() => loadAdvancedDemo())}
-
-      />
-
-    )
-
-  }
-
-
-
-  if (!authenticated && !inDemo) {
-
-    return (
-
-      <AuthScreen
-
-        onAuthenticated={handleAuthenticated}
-
-        onEnterDemo={openWelcomeScreen}
+        onReset={handleWelcomeReset}
 
       />
 
@@ -856,7 +652,7 @@ function App() {
 
               <span className="loader__bar" />
 
-              <span className="loader__sub">Chargement de la sauvegarde...</span>
+              <span className="loader__sub">Chargement de la session…</span>
 
             </div>
 
@@ -886,25 +682,15 @@ function App() {
 
 
 
-      {inDemo && <DemoBanner />}
-
-
-
       <TopBar
 
         state={gameState}
 
         onReset={handleReset}
 
-        onLoadAdvancedDemo={handleLoadAdvancedDemo}
-
         onOpenHowTo={() => setHowToOpen(true)}
 
-        onLogout={handleLogout}
-
-        username={authUser?.username}
-
-        demoMode={inDemo}
+        username={operatorName}
 
       />
 
