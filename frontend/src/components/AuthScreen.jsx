@@ -6,10 +6,11 @@ import './AuthScreen.css'
 /**
  * Écran d'authentification — connexion / inscription opérateur.
  */
-export default function AuthScreen({ onAuthenticated }) {
+export default function AuthScreen({ onAuthenticated, onEnterDemo }) {
   const [mode, setMode] = useState('login')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
 
   const handleSuccess = (result) => {
     setError(null)
@@ -19,6 +20,18 @@ export default function AuthScreen({ onAuthenticated }) {
   const handleError = (err) => {
     setError(err.message)
     setLoading(false)
+  }
+
+  const handleEnterDemo = async () => {
+    if (demoLoading || loading || !onEnterDemo) return
+    setDemoLoading(true)
+    setError(null)
+    try {
+      await onEnterDemo()
+    } catch (err) {
+      setError(err.message || 'Impossible de démarrer le mode démo.')
+      setDemoLoading(false)
+    }
   }
 
   return (
@@ -70,6 +83,20 @@ export default function AuthScreen({ onAuthenticated }) {
               onError={handleError}
             />
           )}
+        </div>
+
+        <div className="auth-screen__demo">
+          <button
+            type="button"
+            className="auth-screen__demo-btn"
+            onClick={handleEnterDemo}
+            disabled={loading || demoLoading}
+          >
+            {demoLoading ? 'Chargement de la démo…' : 'Entrer en mode démo'}
+          </button>
+          <p className="auth-screen__demo-hint">
+            Jouez sans compte — session locale, aucun serveur requis.
+          </p>
         </div>
 
         <footer className="auth-screen__footer">

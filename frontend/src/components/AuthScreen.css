@@ -185,6 +185,42 @@
   line-height: 1.45;
 }
 
+.auth-screen__demo {
+  margin-top: 1.25rem;
+  text-align: center;
+}
+
+.auth-screen__demo-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(255, 180, 60, 0.08);
+  border: 1px solid rgba(255, 180, 60, 0.35);
+  color: rgba(255, 180, 60, 0.9);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.auth-screen__demo-btn:hover:not(:disabled) {
+  background: rgba(255, 180, 60, 0.15);
+  border-color: rgba(255, 180, 60, 0.55);
+}
+
+.auth-screen__demo-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.auth-screen__demo-hint {
+  margin-top: 0.5rem;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .auth-screen__footer {
   margin-top: 1.5rem;
   text-align: center;

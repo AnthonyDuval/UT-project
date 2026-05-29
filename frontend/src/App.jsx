@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   detectApi,
+  enableDemoMode,
   fetchGameState,
   fetchMe,
   getAuthToken,
@@ -63,6 +64,7 @@ function App() {
   const [openApps, setOpenApps] = useState(['terminal'])
   const gameOverTriggeredRef = useRef(false)
   const bootDoneRef = useRef(false)
+  const initDoneRef = useRef(false)
 
   const triggerGameOver = useCallback((skipToFinal = false) => {
     if (gameOverTriggeredRef.current) return
@@ -89,7 +91,7 @@ function App() {
     setOpenApps(['terminal'])
   }, [])
 
-  const loadGame = useCallback(async (username) => {
+  const loadGame = useCallback(async () => {
     setLoading(true)
     try {
       const state = await fetchGameState()
@@ -99,7 +101,9 @@ function App() {
       setBooting(true)
       bootDoneRef.current = false
     } catch (err) {
-      if (err.code === 'UNAUTHORIZED') {
+      if (isDemoMode() || demoMode) {
+        setError(`Impossible de charger la démo (${err.message})`)
+      } else if (err.code === 'UNAUTHORIZED') {
         await handleLogout()
       } else {
         setError(`Impossible de charger la sauvegarde (${err.message})`)
@@ -107,9 +111,21 @@ function App() {
     } finally {
       setLoading(false)
     }
-  }, [triggerGameOver, handleLogout])
+  }, [triggerGameOver, handleLogout, demoMode])
+
+  const startDemoSession = useCallback(async () => {
+    enableDemoMode()
+    setDemoMode(true)
+    setAuthUser({ username: 'ghost_demo' })
+    setAuthenticated(true)
+    setAuthChecking(true)
+    setError(null)
+    await loadGame()
+    setAuthChecking(false)
+  }, [loadGame])
 
   const checkAuth = useCallback(async () => {
+    if (isDemoMode()) return
     setAuthChecking(true)
     const token = getAuthToken()
     if (!token) {
@@ -121,7 +137,7 @@ function App() {
       const user = await fetchMe()
       setAuthUser(user)
       setAuthenticated(true)
-      await loadGame(user.username)
+      await loadGame()
     } catch {
       setAuthenticated(false)
       setAuthUser(null)
@@ -131,26 +147,26 @@ function App() {
   }, [loadGame])
 
   useEffect(() => {
+    if (initDoneRef.current) return
+    initDoneRef.current = true
+
     async function init() {
       setAuthChecking(true)
       const offline = await detectApi()
       if (offline) {
-        setDemoMode(true)
-        setAuthUser({ username: 'ghost_demo' })
-        setAuthenticated(true)
-        await loadGame('ghost_demo')
-        setAuthChecking(false)
+        await startDemoSession()
         return
       }
       await checkAuth()
     }
     init()
-  }, [checkAuth, loadGame])
+  }, [checkAuth, startDemoSession])
 
   const handleAuthenticated = useCallback(async (result) => {
+    if (isDemoMode()) return
     setAuthUser({ username: result.username })
     setAuthenticated(true)
-    await loadGame(result.username)
+    await loadGame()
   }, [loadGame])
 
   const handleBootComplete = useCallback(() => {
@@ -208,7 +224,9 @@ function App() {
         appendTerminalLine('[SYS] Nouvelle app : BLACK MARKET disponible.')
       }
     } catch (err) {
-      if (err.code === 'UNAUTHORIZED') {
+      if (isDemoMode()) {
+        /* pas de déconnexion en mode démo */
+      } else if (err.code === 'UNAUTHORIZED') {
         handleLogout()
       } else {
         setTerminalLines((prev) => [...prev, `[ERR] ${err.message}`, ''])
@@ -253,6 +271,7 @@ function App() {
   const handleGameOverRestart = () => handleReset(true)
 
   const isLocked = !!error || commandLoading || gameState?.gameOver || gameOverActive
+  const inDemo = demoMode || isDemoMode()
 
   const networkTheme = gameState?.network?.currentNodeMeta?.theme ?? 'default'
   const operatorName = gameState?.player?.username || authUser?.username || 'operateur'
@@ -272,8 +291,13 @@ function App() {
     )
   }
 
-  if (!authenticated) {
-    return <AuthScreen onAuthenticated={handleAuthenticated} />
+  if (!authenticated && !inDemo) {
+    return (
+      <AuthScreen
+        onAuthenticated={handleAuthenticated}
+        onEnterDemo={startDemoSession}
+      />
+    )
   }
 
   if (loading || booting) {
@@ -300,14 +324,14 @@ function App() {
         <div className="app__vignette" />
       </div>
 
-      {demoMode && <DemoBanner />}
+      {inDemo && <DemoBanner />}
 
       <TopBar
         state={gameState}
         onReset={handleReset}
         onLogout={handleLogout}
         username={authUser?.username}
-        demoMode={demoMode}
+        demoMode={inDemo}
       />
 
       <main className="desktop">
@@ -327,7 +351,7 @@ function App() {
             {error && (
               <div className="error-banner">
                 <span>⚠ {error}</span>
-                <button onClick={() => loadGame(authUser?.username)}>Réessayer</button>
+                <button onClick={() => loadGame()}>Réessayer</button>
               </div>
             )}
 
@@ -350,7 +374,7 @@ function App() {
               onClose={() => handleCloseApp('chat')}
               variant="secondary"
             >
-              <GlobalChat username={authUser?.username} disabled={isLocked} demoMode={demoMode} />
+              <GlobalChat username={authUser?.username} disabled={isLocked} demoMode={inDemo} />
             </AppWindow>
 
             <AppWindow

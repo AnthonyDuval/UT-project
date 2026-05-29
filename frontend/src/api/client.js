@@ -13,11 +13,36 @@ export function isDemoMode() {
   return DEMO_MODE
 }
 
-/** Teste /api/health — active DEMO_MODE si backend inaccessible. */
+/** Hébergement Netlify (preview ou production). */
+export function isNetlifyHost() {
+  const host = typeof window !== 'undefined' ? window.location.hostname : ''
+  return (
+    host.endsWith('.netlify.app')
+    || host.endsWith('.netlify.live')
+    || import.meta.env.VITE_NETLIFY === 'true'
+  )
+}
+
+/** Force le mode démo (bouton manuel ou init). */
+export function enableDemoMode() {
+  DEMO_MODE = true
+  clearAuthToken()
+  return true
+}
+
+/** Teste /api/health — active DEMO_MODE si Netlify ou backend inaccessible. */
 export async function detectApi() {
+  if (isNetlifyHost()) {
+    enableDemoMode()
+    return true
+  }
   const ok = await checkHealth()
-  DEMO_MODE = !ok
-  return DEMO_MODE
+  if (!ok) {
+    enableDemoMode()
+    return true
+  }
+  DEMO_MODE = false
+  return false
 }
 
 function demoDelay(result) {
@@ -149,7 +174,10 @@ export async function resetGame() {
 
 export async function checkHealth() {
   try {
-    const response = await fetch(`${API_BASE}/health`)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 4000)
+    const response = await fetch(`${API_BASE}/health`, { signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!response.ok) return false
     const data = await response.json().catch(() => ({}))
     return data?.status === 'ok'

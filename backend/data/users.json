@@ -1,14 +1,14 @@
 {
   "users": {
-    "alpha_ops": {
-      "username": "alpha_ops",
-      "password_hash": "711a7ee2e3b697a1a7f7a7f448a87200$7daf6b785b9bc33deedf3b663487096129f61efaf6c844663e683fd68db5de82",
-      "created_at": "2026-05-29T06:01:08.814783+00:00"
+    "silco": {
+      "username": "silco",
+      "password_hash": "9ff41201b3a982b2145ab0cfe19c0447$091e90346ed53bd4ec576d5fef76730c7cb5e7803ff1f93f14d255a0601141dc",
+      "created_at": "2026-05-29T06:47:10.861559+00:00"
     },
-    "beta_ops": {
-      "username": "beta_ops",
-      "password_hash": "c4ac55909370ae8468e867ef6c88301b$50e50a649e665bb62ad055f9d3bbd2d0911748b462c6781f5a0931f9620df60b",
-      "created_at": "2026-05-29T06:01:08.834785+00:00"
+    "vander": {
+      "username": "vander",
+      "password_hash": "9e64f73b38d07b734219e24c5e6b2da6$3bd1b70e0d47f1379d22dda5ec1bc40ceb0a1301a0a1065501c1b913c7bfbd24",
+      "created_at": "2026-05-29T06:47:31.013369+00:00"
     }
   }
 }
