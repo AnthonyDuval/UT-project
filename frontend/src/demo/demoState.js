@@ -91,6 +91,8 @@ export function createFreshDemoState() {
     fakeGameOverUntil: null,
     uiIntrosSeen: {},
     codexDiscovered: {},
+    codexNotified: {},
+    eventLastTriggeredAt: {},
   }
 }
 

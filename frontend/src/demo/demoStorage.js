@@ -34,6 +34,12 @@ export function loadDemoSave() {
 function migrateSave(save) {
   save.flags = save.flags || {}
   save.uiIntrosSeen = save.uiIntrosSeen || {}
+  save.codexDiscovered = save.codexDiscovered || {}
+  save.codexNotified = save.codexNotified || {}
+  save.eventLastTriggeredAt = save.eventLastTriggeredAt || {}
+  for (const id of Object.keys(save.codexDiscovered)) {
+    save.codexNotified[id] = true
+  }
   if (!save.unlocked_commands.includes('files')) {
     save.unlocked_commands.push('files')
   }

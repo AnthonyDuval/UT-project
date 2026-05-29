@@ -132,6 +132,24 @@ function App() {
 
   const uiIntrosHandledRef = useRef({})
 
+  const appendCodexNotifications = useCallback((discoveries) => {
+
+    if (!discoveries?.length) return
+
+    setTerminalLines((prev) => [
+
+      ...prev,
+
+      '',
+
+      ...discoveries.map((entry) => `[CODEX] ${entry.name} — ajouté au registre.`),
+
+      '',
+
+    ])
+
+  }, [])
+
 
 
   const triggerGameOver = useCallback((skipToFinal = false) => {
@@ -440,23 +458,15 @@ function App() {
 
         }
 
-        if (result.state?.codex?.discoveredCount > (gameState?.codex?.discoveredCount ?? 0)) {
+        if (result.newCodexDiscoveries?.length) {
 
-          appendTerminalLine('[SYS] Nouvelle découverte enregistrée dans le Codex.')
+          appendCodexNotifications(result.newCodexDiscoveries)
 
         }
 
 
 
       if (result.state.gameOver && !result.state.fakeGameOverActive) triggerGameOver(false)
-
-      const lastLog = result.state.events_log?.[result.state.events_log.length - 1]
-
-      if (lastLog?.startsWith('[CODEX]')) {
-
-        appendTerminalLine(lastLog)
-
-      }
 
     } catch (err) {
 
@@ -576,11 +586,9 @@ function App() {
 
         }
 
-        const lastLog = result.state.events_log?.[result.state.events_log.length - 1]
+        if (result.newCodexDiscoveries?.length) {
 
-        if (lastLog?.startsWith('[CODEX]')) {
-
-          setTerminalLines((prev) => [...prev, lastLog, ''])
+          appendCodexNotifications(result.newCodexDiscoveries)
 
         }
 
@@ -594,7 +602,7 @@ function App() {
 
     return () => clearInterval(id)
 
-  }, [inDemo, showWelcome, authenticated, loading, booting])
+  }, [inDemo, showWelcome, authenticated, loading, booting, appendCodexNotifications])
 
 
 

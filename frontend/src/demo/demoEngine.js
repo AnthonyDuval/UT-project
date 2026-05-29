@@ -10,7 +10,7 @@ import {
   toPublicState,
 } from './demoState'
 import { loadDemoSave, loadAdvancedDemoSave, resetDemoSave, saveDemoSave } from './demoStorage'
-import { discoverCodexFromFile } from './codexService'
+import { discoverCodexFromFile, consumePendingCodexDiscoveries } from './codexService'
 import {
   clearExpiredUiEffects,
   processMysteryAfterCommand,
@@ -44,6 +44,21 @@ const COMMAND_DESC = {
   market: 'Informations sur le marché clandestin.',
 }
 
+function finishCommand(save, output, extras = {}) {
+  stampUiEffectStart(save)
+  saveDemoSave(save)
+  const newCodexDiscoveries = consumePendingCodexDiscoveries(save)
+  saveDemoSave(save)
+  return {
+    output: output ?? [],
+    clear_terminal: extras.clear_terminal || false,
+    state: toPublicState(save),
+    uiEffect: save.activeUiEffect,
+    autoLines: extras.autoLines || [],
+    newCodexDiscoveries,
+  }
+}
+
 function finalizeCommand(save, output, extras = {}) {
   const mission = updateMissionProgress(save)
   if (mission.output.length) output = [...output, '', ...mission.output]
@@ -52,15 +67,7 @@ function finalizeCommand(save, output, extras = {}) {
   const traceMsgs = traceMessages(save)
   if (traceMsgs.length) output = [...output, '', ...traceMsgs]
 
-  stampUiEffectStart(save)
-  saveDemoSave(save)
-  return {
-    output,
-    clear_terminal: extras.clear_terminal || false,
-    state: toPublicState(save),
-    uiEffect: save.activeUiEffect,
-    autoLines: extras.autoLines || [],
-  }
+  return finishCommand(save, output, extras)
 }
 
 function addTrace(save, amount) {
@@ -391,16 +398,8 @@ export function executeDemoCommand(command) {
         save.activeUiEffect = { type: 'fake_gameover', duration: hidden.fakeGameOver.duration }
       }
       if (hidden.autoLines?.length) autoLines.push(...hidden.autoLines)
-      stampUiEffectStart(save)
-      saveDemoSave(save)
       const output = hidden.silent ? [] : [...(hidden.output || []), ...autoLines]
-      return {
-        output,
-        clear_terminal: false,
-        state: toPublicState(save),
-        uiEffect: save.activeUiEffect,
-        autoLines,
-      }
+      return finishCommand(save, output, { autoLines })
     }
   }
 
@@ -410,14 +409,7 @@ export function executeDemoCommand(command) {
     if (mysteryDisc) {
       addTrace(save, mysteryDisc.addTrace || 0)
       if (mysteryDisc.uiEffect) save.activeUiEffect = mysteryDisc.uiEffect
-      stampUiEffectStart(save)
-      saveDemoSave(save)
-      return {
-        output: mysteryDisc.output,
-        clear_terminal: false,
-        state: toPublicState(save),
-        uiEffect: save.activeUiEffect,
-      }
+      return finishCommand(save, mysteryDisc.output)
     }
   }
 
@@ -487,10 +479,13 @@ export function tickDemoMystery() {
   }
   stampUiEffectStart(save)
   saveDemoSave(save)
+  const newCodexDiscoveries = consumePendingCodexDiscoveries(save)
+  saveDemoSave(save)
   return {
     state: toPublicState(save),
     autoLines: result.autoLines,
     uiEffect: save.activeUiEffect,
+    newCodexDiscoveries,
   }
 }
 

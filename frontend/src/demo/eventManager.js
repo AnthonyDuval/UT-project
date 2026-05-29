@@ -9,6 +9,7 @@ function ensureMysteryState(save) {
   if (!save.mysteryFlags) save.mysteryFlags = {}
   if (!save.seenEvents) save.seenEvents = []
   if (!save.hiddenCommandUses) save.hiddenCommandUses = {}
+  if (!save.eventLastTriggeredAt) save.eventLastTriggeredAt = {}
   if (!save.sessionStartMs) save.sessionStartMs = Date.now()
   if (save.commandCount == null) save.commandCount = 0
 }
@@ -98,10 +99,19 @@ export function processMysteryEvents(save, ctx) {
 
   for (const event of MYSTERY_EVENTS) {
     if (event.once && save.seenEvents.includes(event.id)) continue
+
+    const cooldownMs = event.cooldownMs ?? (event.once ? 0 : 120000)
+    if (cooldownMs > 0) {
+      const lastAt = save.eventLastTriggeredAt[event.id]
+      if (lastAt && Date.now() - lastAt < cooldownMs) continue
+    }
+
     if (!matchesConditions(event, save, ctx)) continue
     if (event.chance != null && Math.random() > event.chance) continue
 
     save.seenEvents.push(event.id)
+    save.eventLastTriggeredAt[event.id] = Date.now()
+
     const applied = applyEffects(save, event.effects)
     if (applied.autoLines.length) autoLines.push(...applied.autoLines)
     if (applied.uiEffect) uiEffect = applied.uiEffect
