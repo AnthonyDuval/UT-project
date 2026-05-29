@@ -12,6 +12,7 @@ export function getMissionObjective(state) {
   const read = state.read_files || []
   const flags = state.flags || {}
   const t = state.tutorialFlags || {}
+  const novaRevealed = !!state.novaIntroSeen
   const m1 = state.missions?.signal_fantome
 
   if (m1?.status === 'active' && !flags.mission_1_complete) {
@@ -67,7 +68,9 @@ export function getMissionObjective(state) {
     if (!hacked.includes('satlink_03')) {
       return {
         title: 'Canal orbital',
-        hint: 'N0VA parle d\'un relais — SATLINK_03. Quelque chose attend de l\'autre côté.',
+        hint: novaRevealed
+          ? 'N0VA parle d\'un relais — SATLINK_03. Quelque chose attend de l\'autre côté.'
+          : 'Un relais orbital attend — SATLINK_03. Quelque chose est de l\'autre côté.',
       }
     }
     if (connected !== 'satlink_03' && hacked.includes('satlink_03')) {
@@ -97,8 +100,10 @@ export function getMissionObjective(state) {
     }
     if (!read.includes('nova_orbital_fragment.dat')) {
       return {
-        title: 'Fragment N0VA',
-        hint: 'N0VA laisse des traces sur les relais qu\'elle utilise.',
+        title: novaRevealed ? 'Fragment N0VA' : 'Fragment orbital',
+        hint: novaRevealed
+          ? 'N0VA laisse des traces sur les relais qu\'elle utilise.'
+          : 'Quelqu\'un a laissé une trace sur ce relais.',
       }
     }
   }
@@ -132,6 +137,7 @@ export function syncMissionObjectiveText(save) {
     read_files: save.read_files,
     flags: save.flags,
     tutorialFlags: save.tutorialFlags,
+    novaIntroSeen: save.novaIntroSeen,
     missions: save.missions,
     network: buildNetworkForHints(save),
     missionJournal: buildMissionJournalForHints(save),

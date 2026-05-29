@@ -195,9 +195,11 @@ function App() {
 
 
 
-  const handleNovaEncounterInteract = useCallback(async () => {
+  const handleNovaEncounterAppear = useCallback(async () => {
 
     if (!(demoMode || isDemoMode())) return
+
+    if (gameState?.novaIntroSeen) return
 
     try {
 
@@ -205,13 +207,27 @@ function App() {
 
       if (result?.state) setGameState(result.state)
 
+      if (result?.newCodexDiscoveries?.length) {
+
+        appendCodexNotifications(result.newCodexDiscoveries)
+
+      }
+
     } catch {
 
       /* ignore */
 
     }
 
-  }, [demoMode])
+  }, [demoMode, gameState?.novaIntroSeen, appendCodexNotifications])
+
+
+
+  const handleNovaEncounterInteract = useCallback(() => {
+
+    /* Persistance déjà effectuée à l'apparition — glitch immédiat au contact. */
+
+  }, [])
 
 
 
@@ -1172,6 +1188,7 @@ function App() {
 
       <NovaEncounter
         open={showNovaEncounter}
+        onAppear={handleNovaEncounterAppear}
         onInteract={handleNovaEncounterInteract}
         onDismiss={handleNovaEncounterDismiss}
       />

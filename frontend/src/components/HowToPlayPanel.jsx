@@ -19,7 +19,7 @@ const STEPS = [
   },
   {
     title: 'Faites confiance à personne',
-    body: 'N0VA, UltraTech, les logs effacés — tout le monde a un agenda.',
+    body: 'UltraTech, les logs effacés, les voix anonymes — tout le monde a un agenda.',
   },
 ]
 

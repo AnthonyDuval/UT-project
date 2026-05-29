@@ -45,6 +45,7 @@ function matchesConditions(event, save, ctx) {
     const mid = c.mission || getActiveMissionId(save)
     if (save.missions?.[mid]?.status !== c.missionStatus) return false
   }
+  if (c.requiresNovaIntro && !save.novaIntroSeen) return false
 
   return true
 }

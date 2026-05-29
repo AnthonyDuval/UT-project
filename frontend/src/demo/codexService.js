@@ -5,10 +5,10 @@
 import {
   CODEX_ENTRIES,
   CODEX_ORDER,
-  CODEX_TOTAL,
   EVENT_TO_CODEX,
   FILE_TO_CODEX,
 } from './codexCatalog'
+import { filterCodexOrder, NOVA_CODEX_IDS } from '../utils/novaGate'
 
 export function ensureCodexState(save) {
   if (!save.codexDiscovered) save.codexDiscovered = {}
@@ -37,6 +37,7 @@ function queueCodexDiscovery(save, entryId) {
  */
 export function discoverCodex(save, entryId) {
   if (!CODEX_ENTRIES[entryId]) return false
+  if (NOVA_CODEX_IDS.has(entryId) && !save.novaIntroSeen) return false
   if (isUnlocked(save, entryId)) return false
 
   ensureCodexState(save)
@@ -78,8 +79,10 @@ export function consumePendingCodexDiscoveries(save) {
 export function buildCodexState(save) {
   ensureCodexState(save)
   const discovered = save.codexDiscovered
+  const order = filterCodexOrder(CODEX_ORDER, save.novaIntroSeen)
+  const total = order.length
 
-  const entries = CODEX_ORDER.map((id, index) => {
+  const entries = order.map((id, index) => {
     const meta = CODEX_ENTRIES[id]
     const discoveredAt = discovered[id]
 
@@ -108,12 +111,13 @@ export function buildCodexState(save) {
     }
   })
 
-  const discoveredCount = Object.keys(discovered).length
+  const discoveredCount = order.filter((id) => discovered[id]).length
 
   return {
-    total: CODEX_TOTAL,
+    total,
     discoveredCount,
-    progressLabel: `${discoveredCount}/${CODEX_TOTAL}`,
+    progressLabel: `${discoveredCount}/${total}`,
     entries,
+    novaRevealed: !!save.novaIntroSeen,
   }
 }

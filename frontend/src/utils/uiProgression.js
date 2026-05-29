@@ -132,7 +132,7 @@ export function collectNewIntros(state, seenIntros = {}) {
     if (visible && !seenIntros[key]) newOnes.push(key)
   }
 
-  if (state.seenEvents?.includes('nova_contact') && !seenIntros.nova) {
+  if (state.novaIntroSeen && state.seenEvents?.includes('nova_contact') && !seenIntros.nova) {
     newOnes.push('nova')
   }
 

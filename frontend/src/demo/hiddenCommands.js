@@ -77,6 +77,12 @@ function cmdGhost(save) {
 }
 
 function cmdNova(save) {
+  if (!save.novaIntroSeen) {
+    return {
+      output: ['[???] Canal muet — origine non identifiée.'],
+      addTrace: 1,
+    }
+  }
   bumpHiddenUse(save, 'nova')
   if (save.hiddenCommandUses.nova === 1) {
     discoverCodex(save, 'nova_contact_01')
@@ -135,10 +141,14 @@ function cmdTraceHidden(save) {
     lines.push('', '« Tu es presque invisible. Profite-en. » — ???')
   } else if (t < 60) {
     lines.push('', '[TRACE] Motif récurrent : activité anormale.')
-    lines.push('« Ils construisent ton profil. » — N0VA')
+    lines.push(save.novaIntroSeen
+      ? '« Ils construisent ton profil. » — N0VA'
+      : '« Ils construisent ton profil. » — ???')
   } else if (t < 85) {
     lines.push('', '[WARN] UltraTech corrèle vos actions.')
-    lines.push('« Ce n\'est plus de la surveillance. C\'est une chasse. » — N0VA')
+    lines.push(save.novaIntroSeen
+      ? '« Ce n\'est plus de la surveillance. C\'est une chasse. » — N0VA'
+      : '« Ce n\'est plus de la surveillance. C\'est une chasse. » — ???')
   } else {
     lines.push('', '[CRIT] Signature exposée.')
     lines.push('« Override ne sauvera personne. » — ???')
@@ -173,7 +183,9 @@ function cmdEcho(save, args) {
       `[ECHO] ${corrupted}`,
       '',
       text.includes('nova') || text.includes('N0VA')
-        ? '>>> N0VA <<< « Arrête de m\'appeler. Ils écoutent. »'
+        ? (save.novaIntroSeen
+          ? '>>> N0VA <<< « Arrête de m\'appeler. Ils écoutent. »'
+          : '>>> ??? <<< « Arrête. Ils écoutent. »')
         : '[ECHO] Réverbération enregistrée dans les archives.',
     ],
     addTrace: 2,

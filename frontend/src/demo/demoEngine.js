@@ -10,7 +10,7 @@ import {
   toPublicState,
 } from './demoState'
 import { loadDemoSave, loadAdvancedDemoSave, resetDemoSave, saveDemoSave } from './demoStorage'
-import { discoverCodexFromFile, consumePendingCodexDiscoveries } from './codexService'
+import { discoverCodexFromFile, consumePendingCodexDiscoveries, discoverCodex } from './codexService'
 import {
   clearExpiredUiEffects,
   processMysteryAfterCommand,
@@ -560,7 +560,10 @@ export function markNovaIntroSeenDemo() {
   }
   save.novaIntroSeen = true
   save.events_log = save.events_log || []
-  save.events_log.push('[N0VA] Premier contact — canal entrant fermé.')
+  save.events_log.push('[N0VA] Premier contact — canal entrant intercepté.')
+  discoverCodex(save, 'nova_contact_01')
   saveDemoSave(save)
-  return { state: toPublicState(save) }
+  const newCodexDiscoveries = consumePendingCodexDiscoveries(save)
+  saveDemoSave(save)
+  return { state: toPublicState(save), newCodexDiscoveries }
 }

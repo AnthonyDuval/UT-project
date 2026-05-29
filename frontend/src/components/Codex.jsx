@@ -33,7 +33,7 @@ export default function Codex({ codex }) {
     )
   }
 
-  const { entries, discoveredCount, total, progressLabel } = codex
+  const { entries, discoveredCount, total, progressLabel, novaRevealed } = codex
   const ratio = total ? discoveredCount / total : 0
 
   return (
@@ -41,7 +41,11 @@ export default function Codex({ codex }) {
       <header className="codex__header">
         <div>
           <h2 className="codex__title">CODEX DES DÉCOUVERTES</h2>
-          <p className="codex__subtitle">Registre clandestin — classification N0VA/███</p>
+          <p className="codex__subtitle">
+            {novaRevealed
+              ? 'Registre clandestin — classification N0VA/███'
+              : 'Registre clandestin — classification ███'}
+          </p>
         </div>
         <div className="codex__progress-block">
           <span className="codex__progress-label">Secrets découverts</span>

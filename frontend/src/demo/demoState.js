@@ -1,4 +1,9 @@
 import { buildCodexState } from './codexService'
+import {
+  NOVA_GATED_FILES,
+  sanitizeMissionRewards,
+  sanitizeObjectiveLabel,
+} from '../utils/novaGate'
 
 const MISSION_DEFS = {
   signal_fantome: {
@@ -175,11 +180,15 @@ export function createAdvancedDemoState() {
 function buildMissionListItem(missionId, save) {
   const def = MISSION_DEFS[missionId]
   const m = save.missions[missionId] || {}
-  const objectives = def.objectiveDefs.map((o) => ({
-    ...o,
-    done: (m.completedObjectives || []).includes(o.id),
-  }))
+  const objectives = def.objectiveDefs.map((o) => {
+    const base = sanitizeObjectiveLabel(o, save.novaIntroSeen)
+    return {
+      ...base,
+      done: (m.completedObjectives || []).includes(o.id),
+    }
+  })
   const done = objectives.filter((o) => o.done).length
+  const rewardsPreview = sanitizeMissionRewards(def.rewardsPreview, save.novaIntroSeen)
   return {
     id: missionId,
     title: def.title,
@@ -191,7 +200,7 @@ function buildMissionListItem(missionId, save) {
     progress: `${done}/${objectives.length}`,
     progressRatio: objectives.length ? done / objectives.length : 0,
     objectives,
-    rewardsPreview: def.rewardsPreview,
+    rewardsPreview,
     rewardsClaimed: m.rewardsClaimed ?? false,
   }
 }
@@ -337,6 +346,7 @@ export function getVisibleFiles(save) {
   const node = save.currentNode
 
   for (const [name, meta] of Object.entries(DEMO_FILES)) {
+    if (NOVA_GATED_FILES.has(name) && !save.novaIntroSeen) continue
     const fileNode = meta.node || 'local'
     if (fileNode !== node) continue
     if (meta.visible_from_start) visible.push(name)

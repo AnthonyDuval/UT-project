@@ -5,10 +5,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
   pointer-events: none;
 }
 
-.nova-encounter--entering,
+.nova-encounter--glitch-in,
 .nova-encounter--visible,
 .nova-encounter--glitch-out {
   pointer-events: auto;
@@ -17,58 +18,67 @@
 .nova-encounter__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(3px);
   opacity: 0;
 }
 
-.nova-encounter--entering .nova-encounter__backdrop,
+.nova-encounter--glitch-in .nova-encounter__backdrop,
 .nova-encounter--visible .nova-encounter__backdrop {
-  animation: nova-backdrop-in 1.4s ease-out forwards;
+  animation: nova-backdrop-in 0.9s ease-out forwards;
 }
 
 .nova-encounter--glitch-out .nova-encounter__backdrop {
-  animation: nova-backdrop-out 0.45s ease-in forwards;
+  animation: nova-backdrop-out 0.4s ease-in forwards;
 }
 
 .nova-encounter__window {
   position: relative;
-  width: min(92vw, 520px);
+  width: min(92vw, 68vw);
+  max-width: 1100px;
+  min-height: min(78vh, 720px);
   background: linear-gradient(165deg, #0c0c12 0%, #08080d 55%, #0a0810 100%);
-  border: 1px solid rgba(167, 139, 250, 0.35);
+  border: 1px solid rgba(167, 139, 250, 0.4);
   box-shadow:
-    0 0 0 1px rgba(230, 57, 70, 0.08),
-    0 0 60px rgba(167, 139, 250, 0.12),
-    0 24px 80px rgba(0, 0, 0, 0.75);
+    0 0 0 1px rgba(230, 57, 70, 0.12),
+    0 0 80px rgba(167, 139, 250, 0.18),
+    0 32px 100px rgba(0, 0, 0, 0.85);
   overflow: hidden;
   opacity: 0;
-  transform: translateY(12px) scale(0.98);
+  transform: translateY(18px) scale(0.96);
+  display: flex;
+  flex-direction: column;
 }
 
-.nova-encounter--entering .nova-encounter__window,
+.nova-encounter--glitch-in .nova-encounter__window {
+  animation: nova-glitch-in 0.42s steps(4) forwards;
+}
+
 .nova-encounter--visible .nova-encounter__window {
-  animation: nova-window-in 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 1;
+  transform: none;
 }
 
 .nova-encounter--glitch-out .nova-encounter__window {
-  animation: nova-glitch-out 0.45s steps(3) forwards;
+  animation: nova-glitch-out 0.4s steps(3) forwards;
 }
 
 .nova-encounter__header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.2);
-  background: linear-gradient(180deg, rgba(22, 18, 32, 0.95) 0%, rgba(12, 10, 18, 0.9) 100%);
+  gap: 0.85rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.22);
+  background: linear-gradient(180deg, rgba(22, 18, 32, 0.98) 0%, rgba(12, 10, 18, 0.92) 100%);
+  flex-shrink: 0;
 }
 
 .nova-encounter__signal {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #a78bfa;
-  box-shadow: 0 0 10px rgba(167, 139, 250, 0.8);
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.85);
   animation: nova-signal-pulse 2.4s ease-in-out infinite;
 }
 
@@ -80,31 +90,47 @@
 .nova-encounter__tag {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.18em;
-  color: rgba(167, 139, 250, 0.65);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  color: rgba(230, 57, 70, 0.75);
   text-transform: uppercase;
 }
 
 .nova-encounter__header h2 {
-  margin: 0.15rem 0 0;
+  margin: 0.2rem 0 0;
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  letter-spacing: 0.35em;
+  font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+  letter-spacing: 0.38em;
   color: #e9d5ff;
-  text-shadow: 0 0 20px rgba(167, 139, 250, 0.35);
+  text-shadow: 0 0 24px rgba(167, 139, 250, 0.4);
 }
 
 .nova-encounter__status {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   letter-spacing: 0.12em;
-  color: rgba(230, 57, 70, 0.85);
+  color: rgba(230, 57, 70, 0.9);
+}
+
+.nova-encounter__body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 0;
+  min-height: 0;
+}
+
+.nova-encounter__media {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .nova-encounter__video-wrap {
   position: relative;
-  aspect-ratio: 16 / 9;
+  flex: 1;
+  min-height: 280px;
   background: #000;
   overflow: hidden;
 }
@@ -114,7 +140,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: contrast(1.05) saturate(0.85);
+  filter: contrast(1.08) saturate(0.88) brightness(0.95);
 }
 
 .nova-encounter__video-scan {
@@ -125,36 +151,61 @@
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.12) 2px,
-    rgba(0, 0, 0, 0.12) 4px
+    rgba(0, 0, 0, 0.14) 2px,
+    rgba(0, 0, 0, 0.14) 4px
   );
-  opacity: 0.35;
+  opacity: 0.4;
 }
 
 .nova-encounter__video-noise {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: nova-noise 0.4s steps(2) infinite;
 }
 
-.nova-encounter__message {
-  margin: 0;
-  padding: 1rem 1.1rem 0.75rem;
+.nova-encounter__audio-btn {
+  margin: 0.65rem 1rem 1rem;
+  padding: 0.55rem 0.85rem;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
-  line-height: 1.65;
-  color: rgba(212, 212, 220, 0.92);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(212, 212, 220, 0.9);
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.nova-encounter__audio-btn:hover {
+  background: rgba(167, 139, 250, 0.2);
+  border-color: rgba(167, 139, 250, 0.55);
+}
+
+.nova-encounter__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.5rem 1.35rem;
+  min-height: 0;
+}
+
+.nova-encounter__message {
+  margin: 0 0 1.5rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.82rem, 1.4vw, 0.95rem);
+  line-height: 1.75;
+  color: rgba(212, 212, 220, 0.94);
 }
 
 .nova-encounter__reply-label {
   display: block;
-  padding: 0.65rem 1.1rem 0.25rem;
+  margin-bottom: 0.35rem;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(167, 139, 250, 0.55);
@@ -162,14 +213,13 @@
 
 .nova-encounter__reply {
   display: block;
-  width: calc(100% - 2.2rem);
-  margin: 0 1.1rem 1rem;
-  padding: 0.65rem 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0.85rem;
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(167, 139, 250, 0.28);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -179,21 +229,23 @@
 }
 
 .nova-encounter__reply:focus {
-  border-color: rgba(167, 139, 250, 0.55);
-  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.6);
+  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.18);
 }
 
 .nova-encounter__footer {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.55rem 1.1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 1.25rem;
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.58rem;
   letter-spacing: 0.1em;
   color: rgba(136, 136, 148, 0.65);
-  background: rgba(0, 0, 0, 0.35);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 @keyframes nova-backdrop-in {
@@ -206,19 +258,25 @@
   to { opacity: 0; }
 }
 
-@keyframes nova-window-in {
+@keyframes nova-glitch-in {
   0% {
     opacity: 0;
-    transform: translateY(16px) scale(0.97);
-    filter: brightness(1.2) blur(1px);
+    transform: translateY(20px) scale(0.94) skewX(2deg);
+    filter: hue-rotate(30deg) contrast(1.3);
   }
-  40% {
-    opacity: 0.85;
-    filter: brightness(1.05) blur(0);
+  35% {
+    opacity: 0.7;
+    transform: translate(-3px, 2px) skewX(-3deg);
+    filter: hue-rotate(-20deg);
+  }
+  65% {
+    opacity: 0.95;
+    transform: translate(2px, -1px) skewX(1deg);
+    filter: none;
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: none;
     filter: none;
   }
 }
@@ -229,24 +287,19 @@
     transform: translate(0) skewX(0);
     filter: none;
   }
-  25% {
-    opacity: 0.85;
-    transform: translate(-4px, 1px) skewX(-2deg);
-    filter: hue-rotate(20deg) contrast(1.2);
+  30% {
+    opacity: 0.75;
+    transform: translate(-5px, 2px) skewX(-2deg);
+    filter: hue-rotate(25deg) contrast(1.25);
   }
-  50% {
-    opacity: 0.5;
-    transform: translate(5px, -2px) skewX(2deg);
-    filter: hue-rotate(-15deg) saturate(1.4);
-  }
-  75% {
-    opacity: 0.2;
-    transform: translate(-2px, 0) skewX(-1deg);
-    filter: blur(1px);
+  60% {
+    opacity: 0.35;
+    transform: translate(6px, -3px) skewX(2deg);
+    filter: hue-rotate(-12deg) blur(1px);
   }
   100% {
     opacity: 0;
-    transform: translate(0, -6px) scale(0.98);
+    transform: translate(0, -8px) scale(0.97);
     filter: blur(2px);
   }
 }
@@ -256,7 +309,38 @@
 }
 
 @keyframes nova-noise {
-  50% { transform: translateX(1px); opacity: 0.06; }
+  50% { transform: translateX(1px); opacity: 0.07; }
+}
+
+@media (max-width: 900px) {
+  .nova-encounter__window {
+    width: min(94vw, 100%);
+    min-height: auto;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .nova-encounter__body {
+    grid-template-columns: 1fr;
+  }
+
+  .nova-encounter__media {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .nova-encounter__video-wrap {
+    min-height: 220px;
+    aspect-ratio: 16 / 10;
+  }
+
+  .nova-encounter__panel {
+    padding: 1.15rem 1.1rem 1.25rem;
+  }
+
+  .nova-encounter__message {
+    margin-bottom: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -267,9 +351,9 @@
     animation: none !important;
   }
 
-  .nova-encounter--entering .nova-encounter__window,
+  .nova-encounter--glitch-in .nova-encounter__window,
   .nova-encounter--visible .nova-encounter__window,
-  .nova-encounter--entering .nova-encounter__backdrop,
+  .nova-encounter--glitch-in .nova-encounter__backdrop,
   .nova-encounter--visible .nova-encounter__backdrop {
     opacity: 1;
     transform: none;

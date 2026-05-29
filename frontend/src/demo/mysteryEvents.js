@@ -27,7 +27,7 @@ export const MYSTERY_EVENTS = [
   {
     id: 'trace_nova_warning',
     once: true,
-    conditions: { type: 'trace', minTrace: 72 },
+    conditions: { type: 'trace', minTrace: 72, requiresNovaIntro: true },
     effects: {
       autoLines: [
         '>>> N0VA — CANAL PRIORITAIRE <<<',
@@ -76,7 +76,7 @@ export const MYSTERY_EVENTS = [
   {
     id: 'command_ghost_nova',
     once: true,
-    conditions: { type: 'command', command: 'ghost' },
+    conditions: { type: 'command', command: 'ghost', requiresNovaIntro: true },
     chance: 0.35,
     effects: {
       autoLines: [
@@ -102,7 +102,13 @@ export const MYSTERY_EVENTS = [
     once: false,
     chance: 0.08,
     cooldownMs: 300000,
-    conditions: { type: 'tick', minSessionSec: 180, mission: 'signal_fantome', missionStatus: 'active' },
+    conditions: {
+      type: 'tick',
+      minSessionSec: 180,
+      mission: 'signal_fantome',
+      missionStatus: 'active',
+      requiresNovaIntro: true,
+    },
     effects: {
       autoLines: ['[???] ...entends-tu le signal sous le bruit ?'],
       uiEffect: { type: 'scanlines', duration: 2000 },

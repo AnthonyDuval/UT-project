@@ -43,6 +43,9 @@ export function getDemoMarket() {
   const ownedPassive = save.traceReductionPassive >= 5
   const items = DEMO_MARKET_ITEMS.map((item) => ({
     ...item,
+    name: item.id === 'brouilleur_nova' && !save.novaIntroSeen
+      ? 'Brouilleur de signal'
+      : item.name,
     can_buy: item.type === 'passive' && ownedPassive ? false : true,
     owned_passive: item.type === 'passive' && ownedPassive,
   }))

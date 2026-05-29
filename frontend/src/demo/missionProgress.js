@@ -57,7 +57,16 @@ function grantMissionRewards(save, missionId) {
     }
     if (!save.seenEvents.includes('nova_contact')) {
       save.seenEvents.push('nova_contact')
-      narrativeLines.push(...NOVA_CONTACT_LINES)
+      if (save.novaIntroSeen) {
+        narrativeLines.push(...NOVA_CONTACT_LINES)
+      } else {
+        narrativeLines.push(
+          '',
+          '[???] Transmission interceptée — origine inconnue.',
+          '« Bien joué. UltraTech ne doit pas savoir. »',
+          '« Le marché noir t\'attend. Reste fantôme. »',
+        )
+      }
     }
     messages.push('[SYS] +50 BitTek | +1 Réputation')
     messages.push('[SYS] BLACK MARKET — accès autorisé.')
