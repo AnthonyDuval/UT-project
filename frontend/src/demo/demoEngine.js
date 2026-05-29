@@ -10,13 +10,29 @@ import {
   toPublicState,
 } from './demoState'
 import { loadDemoSave, loadAdvancedDemoSave, resetDemoSave, saveDemoSave } from './demoStorage'
+import { discoverCodexFromFile } from './codexService'
+import {
+  clearExpiredUiEffects,
+  processMysteryAfterCommand,
+  processMysteryFileOpen,
+  processMysteryTick,
+  processMysteryTrace,
+  stampUiEffectStart,
+} from './eventManager'
+import {
+  handleHiddenCommand,
+  handleMysteryDisconnect,
+  isHiddenCommand,
+} from './hiddenCommands'
 
 function addTrace(save, amount) {
-  if (amount <= 0 || save.gameOver) return
+  if (amount <= 0 || save.gameOver) return []
+  const prev = save.traceLevel
   const mult = NODE_META[save.currentNode]?.traceMultiplier || 1
   const passive = save.traceReductionPassive || 0
   const actual = Math.max(1, Math.round(amount * mult * (1 - passive / 100)))
   save.traceLevel = Math.min(100, save.traceLevel + actual)
+  const mysteryAuto = []
   if (save.traceLevel >= 30 && !save.trace_alerts_triggered.includes(30)) {
     save.trace_alerts_triggered.push(30)
     save.events_log.push('[TRACE] Activite reseau inhabituelle detectee.')
@@ -29,6 +45,15 @@ function addTrace(save, amount) {
     save.gameOver = true
     save.events_log.push('[GAME OVER] UltraTech vous a localise.')
   }
+  if (prev !== save.traceLevel) {
+    const mt = processMysteryTrace(save)
+    if (mt.autoLines.length) {
+      save._pendingMysteryLines = (save._pendingMysteryLines || []).concat(mt.autoLines)
+      mysteryAuto.push(...mt.autoLines)
+    }
+    if (mt.uiEffect) save.activeUiEffect = mt.uiEffect
+  }
+  return mysteryAuto
 }
 
 function traceMessages(save) {
@@ -121,6 +146,12 @@ function cmdOpen(save, args) {
     }
     lines.push('', '[SYS] Protocole de connexion débloqué : connect [cible]')
   }
+
+  const mystery = processMysteryFileOpen(save, name)
+  if (mystery.autoLines.length) lines.push('', ...mystery.autoLines)
+  if (mystery.uiEffect) save.activeUiEffect = mystery.uiEffect
+  discoverCodexFromFile(save, name)
+
   return lines
 }
 
@@ -156,6 +187,18 @@ function cmdConnect(save, args) {
   if (!save.hackedNodes.includes(target)) save.hackedNodes.push(target)
   save.currentNode = target
   addTrace(save, 15)
+
+  if (target === 'mirror_relay') {
+    return [
+      '[NET] Tunnel instable — reflet détecté...',
+      `[NET] Connected to ${meta.name}`,
+      '[???] Ce nœud n\'existe pas dans les registres UltraTech.',
+      '[SYS] ls · disconnect pour revenir.',
+      '',
+      '>>> N0VA <<< « Tu as trouvé le miroir. Ne regarde pas trop longtemps. »',
+    ]
+  }
+
   return [
     '[NET] Establishing encrypted tunnel...',
     `[NET] Connected to ${meta.name}`,
@@ -262,7 +305,9 @@ function cmdSync(save) {
 
 export function executeDemoCommand(command) {
   const save = loadDemoSave()
-  if (save.gameOver) {
+  clearExpiredUiEffects(save)
+
+  if (save.gameOver && !save.fakeGameOverUntil) {
     return {
       output: ['[LOCKED] Session terminée.', '[LOCKED] GAME OVER.'],
       clear_terminal: false,
@@ -275,6 +320,55 @@ export function executeDemoCommand(command) {
   const args = parts.slice(1)
 
   if (!cmd) return { output: [], clear_terminal: false, state: toPublicState(save) }
+
+  save.lastCommand = command.trim()
+
+  let uiEffect = null
+  let autoLines = []
+
+  // Commandes secrètes (prioritaires — pas dans help)
+  if (isHiddenCommand(cmd)) {
+    const hidden = handleHiddenCommand(save, cmd, args)
+    if (hidden) {
+      if (hidden.addTrace) {
+        const traceMystery = addTrace(save, hidden.addTrace)
+        autoLines.push(...traceMystery)
+      }
+      if (hidden.uiEffect) save.activeUiEffect = hidden.uiEffect
+      if (hidden.fakeGameOver) {
+        save.fakeGameOverUntil = Date.now() + hidden.fakeGameOver.duration
+        save.activeUiEffect = { type: 'fake_gameover', duration: hidden.fakeGameOver.duration }
+      }
+      if (hidden.autoLines?.length) autoLines.push(...hidden.autoLines)
+      stampUiEffectStart(save)
+      saveDemoSave(save)
+      const output = hidden.silent ? [] : [...(hidden.output || []), ...autoLines]
+      return {
+        output,
+        clear_terminal: false,
+        state: toPublicState(save),
+        uiEffect: save.activeUiEffect,
+        autoLines,
+      }
+    }
+  }
+
+  // disconnect mystérieux avant déblocage
+  if (cmd === 'disconnect' && !save.unlocked_commands.includes('disconnect')) {
+    const mysteryDisc = handleMysteryDisconnect(save, false)
+    if (mysteryDisc) {
+      addTrace(save, mysteryDisc.addTrace || 0)
+      if (mysteryDisc.uiEffect) save.activeUiEffect = mysteryDisc.uiEffect
+      stampUiEffectStart(save)
+      saveDemoSave(save)
+      return {
+        output: mysteryDisc.output,
+        clear_terminal: false,
+        state: toPublicState(save),
+        uiEffect: save.activeUiEffect,
+      }
+    }
+  }
 
   if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear') {
     addTrace(save, 2)
@@ -315,8 +409,48 @@ export function executeDemoCommand(command) {
   const traceMsgs = traceMessages(save)
   if (traceMsgs.length) output = [...output, '', ...traceMsgs]
 
+  const postCmd = processMysteryAfterCommand(save, cmd)
+  if (postCmd.autoLines.length) autoLines.push(...postCmd.autoLines)
+  if (postCmd.uiEffect) save.activeUiEffect = postCmd.uiEffect
+  if (postCmd.fakeGameOver) {
+    save.fakeGameOverUntil = Date.now() + postCmd.fakeGameOver.duration
+    save.activeUiEffect = { type: 'fake_gameover', duration: postCmd.fakeGameOver.duration }
+  }
+
+  if (autoLines.length) output = [...output, '', ...autoLines]
+  if (save._pendingMysteryLines?.length) {
+    output = [...output, '', ...save._pendingMysteryLines]
+    delete save._pendingMysteryLines
+  }
+
+  stampUiEffectStart(save)
   saveDemoSave(save)
-  return { output, clear_terminal, state: toPublicState(save) }
+  return {
+    output,
+    clear_terminal,
+    state: toPublicState(save),
+    uiEffect: save.activeUiEffect,
+    autoLines,
+  }
+}
+
+/** Tick session — événements temporels / hasard. */
+export function tickDemoMystery() {
+  const save = loadDemoSave()
+  clearExpiredUiEffects(save)
+  const result = processMysteryTick(save)
+  if (result.uiEffect) save.activeUiEffect = result.uiEffect
+  if (result.fakeGameOver) {
+    save.fakeGameOverUntil = Date.now() + result.fakeGameOver.duration
+    save.activeUiEffect = { type: 'fake_gameover', duration: result.fakeGameOver.duration }
+  }
+  stampUiEffectStart(save)
+  saveDemoSave(save)
+  return {
+    state: toPublicState(save),
+    autoLines: result.autoLines,
+    uiEffect: save.activeUiEffect,
+  }
 }
 
 export function getDemoState() {

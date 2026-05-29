@@ -1,6 +1,4 @@
-/**
- * États démo — partie fraîche (Mission 1) vs démo avancée (showcase).
- */
+import { buildCodexState } from './codexService'
 
 const MISSION_DEFS = {
   signal_fantome: {
@@ -83,6 +81,14 @@ export function createFreshDemoState() {
     installedPrograms: [],
     lootedProgramNodes: [],
     seenEvents: [],
+    mysteryFlags: {},
+    sessionStartMs: Date.now(),
+    commandCount: 0,
+    hiddenCommandUses: {},
+    lastCommand: '',
+    activeUiEffect: null,
+    fakeGameOverUntil: null,
+    codexDiscovered: {},
   }
 }
 
@@ -143,6 +149,14 @@ export function createAdvancedDemoState() {
     installedPrograms: ['packet_sniffer'],
     lootedProgramNodes: ['relay_ghost', 'satlink_03'],
     seenEvents: ['nova_contact'],
+    mysteryFlags: {},
+    sessionStartMs: Date.now(),
+    commandCount: 0,
+    hiddenCommandUses: {},
+    lastCommand: '',
+    activeUiEffect: null,
+    fakeGameOverUntil: null,
+    codexDiscovered: {},
   }
 }
 
@@ -217,6 +231,10 @@ const NODE_META = {
     id: 'blackvault', name: 'BLACKVAULT', displayName: 'ghost@blackvault',
     securityLevel: 'BLACK', traceMultiplier: 3.0, theme: 'blackvault',
   },
+  mirror_relay: {
+    id: 'mirror_relay', name: 'MIRROR_RELAY', displayName: 'ghost@mirror_relay',
+    securityLevel: 'UNKNOWN', traceMultiplier: 0.8, theme: 'ghost',
+  },
 }
 
 const PROGRAMS = {
@@ -269,6 +287,7 @@ export function buildProgramToolkit(save) {
 
 export function toPublicState(save) {
   const visible = getVisibleFiles(save)
+  const now = Date.now()
   return {
     player: save.player,
     unlocked_commands: save.unlocked_commands,
@@ -285,6 +304,10 @@ export function toPublicState(save) {
     traceReductionPassive: save.traceReductionPassive,
     network: buildNetwork(save),
     programToolkit: buildProgramToolkit(save),
+    activeUiEffect: save.activeUiEffect || null,
+    fakeGameOverActive: !!(save.fakeGameOverUntil && now < save.fakeGameOverUntil),
+    seenEvents: save.seenEvents || [],
+    codex: buildCodexState(save),
   }
 }
 
@@ -370,6 +393,64 @@ export const DEMO_FILES = {
     content: [
       '« SATLINK_03 est la porte d\'entrée. Cartographie tout. »',
       '— N0VA',
+    ],
+  },
+  'memory_fragment.log': {
+    node: 'local', unlock_key: 'mystery_memory_unlocked',
+    description: 'Fragment mémoire corrompu',
+    content: [
+      '[CORRUPT] 0x00 0xFF 0x?? 0x7F',
+      '[RECOVERED] "...subject ghost_operative — memory wipe FAILED..."',
+      '[RECOVERED] "...N0VA is not a person. N0VA is a protocol..."',
+      '[RECOVERED] "...mirror_relay coordinates: 47.██.ghost..."',
+      '',
+      '>>> hint: connect mirror_relay <<<',
+    ],
+  },
+  'unknown_signal.enc': {
+    node: 'local', unlock_key: 'mystery_signal_unlocked',
+    description: 'Signal non identifié',
+    content: [
+      '-----BEGIN ENCRYPTED SIGNAL-----',
+      'Freq: 1420.405 MHz · Origin: ████ ORBITAL',
+      'Pattern: N0VA / ULTRATECH / N0VA / ULTRATECH',
+      '',
+      'Décodage partiel :',
+      '« Le miroir montre ce qu\'UltraTech efface. »',
+      '« archive_███.dat — ne pas diffuser. »',
+      '-----END-----',
+    ],
+  },
+  'do_not_open.sys': {
+    node: 'local', unlock_key: 'mystery_override_unlocked',
+    description: 'Segment système verrouillé',
+    content: [
+      '[KERNEL] ACCESS LEVEL: BLACK',
+      '[KERNEL] FILE MARKED: DO NOT OPEN',
+      '',
+      'Contenu partiel :',
+      'Projet MIRROR — duplication de conscience opérateur.',
+      'Statut : ACTIF',
+      'Sujet test : ghost_███',
+      '',
+      '[WARN] Lecture déclenche alerte passive.',
+    ],
+  },
+  'archive_███.dat': {
+    node: 'local', unlock_key: 'mystery_archive_unlocked',
+    description: 'Archive classifiée',
+    content: [
+      '╔══════════════════════════════════════════════════╗',
+      '║  ULTRATECH — ARCHIVE INTERNE — NIVEAU ███        ║',
+      '╚══════════════════════════════════════════════════╝',
+      '',
+      'Théorie interne : « N0VA » serait une ruse de contre-surveillance.',
+      'Autre théorie : N0VA est une IA devenue autonome.',
+      '',
+      'Note marginale (main inconnue) :',
+      '« Les deux théories sont vraies. »',
+      '',
+      'Coordonnées : mirror_relay · deepnode_alpha · ???',
     ],
   },
 }

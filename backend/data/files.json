@@ -219,6 +219,45 @@
         "",
         "— ???"
       ]
+    },
+    "memory_fragment.log": {
+      "name": "memory_fragment.log",
+      "description": "Fragment mémoire corrompu",
+      "node": "local",
+      "unlock_key": "mystery_memory_unlocked",
+      "content": [
+        "[CORRUPT] ...subject ghost_operative — memory wipe FAILED...",
+        "[RECOVERED] ...N0VA is not a person. N0VA is a protocol..."
+      ]
+    },
+    "unknown_signal.enc": {
+      "name": "unknown_signal.enc",
+      "description": "Signal non identifié",
+      "node": "local",
+      "unlock_key": "mystery_signal_unlocked",
+      "content": [
+        "Décodage partiel : « Le miroir montre ce qu'UltraTech efface. »"
+      ]
+    },
+    "do_not_open.sys": {
+      "name": "do_not_open.sys",
+      "description": "Segment système verrouillé",
+      "node": "local",
+      "unlock_key": "mystery_override_unlocked",
+      "content": [
+        "Projet MIRROR — duplication de conscience opérateur.",
+        "[WARN] Lecture déclenche alerte passive."
+      ]
+    },
+    "archive_███.dat": {
+      "name": "archive_███.dat",
+      "description": "Archive classifiée",
+      "node": "local",
+      "unlock_key": "mystery_archive_unlocked",
+      "content": [
+        "Théorie interne : N0VA serait une ruse de contre-surveillance.",
+        "Note : « Les deux théories sont vraies. »"
+      ]
     }
   }
 }

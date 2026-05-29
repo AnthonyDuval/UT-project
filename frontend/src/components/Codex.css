@@ -1,0 +1,203 @@
+.codex {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(180deg, rgba(6, 4, 4, 0.98) 0%, rgba(10, 6, 8, 0.95) 100%);
+  color: var(--text-primary);
+}
+
+.codex--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+
+.codex__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(230, 57, 70, 0.25);
+}
+
+.codex__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.18em;
+  color: var(--red-primary);
+  text-shadow: 0 0 12px rgba(230, 57, 70, 0.25);
+  margin-bottom: 0.25rem;
+}
+
+.codex__subtitle {
+  font-size: var(--fs-xs);
+  color: rgba(255, 180, 60, 0.65);
+  letter-spacing: 0.1em;
+}
+
+.codex__progress-block {
+  min-width: 160px;
+  text-align: right;
+}
+
+.codex__progress-label {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.2rem;
+}
+
+.codex__progress-value {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  color: rgba(255, 180, 60, 0.95);
+}
+
+.codex__progress-bar {
+  margin-top: 0.45rem;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.codex__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red-primary), rgba(255, 180, 60, 0.85));
+  transition: width 0.4s ease;
+}
+
+.codex__intro {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+  font-style: italic;
+}
+
+.codex__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.codex__entry {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s;
+}
+
+.codex__entry--found {
+  border-left: 3px solid var(--red-dim);
+}
+
+.codex__entry--locked {
+  opacity: 0.55;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.codex__entry--commun.codex__entry--found { border-left-color: var(--text-dim); }
+.codex__entry--rare.codex__entry--found { border-left-color: #6eb5ff; }
+.codex__entry--interdit.codex__entry--found { border-left-color: #b86eff; }
+.codex__entry--anomalie.codex__entry--found {
+  border-left-color: rgba(255, 180, 60, 0.9);
+  box-shadow: inset 0 0 20px rgba(255, 180, 60, 0.04);
+}
+
+.codex__entry-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.45rem;
+}
+
+.codex__slot {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.codex__entry-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.codex__entry--locked .codex__entry-name {
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+}
+
+.codex__rarity {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid;
+}
+
+.codex__rarity--commun { color: var(--text-dim); border-color: var(--border); }
+.codex__rarity--rare { color: #6eb5ff; border-color: rgba(110, 181, 255, 0.4); }
+.codex__rarity--interdit { color: #b86eff; border-color: rgba(184, 110, 255, 0.4); }
+.codex__rarity--anomalie {
+  color: rgba(255, 180, 60, 0.95);
+  border-color: rgba(255, 180, 60, 0.35);
+}
+
+.codex__desc {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin: 0 0 0.5rem;
+}
+
+.codex__meta {
+  margin-bottom: 0.35rem;
+}
+
+.codex__date {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.codex__hint {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.65rem;
+  font-size: var(--fs-xs);
+  color: rgba(255, 180, 60, 0.85);
+  background: rgba(255, 180, 60, 0.06);
+  border-left: 2px solid rgba(255, 180, 60, 0.35);
+  line-height: 1.45;
+}
+
+.codex__hint-label {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+  opacity: 0.85;
+}
+
+.codex__locked-text {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+  line-height: 1.45;
+}

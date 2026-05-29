@@ -1,167 +1,148 @@
 # UltraTech Online
 
-Jeu navigateur narratif cyberpunk — terminal interactif, hacking, enquête et progression.
+**UltraTech Online** est un jeu narratif cyberpunk jouable dans le navigateur. Vous incarnez un opérateur clandestin qui infiltre le réseau d'UltraTech Corp. via un terminal sécurisé : fichiers cryptés, missions, nœuds réseau, Black Market et mécanique de **TRACE** (surveillance corporatiste).
+
+> **État actuel : Alpha publique — Demo Offline**  
+> La version Netlify fonctionne **sans backend** : progression sauvegardée dans le navigateur (`localStorage`). Le mode multijoueur (comptes, chat global, sauvegardes serveur) nécessite le backend Python en local.
+
+---
+
+## Jouer en ligne (Netlify)
+
+**Lien alpha :** [https://ut-project.netifly.app](https://ut-project.netifly.app)
+
+### Écran d'accueil
+
+| Bouton | Action |
+|--------|--------|
+| **Entrer dans la démo** | Reprend la sauvegarde locale existante |
+| **Nouvelle partie** | Mission 1 — Signal Fantôme, TRACE 0, terminal local |
+| **Démo avancée** | Showcase : SATLINK_03, Black Market, Mission 2 |
+| **Comment jouer ?** | Guide rapide (help, fichiers, TRACE, market) |
+
+### En jeu (mode démo)
+
+- **Reset Demo** — Recommence depuis la Mission 1 (efface la sauvegarde locale)
+- **Démo Avancée** — Charge l'état showcase
+- **Signaler un bug / Donner un avis** — Feedback (mailto ou liens configurables)
+
+---
 
 ## Stack
 
-| Couche     | Technologie              |
-|------------|--------------------------|
-| Frontend   | React.js + Vite          |
-| Backend    | Python + FastAPI         |
-| Sauvegarde | JSON local (`backend/data/`) |
-| API        | REST                     |
-
-## Structure
-
-```
-UT-Project/
-├── frontend/          # React + Vite
-│   ├── src/
-│   │   ├── api/       # Client REST
-│   │   └── components/
-│   └── package.json
-├── backend/           # FastAPI
-│   ├── main.py
-│   ├── data/
-│   │   ├── game_state.json
-│   │   ├── files.json
-│   │   ├── commands.json
-│   │   └── story.json
-│   ├── models/
-│   ├── services/
-│   └── requirements.txt
-└── README.md
-```
-
-## Prérequis
-
-- **Python 3.10+**
-- **Node.js 18+** et npm
+| Couche | Technologie |
+|--------|-------------|
+| Frontend | React + Vite |
+| Backend (local) | Python + FastAPI |
+| Démo Netlify | Moteur offline (`frontend/src/demo/`) + localStorage |
+| API (local) | REST |
 
 ---
 
-## Installation et lancement
+## Limitations actuelles (Alpha)
 
-### Étape 1 — Backend Python
+- **Pas de backend hébergé** sur Netlify — pas de login/register en production
+- **Pas de multijoueur** ni chat global synchronisé en ligne
+- **Sauvegarde locale uniquement** — effacée si vous videz les données du navigateur
+- Certaines commandes avancées du backend complet peuvent être simplifiées en mode démo
+- Le feedback alpha se configure via `frontend/.env` (`VITE_FEEDBACK_EMAIL`, etc.)
+
+---
+
+## Lancer en local (développement complet)
+
+### Prérequis
+
+- Python 3.10+
+- Node.js 18+
+
+### Backend
 
 ```bash
 cd backend
-
-# Créer un environnement virtuel (recommandé)
 python -m venv venv
 
-# Activer l'environnement
-# Windows (PowerShell) :
+# Windows PowerShell
 .\venv\Scripts\Activate.ps1
-# Windows (CMD) :
-venv\Scripts\activate.bat
-# macOS / Linux :
-source venv/bin/activate
 
-# Installer les dépendances
 pip install -r requirements.txt
-
-# Lancer le serveur
 uvicorn main:app --reload --port 8000
 ```
 
-Le backend est accessible sur **http://localhost:8000**  
-Documentation API interactive : **http://localhost:8000/docs**
+API : http://localhost:8000 — Docs : http://localhost:8000/docs
 
-### Étape 2 — Frontend React
-
-Ouvrir un **second terminal** :
+### Frontend
 
 ```bash
 cd frontend
-
-# Installer les dépendances
 npm install
-
-# Lancer le serveur de développement
 npm run dev
 ```
 
-Le jeu est accessible sur **http://localhost:5173**
+Jeu : http://localhost:5173
+
+Avec le backend actif, le client se connecte en mode **multijoueur** (login/register). Sans backend, le mode **démo offline** s'active automatiquement.
 
 ---
 
-## Tester la Mission 1 — Signal Fantôme
+## Déployer sur Netlify
 
-1. Ouvrir **http://localhost:5173** dans le navigateur.
-2. Taper `help` — seules les commandes de base sont listées.
-3. Taper `ls` — voir les fichiers disponibles.
-4. Taper `open readme.txt` — lire le brief d'accueil.
-5. Taper `open system.log` — découvrir l'indice **scan**.
-6. Taper `scan` — analyser le réseau, débloquer `ghost_relay.log`.
-7. Taper `open ghost_relay.log` — découvrir la commande **connect relay_ghost**.
-8. Taper `connect relay_ghost` — événement N0VA, +50 BitTek, +1 réputation.
-9. Taper `status` — vérifier la mission terminée.
-10. Taper `open nova_contact.dat` — lire le message de N0VA.
-
-Pour recommencer : cliquer **↺ Reset Save** en haut à droite.
+1. Connecter le dépôt GitHub à Netlify
+2. Build settings (ou utiliser `netlify.toml` à la racine) :
+   - **Base directory :** `frontend`
+   - **Build command :** `npm run build`
+   - **Publish directory :** `frontend/dist`
+3. Variables d'environnement (optionnel) :
+   - `VITE_NETLIFY_URL` — URL publique
+   - `VITE_FEEDBACK_EMAIL` — email feedback
+   - `VITE_FEEDBACK_DISCORD` / `VITE_FEEDBACK_TWITTER`
 
 ---
 
-## Commandes disponibles
+## Mission 1 — Signal Fantôme (guide)
 
-| Commande              | Disponibilité   | Description                    |
-|-----------------------|-----------------|--------------------------------|
-| `help`                | Départ          | Aide (sans révéler les cachées)|
-| `clear`               | Départ          | Efface le terminal             |
-| `ls`                  | Départ          | Liste les fichiers             |
-| `open [fichier]`      | Départ          | Lit un fichier                 |
-| `status`              | Départ          | Statut opérateur               |
-| `scan`                | À découvrir     | Analyse réseau                 |
-| `connect relay_ghost` | À découvrir     | Connexion au relais fantôme (+25 trace) |
-| `decrypt`             | Futur           | Déchiffrement (+10 trace)               |
-
-## Mécanique UltraTech Trace
-
-UltraTech tente progressivement de localiser le joueur. Certaines actions augmentent le niveau de traque (0–100 %) :
-
-| Action                    | Trace |
-|---------------------------|-------|
-| `scan`                    | +15   |
-| `connect relay_ghost`       | +25   |
-| Commande inconnue         | +2    |
-| `decrypt` (futur)         | +10   |
-
-Seuils narratifs : 30 %, 60 %, 85 %, 100 % (**Game Over** — séquence chaotique + écran final).
-
-### Game Over (100 % trace)
-
-- `gameOver: true` en backend — commandes bloquées
-- Séquence automatique ~15 s : freeze, glitch, popups, caméra, auto-typing, N0VA, écran final
-- Bouton **Recommencer** pour reset la sauvegarde
-
-**Test rapide :** spammer des commandes invalides (`hack`, `test`…) — +2 % par tentative.
+1. `help` — commandes de base
+2. `ls` puis `open readme.txt` et `open system.log`
+3. `scan` — débloqué après lecture de system.log
+4. `open ghost_relay.log` — débloque `connect`
+5. `connect relay_ghost` — infiltration du relais
+6. Surveiller la **TRACE** en haut de l'écran
 
 ---
 
-## API REST
+## Structure du projet
 
-| Méthode | Endpoint        | Description              |
-|---------|-----------------|--------------------------|
-| GET     | `/api/health`   | Santé du serveur         |
-| GET     | `/api/state`    | État du joueur           |
-| POST    | `/api/command`  | Exécuter une commande    |
-| POST    | `/api/reset`    | Réinitialiser la sauvegarde |
-| GET     | `/api/market`   | Catalogue Black Market      |
-| POST    | `/api/market/buy` | Acheter un objet          |
-| GET     | `/api/inventory`| Inventaire + effets actifs  |
-| POST    | `/api/inventory/use` | Utiliser un objet      |
+```
+UT-Project/
+├── frontend/           # React + Vite
+│   ├── src/
+│   │   ├── api/        # Client REST + routage démo
+│   │   ├── demo/       # Moteur offline (Netlify)
+│   │   └── components/
+│   └── .env.example
+├── backend/            # FastAPI (local / futur hébergement)
+│   ├── main.py
+│   ├── data/
+│   └── services/
+├── netlify.toml
+└── README.md
+```
 
-## Black Market
+---
 
-App **BLACK MARKET** sur le bureau — débloquée après Mission 1 ou lecture de `market://blacknode`.
+## Fichiers à ne pas committer
 
-| Objet | Prix | Effet |
-|-------|------|-------|
-| Firewall Jetable | 30 ₿ | -15 % trace (usage unique) |
-| Proxy Fantôme | 50 ₿ | -25 % trace (usage unique) |
-| Brouilleur N0VA | 75 ₿ | 2 prochaines augmentations de trace /2 |
-| Spoof d'Identité | 100 ₿ | -40 % trace + alerte UltraTech |
-| Pack Firewall Basique | 120 ₿ | Passif permanent : -5 % sur toutes les augmentations |
+Vérifiés dans `.gitignore` :
 
-Les objets consommables vont dans l'inventaire. Le passif s'applique à l'achat. Achat impossible si Game Over ou BitTek insuffisant.
+- `backend/venv/`, `node_modules/`
+- `frontend/dist/`
+- `.env`, `.env.local`
+- `backend/data/saves/` (sauvegardes joueurs)
+- fichiers temporaires (`*.log`, `*.tmp`)
+
+---
+
+## Licence / Contact
+
+Prototype alpha — UltraTech Online.  
+Feedback : configurez `VITE_FEEDBACK_EMAIL` ou ouvrez une issue sur le dépôt.

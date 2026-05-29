@@ -1,0 +1,123 @@
+.feedback-btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 2px;
+}
+
+.feedback-btn--secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.feedback-btn--secondary:hover {
+  border-color: var(--text-dim);
+  color: var(--text-primary);
+}
+
+.feedback-btn--ghost {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 0.35rem 0;
+}
+
+.feedback-btn--ghost:hover {
+  color: var(--text-dim);
+}
+
+.feedback-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.feedback-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  border: none;
+  cursor: pointer;
+}
+
+.feedback-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  padding: 1.5rem;
+  background: rgba(8, 10, 16, 0.98);
+  border: 1px solid var(--border);
+}
+
+.feedback-modal__panel h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.feedback-modal__panel > p {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.feedback-modal__links {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.feedback-modal__links a {
+  display: block;
+  padding: 0.65rem 0.85rem;
+  font-size: var(--fs-sm);
+  color: var(--red-primary);
+  background: rgba(230, 57, 70, 0.08);
+  border: 1px solid var(--red-dim);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.feedback-modal__links a:hover {
+  background: rgba(230, 57, 70, 0.18);
+}
+
+.feedback-modal__placeholder {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.45;
+  padding: 0.5rem 0;
+}
+
+.feedback-modal__close {
+  width: 100%;
+  padding: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.feedback-modal__close:hover {
+  color: var(--text-primary);
+}

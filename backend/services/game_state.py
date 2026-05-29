@@ -61,6 +61,11 @@ DEFAULT_STATE: dict[str, Any] = {
     ],
     "installedPrograms": [],
     "lootedProgramNodes": [],
+    "hiddenCommandUses": {},
+    "mysteryFlags": {},
+    "sessionStartMs": 0,
+    "commandCount": 0,
+    "lastCommand": "",
 }
 
 

@@ -5,6 +5,7 @@ const APPS = [
   { id: 'chat', name: 'Canal', icon: '💬', alwaysUnlocked: true },
   { id: 'journal', name: 'Journal', icon: '📋', alwaysUnlocked: true },
   { id: 'toolkit', name: 'ToolKit', icon: '💾', alwaysUnlocked: true },
+  { id: 'codex', name: 'Codex', icon: '📜', alwaysUnlocked: true },
   { id: 'market', name: 'BLACK MARKET', icon: '🛒', requiresMarket: true },
 ]
 

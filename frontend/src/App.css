@@ -199,6 +199,12 @@
   letter-spacing: 0.05em;
 }
 
+.footer__right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
 .footer__blink {
   color: var(--red-primary);
   animation: blink 2s step-end infinite;

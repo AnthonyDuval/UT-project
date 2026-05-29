@@ -377,6 +377,28 @@
   border: 1px solid var(--border);
 }
 
+.statusbar__journal-btn--codex {
+  border-color: rgba(255, 180, 60, 0.35);
+  color: rgba(255, 180, 60, 0.9);
+}
+
+.statusbar__journal-btn--codex:hover {
+  background: rgba(255, 180, 60, 0.1);
+}
+
+.statusbar__codex-progress {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: rgba(255, 180, 60, 0.75);
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.06em;
+}
+
+.statusbar__section--codex {
+  border-left: 2px solid rgba(230, 57, 70, 0.35);
+  padding-left: 0.75rem;
+}
+
 .statusbar__journal-btn {
   margin-top: 0.65rem;
   background: none;

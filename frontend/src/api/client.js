@@ -1,6 +1,6 @@
 /** Client API REST — backend FastAPI ou mode démo offline local */
 
-import { executeDemoCommand, getDemoState, loadAdvancedDemoGame, resetDemoGame } from '../demo/demoEngine'
+import { executeDemoCommand, getDemoState, loadAdvancedDemoGame, resetDemoGame, tickDemoMystery } from '../demo/demoEngine'
 import { buyDemoItem, getDemoInventory, getDemoMarket, useDemoItem } from '../demo/demoMarket'
 import { loadDemoChat, saveDemoChat } from '../demo/demoStorage'
 
@@ -177,6 +177,13 @@ export async function loadAdvancedDemo() {
     throw new Error('Démo avancée disponible uniquement en mode offline.')
   }
   return demoDelay(loadAdvancedDemoGame())
+}
+
+export async function tickMysteryEvents() {
+  if (DEMO_MODE) {
+    return demoDelay(tickDemoMystery())
+  }
+  return { state: null, autoLines: [], uiEffect: null }
 }
 
 export async function checkHealth() {

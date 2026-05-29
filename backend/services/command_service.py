@@ -2,6 +2,7 @@
 
 from services.game_state import GameStateManager
 from services.mission_service import MissionService
+from services.mystery_service import EventManager
 from services.network_service import NetworkService
 from services.program_service import ProgramService
 from services.trace_service import TRACE_COSTS, add_trace
@@ -15,6 +16,7 @@ class CommandInterpreter:
         self.network = NetworkService(manager)
         self.missions = MissionService(manager)
         self.programs = ProgramService(manager)
+        self.events = EventManager(manager)
 
     def _apply_trace(self, trace_key: str, custom_amount: int | None = None) -> tuple[list[str], bool]:
         """Applique un coût de trace (avec multiplicateur nœud)."""
@@ -48,6 +50,25 @@ class CommandInterpreter:
         parts = command_line.split()
         cmd = parts[0].lower()
         args = parts[1:]
+        self.manager.state["lastCommand"] = command_line
+
+        if self.events.is_hidden(cmd):
+            hidden_out = self.events.handle_hidden(cmd, args)
+            if hidden_out is not None:
+                trace_msgs = []
+                if cmd in ("override", "ghost", "mirror"):
+                    trace_msgs, _ = self._apply_trace("unknown_command")
+                self.manager.save_state()
+                return self._append_trace_messages(hidden_out, trace_msgs), False
+
+        if cmd == "disconnect" and cmd not in self.manager.state["unlocked_commands"]:
+            trace_msgs, _ = self._apply_trace("unknown_command")
+            self.manager.save_state()
+            output = [
+                "[NET] Aucune connexion active à fermer.",
+                "[???] Pourtant un tunnel fantôme vient de se fermer ailleurs.",
+            ]
+            return self._append_trace_messages(output, trace_msgs), False
 
         if cmd not in self.manager.state["unlocked_commands"]:
             trace_msgs, _ = self._apply_trace("unknown_command")

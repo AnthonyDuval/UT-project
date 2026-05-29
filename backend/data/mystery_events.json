@@ -1,0 +1,18 @@
+{
+  "hidden_commands": ["mirror", "ghost", "nova", "trace", "echo", "override"],
+  "events": {
+    "trace_whisper_45": {
+      "id": "trace_whisper_45",
+      "lines": ["[???] Quelqu'un compte vos pas dans le réseau."],
+      "log": "[EVENT] Signature parallèle détectée."
+    },
+    "nova_ghost_channel": {
+      "id": "nova_ghost_channel",
+      "lines": [
+        ">>> N0VA <<<",
+        "« Ne cherche pas mon vrai nom dans les logs. »"
+      ],
+      "log": "[N0VA] Présence — canal fantôme."
+    }
+  }
+}

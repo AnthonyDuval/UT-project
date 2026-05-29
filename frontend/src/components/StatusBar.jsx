@@ -187,6 +187,21 @@ export default function StatusBar({
         </div>
       )}
 
+      {/* Codex — secrets découverts */}
+      <div className="statusbar__section statusbar__section--codex">
+        <h2 className="statusbar__heading">CODEX</h2>
+        <p className="statusbar__codex-progress">
+          Secrets : {state.codex?.progressLabel ?? '0/18'}
+        </p>
+        <button
+          type="button"
+          className="statusbar__journal-btn statusbar__journal-btn--codex"
+          onClick={() => onOpenApp?.('codex')}
+        >
+          Ouvrir le Codex →
+        </button>
+      </div>
+
       {/* Apps bureau */}
       <div className="statusbar__apps">
         <h2 className="statusbar__heading">APPLICATIONS</h2>
