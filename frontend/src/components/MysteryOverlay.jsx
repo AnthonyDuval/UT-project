@@ -84,6 +84,7 @@ export default function MysteryOverlay({ effect, onExpire }) {
     'mystery-overlay',
     `mystery-overlay--${type}`,
     isHorror ? 'mystery-overlay--horror' : '',
+    type === 'ut_freeze' ? 'mystery-overlay--ut-freeze' : '',
     visible ? 'mystery-overlay--visible' : '',
   ].filter(Boolean).join(' ')
 
@@ -112,6 +113,12 @@ export default function MysteryOverlay({ effect, onExpire }) {
           {type === 'ultratech_watch' && (
             <div className="mystery-watch">
               <p className="mystery-watch__text">{watchText}</p>
+            </div>
+          )}
+
+          {type === 'ut_freeze' && (
+            <div className="mystery-ut-freeze" aria-hidden="true">
+              <span className="mystery-ut-freeze__pulse" />
             </div>
           )}
 

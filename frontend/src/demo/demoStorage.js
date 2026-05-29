@@ -50,6 +50,13 @@ function migrateSave(save) {
       stuckTier: 0,
     }
   }
+  if (!save.ultraTechPresence) {
+    save.ultraTechPresence = {
+      level: save.flags?.ut_first_riposte ? 'monitoring' : 'passive',
+      lastWarningAt: 0,
+      terminalLockUntil: 0,
+    }
+  }
   save.seenTransmissions = save.seenTransmissions || []
   save.characterTransmissionLastAt = save.characterTransmissionLastAt || 0
   if (save.activeCharacterTransmission === undefined) save.activeCharacterTransmission = null
@@ -75,6 +82,17 @@ function migrateSave(save) {
   if (!save.unlocked_commands.includes('files')) {
     save.unlocked_commands.push('files')
   }
+  save.onboardingSeen = save.onboardingSeen ?? (
+    !!(save.player?.username && save.player.username !== 'ghost_demo')
+    || !!save.flags?.scan_completed
+    || !!save.flags?.mission_1_complete
+    || (save.commandCount || 0) > 0
+  )
+  if (save.onboardingSeen && !save.player?.username) {
+    save.player = save.player || {}
+    save.player.username = 'ghost_demo'
+  }
+  save.lastRiskyActionAt = save.lastRiskyActionAt || save.sessionStartMs || Date.now()
   if (save.read_files?.includes('readme.txt') && !save.read_files.includes('note.txt')) {
     save.read_files.push('note.txt')
     save.flags.note_read = true

@@ -85,6 +85,12 @@ export default {
         nextHint: 'Climb higher. N0VA intervenes before game over.',
         rarity: 'rare',
       },
+      veil_agent: {
+        name: 'VEIL',
+        description: 'UltraTech SECOPS agent — cold presence on the channel. Your session is now monitored.',
+        nextHint: 'VEIL speaks once. Then she watches.',
+        rarity: 'interdit',
+      },
       nova_trace_warning: {
         name: 'NOVA_TRACE_WARNING',
         description: 'N0VA cuts the channel : "It may not be me helping you." Moral ambiguity confirmed.',

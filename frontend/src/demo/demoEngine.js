@@ -58,7 +58,17 @@ import {
   rollCharacterTransmission,
   clearActiveCharacterTransmission,
 } from '../systems/CharacterTransmissionSystem.jsx'
-import { tx, txRaw } from '../i18n/helpers'
+import {
+  checkRiposteTriggers,
+  getPresenceTraceMultiplier,
+  getTraceRiseFeedback,
+  isTerminalLockedByPresence,
+  syncPresenceLevel,
+  tickPresenceEffects,
+  flushPendingVeilIntro,
+  PRESENCE_LEVELS,
+} from '../systems/UltraTechPresence'
+import { getPlayerDisplayName } from '../utils/playerName'
 
 function trackTutorial(save, cmd, args) {
   save.tutorialFlags = save.tutorialFlags || {}
@@ -148,14 +158,32 @@ function finalizeCommand(save, output, extras = {}) {
   return finishCommand(save, output, extras)
 }
 
+function touchRiskyAction(save) {
+  save.lastRiskyActionAt = Date.now()
+}
+
 function addTrace(save, amount) {
   if (amount <= 0 || save.gameOver) return []
+  touchRiskyAction(save)
+
+  let effectiveAmount = amount
+  const halvedFx = save.activeEffects?.find((e) => e.type === 'trace_halved' && e.usesLeft > 0)
+  if (halvedFx) {
+    effectiveAmount = Math.max(1, Math.round(amount / 2))
+    halvedFx.usesLeft -= 1
+    if (halvedFx.usesLeft <= 0) {
+      save.activeEffects = save.activeEffects.filter((e) => e !== halvedFx)
+    }
+  }
+
   const prev = save.traceLevel
-  const mult = NODE_META[save.currentNode]?.traceMultiplier || 1
+  const mult = (NODE_META[save.currentNode]?.traceMultiplier || 1) * getPresenceTraceMultiplier(save)
   const passive = save.traceReductionPassive || 0
-  const actual = Math.max(1, Math.round(amount * mult * (1 - passive / 100)))
+  const actual = Math.max(1, Math.round(effectiveAmount * mult * (1 - passive / 100)))
   save.traceLevel = Math.min(100, save.traceLevel + actual)
   const mysteryAuto = []
+  const traceFeedback = getTraceRiseFeedback(save, actual)
+
   if (save.traceLevel >= 30 && !save.trace_alerts_triggered.includes(30)) {
     save.trace_alerts_triggered.push(30)
     save.events_log.push(tx('terminal.trace.activity30'))
@@ -169,6 +197,13 @@ function addTrace(save, amount) {
     save.events_log.push(tx('terminal.trace.gameOver'))
   }
   if (prev !== save.traceLevel) {
+    syncPresenceLevel(save)
+    if (prev <= 45 && save.traceLevel > 45) {
+      const riposte = checkRiposteTriggers(save, 'trace_threshold')
+      if (riposte?.autoLines?.length) mysteryAuto.push(...riposte.autoLines)
+      if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
+    }
+    if (traceFeedback) mysteryAuto.push(traceFeedback)
     if (prev < 50 && save.traceLevel >= 50) tryCharacterTransmission(save, 'high_trace')
     if (prev < 70 && save.traceLevel >= 70) tryCharacterTransmission(save, 'high_trace')
     const merged = mergeHorrorResult(
@@ -243,7 +278,8 @@ function cmdLs(save, args) {
 
   const visible = getVisibleFiles(save)
   const isLocal = save.currentNode === 'local'
-  const dirPath = isLocal ? '/home/ghost_demo/' : `/net/${save.currentNode}/`
+  const homeUser = getPlayerDisplayName(save)
+  const dirPath = isLocal ? `/home/${homeUser}/` : `/net/${save.currentNode}/`
   const lines = [tx('terminal.ls.currentDir', { path: dirPath }), '']
   if (isLocal) {
     lines.push(tx('terminal.ls.dirPrograms', { count: save.installedPrograms.length }))
@@ -335,19 +371,28 @@ function cmdConnect(save, args) {
   if (!save.hackedNodes.includes(target)) save.hackedNodes.push(target)
   save.currentNode = target
   trackHorrorConnection(save)
-  addTrace(save, 15)
+  addTrace(save, 12)
   syncMissionObjectiveText(save)
   touchProgress(save)
 
-  if (target === 'relay_ghost') tryCharacterTransmission(save, 'ghost_node')
-
+  let connectLines
   if (target === 'mirror_relay') {
-    return (txRaw('terminal.connect.mirror') || []).map((line) =>
+    connectLines = (txRaw('terminal.connect.mirror') || []).map((line) =>
+      line.replace('{{nodeName}}', meta.name))
+  } else {
+    connectLines = (txRaw('terminal.connect.normal') || []).map((line) =>
       line.replace('{{nodeName}}', meta.name))
   }
 
-  return (txRaw('terminal.connect.normal') || []).map((line) =>
-    line.replace('{{nodeName}}', meta.name))
+  if (target === 'satlink_03') {
+    const riposte = checkRiposteTriggers(save, 'satlink_connect')
+    if (riposte?.autoLines?.length) connectLines = [...connectLines, '', ...riposte.autoLines]
+    if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
+  }
+
+  if (target === 'relay_ghost') tryCharacterTransmission(save, 'ghost_node')
+
+  return connectLines
 }
 
 function cmdDisconnect(save) {
@@ -375,10 +420,22 @@ function cmdScan(save) {
   for (const c of ['connect', 'disconnect']) {
     if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
   }
-  addTrace(save, 15)
+  addTrace(save, 10)
   syncMissionObjectiveText(save)
   touchProgress(save)
-  return txRaw('terminal.scan.lines') || []
+
+  const lines = [...(txRaw('terminal.scan.lines') || [])]
+  if (save.flags.mission_1_complete) {
+    const riposte = checkRiposteTriggers(save, 'mission_1_complete')
+    if (riposte?.autoLines?.length) lines.push('', ...riposte.autoLines)
+    if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
+  } else if (save.currentNode === 'satlink_03') {
+    const riposte = checkRiposteTriggers(save, 'satlink_scan')
+    if (riposte?.autoLines?.length) lines.push('', ...riposte.autoLines)
+    if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
+  }
+
+  return lines
 }
 
 function cmdProbe(save) {
@@ -390,9 +447,13 @@ function cmdProbe(save) {
   for (const n of ['morgue_server', 'blackvault']) {
     if (!save.discoveredNodes.includes(n)) save.discoveredNodes.push(n)
   }
-  addTrace(save, 8)
+  addTrace(save, 12)
   syncMissionObjectiveText(save)
-  return txRaw('terminal.probe.lines') || []
+  const lines = [...(txRaw('terminal.probe.lines') || [])]
+  const riposte = checkRiposteTriggers(save, 'satlink_probe')
+  if (riposte?.autoLines?.length) lines.push('', ...riposte.autoLines)
+  if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
+  return lines
 }
 
 function cmdRun(save, args) {
@@ -448,13 +509,45 @@ function cmdSync(save) {
   ]
 }
 
+function processTraceDecay(save) {
+  const level = save.ultraTechPresence?.level
+  if (level === PRESENCE_LEVELS.HOSTILE || level === PRESENCE_LEVELS.LOCKDOWN) return
+  if (save.traceLevel <= 0) return
+
+  const now = Date.now()
+  const sinceRisk = now - (save.lastRiskyActionAt || save.sessionStartMs || now)
+  if (sinceRisk < 60000) return
+
+  save._traceDecayTick = save._traceDecayTick || 0
+  if (now - save._traceDecayTick < 60000) return
+
+  save._traceDecayTick = now
+  save.traceLevel = Math.max(0, save.traceLevel - 2)
+}
+
 export function executeDemoCommand(command) {
   const save = loadDemoSave()
   clearExpiredUiEffects(save)
 
+  if (!save.onboardingSeen) {
+    return {
+      output: [tx('onboarding.terminalBlocked')],
+      clear_terminal: false,
+      state: toPublicState(save),
+    }
+  }
+
   if (save.gameOver && !save.fakeGameOverUntil) {
     return {
       output: [tx('terminal.locked.session'), tx('terminal.locked.gameOver')],
+      clear_terminal: false,
+      state: toPublicState(save),
+    }
+  }
+
+  if (isTerminalLockedByPresence(save)) {
+    return {
+      output: [tx('presence.lockdown.terminalLock')],
       clear_terminal: false,
       state: toPublicState(save),
     }
@@ -523,7 +616,7 @@ export function executeDemoCommand(command) {
   }
 
   if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear' && cmd !== 'ls') {
-    addTrace(save, 2)
+    addTrace(save, 1)
     recordUnknownCommand(save)
     recordUselessCommand(save, cmd)
     let output = [pickUnknownCommandLine(cmd), ...traceMessages(save)]
@@ -606,6 +699,15 @@ export function tickDemoMystery() {
     mergeHorrorResult(processMysteryTick(save), processHorrorTick(save)),
     behaviorTick,
   )
+  const presenceTick = tickPresenceEffects(save)
+  if (presenceTick.autoLines?.length) {
+    result.autoLines = [...(result.autoLines || []), ...presenceTick.autoLines]
+  }
+  if (presenceTick.transmission) {
+    save.activeCharacterTransmission = presenceTick.transmission
+  }
+  flushPendingVeilIntro(save)
+  processTraceDecay(save)
   if (result.uiEffect) save.activeUiEffect = result.uiEffect
   if (result.fakeGameOver) {
     save.fakeGameOverUntil = Date.now() + result.fakeGameOver.duration

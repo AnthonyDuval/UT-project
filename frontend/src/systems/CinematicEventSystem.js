@@ -79,31 +79,38 @@ function buildActiveCinematic(type, eventId) {
 }
 
 /** Déclenche un événement cinématique (log console inclus). */
-export function fireCinematicEvent(save, type, eventId = `manual_${type}`) {
+export function fireCinematicEvent(save, type, eventId = `manual_${type}`, options = {}) {
   if (save.gameOver || save.activeCinematic || save.activeCharacterTransmission) return null
-  if (save.fakeGameOverUntil && Date.now() < save.fakeGameOverUntil) return null
+  if (!options.skipCooldown && save.fakeGameOverUntil && Date.now() < save.fakeGameOverUntil) return null
 
   ensureCinematicState(save)
   const meta = CINEMATIC_META[type]
   if (!meta) return null
 
-  const sinceGlobal = Date.now() - (save.cinematicLastGlobalAt || 0)
-  if (save.cinematicLastGlobalAt && sinceGlobal < CINEMATIC_GLOBAL_COOLDOWN_MS) {
-    return null
+  if (!options.skipCooldown) {
+    const sinceGlobal = Date.now() - (save.cinematicLastGlobalAt || 0)
+    if (save.cinematicLastGlobalAt && sinceGlobal < CINEMATIC_GLOBAL_COOLDOWN_MS) {
+      return null
+    }
   }
 
   if (meta.revealPhantom) revealPhantomNode(save)
 
   save.activeCinematic = buildActiveCinematic(type, eventId)
+  if (options.bannerMessage) {
+    save.activeCinematic.bannerMessage = options.bannerMessage
+  }
   save.cinematicLastGlobalAt = Date.now()
   save.cinematicLastTriggeredAt[eventId] = Date.now()
 
   // eslint-disable-next-line no-console
   console.log('[CINEMATIC EVENT]', eventId)
 
+  const logLine = options.logLine || meta.log
+
   return {
     cinematic: save.activeCinematic,
-    autoLines: meta.log ? [meta.log] : [],
+    autoLines: logLine ? [logLine] : [],
   }
 }
 

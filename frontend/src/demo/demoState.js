@@ -2,6 +2,7 @@ import { buildCodexState } from './codexService'
 import { getHintBrokerState } from './hintBroker'
 import { createBehaviorState } from '../systems/PlayerBehaviorTracker'
 import { getFileContent, getFileDescription } from '../i18n/helpers'
+import { getPlayerDisplayName } from '../utils/playerName'
 import {
   NOVA_GATED_FILES,
   sanitizeMissionRewards,
@@ -22,9 +23,9 @@ const MISSION_DEFS = {
       { id: 'connect_relay', label: 'Atteindre le relais fantôme' },
     ],
     rewardsPreview: {
-      bittek: 50,
+      bittek: 120,
       reputation: 1,
-      summary: 'Contact N0VA · BLACK MARKET · accès SATLINK_03',
+      summary: 'Contact N0VA · BLACK MARKET · Firewall Jetable · accès SATLINK_03',
     },
   },
   satlink_intrusion: {
@@ -32,7 +33,7 @@ const MISSION_DEFS = {
     title: 'Intrusion Orbitale',
     subtitle: 'Mission 2',
     description: 'Pénétrez le relais orbital SATLINK_03 et cartographiez le réseau UltraTech.',
-    atmosphere: 'SATLINK_03 transmet des données qu\'aucun contrat orbital ne justifie. Les cartographes effacés le savaient.',
+    atmosphere: 'SATLINK_03 transmet des données qu\'aucun contrat orbital ne justifie. Les opérateurs ne scannaient pas ce relais — ils l\'interrogeaient. PROBE revient dans les logs effacés.',
     primaryNode: 'satlink_03',
     objectiveDefs: [
       { id: 'connect_satlink', label: 'Atteindre le relais orbital SATLINK_03' },
@@ -42,9 +43,37 @@ const MISSION_DEFS = {
       { id: 'nova_fragment', label: 'Récupérer un fragment laissé par N0VA' },
     ],
     rewardsPreview: {
-      bittek: 75,
+      bittek: 180,
       reputation: 1,
-      summary: 'Commande bypass · BLACK MARKET avancé',
+      summary: 'Commande bypass · Proxy Fantôme · BLACK MARKET avancé',
+    },
+  },
+  transmission_interdite: {
+    id: 'transmission_interdite',
+    title: 'Transmission Interdite',
+    subtitle: 'Mission 3',
+    description: 'Intercepter une transmission classifiée UltraTech.',
+    atmosphere: 'Quelqu\'un parle en dehors des canaux officiels. UltraTech efface déjà la trace.',
+    primaryNode: 'satlink_03',
+    objectiveDefs: [],
+    rewardsPreview: {
+      bittek: 250,
+      reputation: 2,
+      summary: 'Outil anti-trace avancé · accès segments profonds',
+    },
+  },
+  node_fantome: {
+    id: 'node_fantome',
+    title: 'Node Fantôme',
+    subtitle: 'Mission 4',
+    description: 'Localiser et pénétrer un nœud qui n\'existe pas sur les cartes officielles.',
+    atmosphere: 'Un relais sans nom répond à des requêtes mortes. Les cartographes effacés le connaissaient.',
+    primaryNode: 'mirror_relay',
+    objectiveDefs: [],
+    rewardsPreview: {
+      bittek: 350,
+      reputation: 2,
+      summary: 'Objet rare · réduction TRACE permanente',
     },
   },
 }
@@ -52,7 +81,8 @@ const MISSION_DEFS = {
 /** Nouvelle partie démo — Mission 1, terminal local, TRACE à 0. */
 export function createFreshDemoState() {
   return {
-    player: { username: 'ghost_demo', bittek: 0, reputation: 0 },
+    player: { username: '', bittek: 0, reputation: 0 },
+    onboardingSeen: false,
     unlocked_commands: ['help', 'clear', 'files', 'open'],
     read_files: [],
     flags: {
@@ -124,6 +154,11 @@ export function createFreshDemoState() {
       lastStuckHintAt: 0,
       stuckTier: 0,
     },
+    ultraTechPresence: {
+      level: 'passive',
+      lastWarningAt: 0,
+      terminalLockUntil: 0,
+    },
     seenTransmissions: [],
     activeCharacterTransmission: null,
     characterTransmissionLastAt: 0,
@@ -138,6 +173,7 @@ export function createFreshDemoState() {
 export function createAdvancedDemoState() {
   return {
     player: { username: 'ghost_demo', bittek: 250, reputation: 3 },
+    onboardingSeen: true,
     unlocked_commands: [
       'help', 'clear', 'ls', 'open', 'status', 'sync',
       'scan', 'connect', 'disconnect', 'probe', 'run', 'install', 'uninstall',
@@ -271,7 +307,7 @@ export function buildMissionJournal(save) {
 
 const NODE_META = {
   local: {
-    id: 'local', name: 'LOCAL', displayName: 'ghost_demo@ultratech',
+    id: 'local', name: 'LOCAL', displayName: 'ghost_operator@ultratech',
     securityLevel: 'LOW', traceMultiplier: 1.0, theme: 'default',
   },
   relay_ghost: {
@@ -307,9 +343,18 @@ const PROGRAMS = {
   netscan: { filename: 'netscan.exe', name: 'NetScan', type: 'consumable', rarity: 'common', installable: false },
 }
 
+export function resolveNodeMeta(save, nodeId) {
+  const base = NODE_META[nodeId] || NODE_META.local
+  const user = getPlayerDisplayName(save)
+  return {
+    ...base,
+    displayName: nodeId === 'local' ? `${user}@ultratech` : `${user}@${nodeId}`,
+  }
+}
+
 export function buildNetwork(save) {
   const current = save.currentNode
-  const meta = NODE_META[current] || NODE_META.local
+  const meta = resolveNodeMeta(save, current)
   const nodes = save.discoveredNodes
     .filter((id) => id !== 'local')
     .map((id) => ({
@@ -378,6 +423,8 @@ export function toPublicState(save) {
     tutorialFlags: save.tutorialFlags || {},
     codex: buildCodexState(save),
     novaIntroSeen: !!save.novaIntroSeen,
+    onboardingSeen: !!save.onboardingSeen,
+    ultraTechPresence: save.ultraTechPresence || { level: 'passive' },
     hintBroker: getHintBrokerState(save),
   }
 }
@@ -483,8 +530,11 @@ export const DEMO_FILES = {
     content: [
       '[SATLINK_03] Segments adjacents : morgue_server, blackvault',
       '',
+      'Note interne (effacée) : « Les opérateurs ne scannaient pas SATLINK_03. Ils l\'interrogeaient. »',
+      '',
       'Dernier cartographe connu — statut : EFFACÉ',
       'Dernière entrée de journal : « PROBE le segment avant qu\'ils ne m\'effacent. »',
+      'Référence PROBE — 7 occurrences dans les logs effacés.',
       '',
       '[WARN] Firewall actif sur blackvault.',
     ],

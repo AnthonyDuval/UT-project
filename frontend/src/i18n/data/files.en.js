@@ -76,8 +76,11 @@ export default {
       content: [
         '[SATLINK_03] Adjacent segments : morgue_server, blackvault',
         '',
+        'Internal note (erased) : "Operators did not scan SATLINK_03. They interrogated it."',
+        '',
         'Last known cartographer — status : ERASED',
         'Last log entry : "PROBE the segment before they erase me."',
+        'PROBE reference — 7 occurrences in erased logs.',
         '',
         '[WARN] Active firewall on blackvault.',
       ],

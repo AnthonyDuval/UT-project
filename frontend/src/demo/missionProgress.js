@@ -4,6 +4,7 @@
 
 import { MISSION_DEFS } from './demoState'
 import { syncMissionObjectiveText } from '../utils/missionHints'
+import { checkRiposteTriggers } from '../systems/UltraTechPresence'
 import { tx, txRaw } from '../i18n/helpers'
 import { getTranslator, getLocale } from '../i18n'
 
@@ -52,6 +53,12 @@ function refreshObjective(save) {
   syncMissionObjectiveText(save)
 }
 
+function grantInventoryItem(save, itemId, qty = 1) {
+  const inv = save.inventory.find((e) => e.itemId === itemId)
+  if (inv) inv.quantity += qty
+  else save.inventory.push({ itemId, quantity: qty })
+}
+
 function grantMissionRewards(save, missionId) {
   const def = MISSION_DEFS[missionId]
   const messages = []
@@ -61,11 +68,12 @@ function grantMissionRewards(save, missionId) {
   if (!save.seenEvents) save.seenEvents = []
 
   if (missionId === 'signal_fantome') {
-    save.player.bittek += preview?.bittek ?? 50
+    save.player.bittek += preview?.bittek ?? 120
     save.player.reputation += preview?.reputation ?? 1
     save.flags.mission_1_complete = true
     save.marketUnlocked = true
     save.hintBrokerUnlocked = true
+    grantInventoryItem(save, 'firewall_jetable', 1)
     if (!save.discoveredNodes.includes('satlink_03')) {
       save.discoveredNodes.push('satlink_03')
     }
@@ -83,6 +91,7 @@ function grantMissionRewards(save, missionId) {
       }
     }
     messages.push(tx('terminal.missionProgress.signalFantome.bittekRep'))
+    messages.push(tx('terminal.missionProgress.signalFantome.firewallGift'))
     messages.push(tx('terminal.missionProgress.signalFantome.marketUnlocked'))
     messages.push(tx('terminal.missionProgress.signalFantome.hintBroker'))
     messages.push(tx('terminal.missionProgress.signalFantome.satlinkDetected'))
@@ -90,13 +99,15 @@ function grantMissionRewards(save, missionId) {
   }
 
   if (missionId === 'satlink_intrusion') {
-    save.player.bittek += preview?.bittek ?? 75
+    save.player.bittek += preview?.bittek ?? 180
     save.player.reputation += preview?.reputation ?? 1
     save.marketAdvancedUnlocked = true
+    grantInventoryItem(save, 'proxy_fantome', 1)
     if (!save.unlocked_commands.includes('probe')) {
       save.unlocked_commands.push('probe')
     }
     messages.push(tx('terminal.missionProgress.satlinkIntrusion.bittekRep'))
+    messages.push(tx('terminal.missionProgress.satlinkIntrusion.proxyGift'))
     messages.push(tx('terminal.missionProgress.satlinkIntrusion.missionComplete'))
   }
 
@@ -113,6 +124,12 @@ function completeMission(save, missionId) {
   m.rewardsClaimed = true
 
   const { messages, narrativeLines } = grantMissionRewards(save, missionId)
+
+  if (missionId === 'signal_fantome') {
+    const riposte = checkRiposteTriggers(save, 'mission_1_complete')
+    if (riposte?.autoLines?.length) messages.push('', ...riposte.autoLines)
+    if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
+  }
 
   const nextId = missionId === 'signal_fantome' ? 'satlink_intrusion' : null
   if (nextId && save.missions[nextId]?.status === 'locked') {

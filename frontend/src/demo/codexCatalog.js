@@ -21,6 +21,7 @@ export const CODEX_ORDER = [
   'phantom_disconnect',
   'silent_observer',
   'trace_whisper',
+  'veil_agent',
   'nova_trace_warning',
   'false_game_over',
   'terminal_auto',
@@ -98,6 +99,12 @@ export const CODEX_ENTRIES = {
     description: 'À 45 % de TRACE, une signature parallèle compte vos pas dans le réseau.',
     nextHint: 'Montez plus haut. N0VA intervient avant le game over.',
     rarity: 'rare',
+  },
+  veil_agent: {
+    name: 'VEIL',
+    description: 'Agent UltraTech SECOPS — présence froide sur le canal. Votre session est désormais surveillée.',
+    nextHint: 'VEIL ne parle qu\'une fois. Ensuite, elle observe.',
+    rarity: 'interdit',
   },
   nova_trace_warning: {
     name: 'NOVA_TRACE_WARNING',

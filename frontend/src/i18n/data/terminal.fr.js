@@ -144,6 +144,11 @@ export default {
     analyzing60: '[TRACE] UltraTech analyse votre signature.',
     gameOver: '[GAME OVER] UltraTech vous a localise.',
     critical: '[TRACE] NIVEAU CRITIQUE — 100% — GAME OVER IMMINENT',
+    riseVariants: [
+      '[TRACE] UltraTech +{{amount}} — requête observée.',
+      '[TRACE] Signature opérateur partiellement exposée (+{{amount}}).',
+      '[TRACE] +{{amount}} — quelqu\'un compte vos pas.',
+    ],
   },
 
   reset: {
@@ -170,7 +175,8 @@ export default {
       nova_fragment: 'Récupérer un fragment laissé par N0VA',
     },
     signalFantome: {
-      bittekRep: '[SYS] +50 BitTek | +1 Réputation',
+      bittekRep: '[SYS] +120 BitTek | +1 Réputation',
+      firewallGift: '[SYS] Firewall Jetable ajouté à l\'inventaire.',
       marketUnlocked: '[SYS] BLACK MARKET — accès autorisé.',
       hintBroker: '[???] GHOST BROKER — canal indices ouvert.',
       satlinkDetected: '[NET] Nouveau relais détecté : SATLINK_03',
@@ -188,7 +194,8 @@ export default {
       },
     },
     satlinkIntrusion: {
-      bittekRep: '[SYS] +75 BitTek | +1 Réputation',
+      bittekRep: '[SYS] +180 BitTek | +1 Réputation',
+      proxyGift: '[SYS] Proxy Fantôme ajouté à l\'inventaire.',
       missionComplete: '[MISSION] Intrusion Orbitale — TERMINÉE',
     },
   },

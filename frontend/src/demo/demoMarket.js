@@ -9,32 +9,37 @@ import { tx } from '../i18n/helpers'
 
 export const DEMO_MARKET_ITEMS = [
   {
-    id: 'firewall_jetable', name: 'Firewall Jetable', price: 30, rarity: 'common',
+    id: 'firewall_jetable', name: 'Firewall Jetable', price: 40, rarity: 'common',
     description: 'Barrière réseau éphémère.', effect: 'Réduit la TRACE de 15 pts.',
     type: 'consumable', effect_type: 'reduce_trace', effect_value: 15, can_buy: true,
   },
   {
-    id: 'proxy_fantome', name: 'Proxy Fantôme', price: 50, rarity: 'uncommon',
+    id: 'proxy_fantome', name: 'Proxy Fantôme', price: 70, rarity: 'uncommon',
     description: 'Relais anonyme instable.', effect: 'Réduit la TRACE de 25 pts.',
     type: 'consumable', effect_type: 'reduce_trace', effect_value: 25, can_buy: true,
   },
   {
-    id: 'brouilleur_nova', name: 'Brouilleur N0VA', price: 75, rarity: 'rare',
+    id: 'brouilleur_nova', name: 'Brouilleur N0VA', price: 100, rarity: 'rare',
     description: 'Atténue les signaux de traçage.', effect: '2 traces réduites de moitié.',
     type: 'consumable', effect_type: 'trace_halved', effect_value: 2, can_buy: true,
   },
   {
-    id: 'prog_netscan', name: 'NetScan v2.1', price: 35, rarity: 'common', isProgram: true,
+    id: 'prog_netscan', name: 'NetScan v2.1', price: 60, rarity: 'common', isProgram: true,
     programId: 'netscan', description: 'Analyseur réseau portable.',
     effect: 'Télécharge netscan.exe', type: 'program', can_buy: true,
   },
   {
-    id: 'prog_trace_wiper', name: 'Trace Wiper Pro', price: 40, rarity: 'common', isProgram: true,
+    id: 'prog_trace_wiper', name: 'Trace Wiper Pro', price: 120, rarity: 'common', isProgram: true,
     programId: 'trace_wiper', description: 'Effaceur de signatures.',
     effect: 'Télécharge trace_wiper.exe', type: 'program', can_buy: true,
   },
   {
-    id: 'pack_firewall_basique', name: 'Pack Firewall Basique', price: 120, rarity: 'legendary',
+    id: 'spoof_identite', name: 'Spoof d\'identité', price: 140, rarity: 'rare',
+    description: 'Masque temporaire la signature opérateur.', effect: 'Réduit la TRACE de 20 pts.',
+    type: 'consumable', effect_type: 'reduce_trace', effect_value: 20, can_buy: true,
+  },
+  {
+    id: 'pack_firewall_basique', name: 'Pack Firewall Basique', price: 180, rarity: 'legendary',
     description: 'Suite défensive permanente.', effect: 'Passif -5% TRACE permanent.',
     type: 'passive', effect_type: 'passive_reduction', effect_value: 5, can_buy: true,
   },

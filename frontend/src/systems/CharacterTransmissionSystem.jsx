@@ -131,7 +131,9 @@ function isCharacterEligible(characterId, save) {
         || satlinkMission?.status === 'active'
         || satlinkMission?.status === 'completed'
     case CHARACTER_IDS.VEIL:
-      return true
+      return !!save.flags?.veil_intro_seen
+        || ['monitoring', 'hostile', 'lockdown'].includes(save.ultraTechPresence?.level)
+        || !!save.flags?.ut_first_riposte
     case CHARACTER_IDS.ABSENT:
       return trace > 70
         || save.currentNode === 'relay_ghost'
@@ -222,17 +224,19 @@ function randomDurationMs() {
   return DURATION_MIN_MS + Math.floor(Math.random() * (DURATION_MAX_MS - DURATION_MIN_MS + 1))
 }
 
-export function fireCharacterTransmission(save, characterId, source = 'random') {
-  if (isCharacterTransmissionBlocked(save)) return null
-  if (isOnGlobalCooldown(save)) return null
+export function fireCharacterTransmission(save, characterId, source = 'random', options = {}) {
+  if (!options.bypassGlobalBlock && isCharacterTransmissionBlocked(save)) return null
+  if (!options.bypassCooldown && isOnGlobalCooldown(save)) return null
 
   const character = CHARACTERS[characterId]
   if (!character || !isCharacterEligible(characterId, save)) return null
 
-  const picked = pickMessage(character, save, {
-    preferHints: isPlayerStuckForTransmission(save),
-  })
-  const durationMs = randomDurationMs()
+  const picked = options.forceMessageKey
+    ? { key: options.forceMessageKey, id: `${characterId}_intro_0` }
+    : pickMessage(character, save, {
+      preferHints: isPlayerStuckForTransmission(save),
+    })
+  const durationMs = options.durationMs || randomDurationMs()
 
   ensureCharacterTransmissionState(save)
   save.activeCharacterTransmission = {

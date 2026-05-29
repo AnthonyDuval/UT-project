@@ -28,6 +28,8 @@ import {
 
   touchPlayerActivity,
 
+  submitPlayerOnboarding,
+
 } from './api/client'
 
 import Terminal from './components/Terminal'
@@ -69,11 +71,15 @@ import NovaEncounter from './components/NovaEncounter'
 
 import CharacterTransmission from './components/CharacterTransmission'
 
+import NarrativeOnboarding from './components/NarrativeOnboarding'
+
 import CinematicEventManager from './systems/CinematicEventManager'
 
 import { getRandomRollDelayMs } from './systems/RandomCinematicEvents'
 
 import { getRandomTransmissionRollDelayMs } from './systems/CharacterTransmissionSystem.jsx'
+
+import { interpolatePlayerName } from './utils/playerName'
 
 import './App.css'
 
@@ -372,6 +378,10 @@ function App() {
 
       seedNotificationState(state)
 
+      if (state.onboardingSeen && state.player?.username) {
+        setAuthUser({ username: state.player.username })
+      }
+
       if (state.gameOver) triggerGameOver(true)
 
       setError(null)
@@ -409,7 +419,7 @@ function App() {
 
     setDemoMode(true)
 
-    setAuthUser({ username: 'GHOST' })
+    setAuthUser(null)
 
     setAuthenticated(true)
 
@@ -436,6 +446,10 @@ function App() {
         const result = await loadFn()
 
         setGameState(result.state)
+
+        if (result.state.onboardingSeen && result.state.player?.username) {
+          setAuthUser({ username: result.state.player.username })
+        }
 
         if (result.state.gameOver) triggerGameOver(true)
 
@@ -538,6 +552,40 @@ function App() {
     setBooting(false)
 
     setTerminalLines(buildPostBootLines(t))
+
+  }, [t])
+
+
+
+  const handleOnboardingComplete = useCallback(async (name) => {
+
+    try {
+
+      const result = await submitPlayerOnboarding(name)
+
+      setGameState(result.state)
+
+      setAuthUser({ username: result.playerName })
+
+      setTerminalLines((prev) => [
+
+        ...prev,
+
+        '',
+
+        t('onboarding.confirmed', { playerName: result.playerName }),
+
+        '',
+
+      ])
+
+      setError(null)
+
+    } catch (err) {
+
+      setError(err.message)
+
+    }
 
   }, [t])
 
@@ -717,6 +765,12 @@ function App() {
 
     setGameState(result.state)
 
+    if (result.state.onboardingSeen && result.state.player?.username) {
+      setAuthUser({ username: result.state.player.username })
+    } else {
+      setAuthUser(null)
+    }
+
     setTerminalLines([
 
       ...buildPostBootLines(t),
@@ -782,6 +836,8 @@ function App() {
   useEffect(() => {
 
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
+
+    if (gameState && !gameState.onboardingSeen) return undefined
 
     const id = setInterval(async () => {
 
@@ -855,6 +911,8 @@ function App() {
 
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
 
+    if (gameState && !gameState.onboardingSeen) return undefined
+
     let cancelled = false
     let timerId
 
@@ -896,6 +954,8 @@ function App() {
 
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
 
+    if (gameState && !gameState.onboardingSeen) return undefined
+
     let cancelled = false
     let timerId
 
@@ -932,6 +992,8 @@ function App() {
 
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
 
+    if (gameState && !gameState.onboardingSeen) return undefined
+
     const onActivity = () => bumpActivity()
 
     window.addEventListener('mousemove', onActivity, { passive: true })
@@ -961,6 +1023,8 @@ function App() {
   useEffect(() => {
 
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
+
+    if (gameState && !gameState.onboardingSeen) return undefined
 
     if (gameState?.novaIntroSeen) return undefined
 
@@ -1055,12 +1119,18 @@ function App() {
   const cinematicActive = gameState?.activeCinematic
   const transmissionActive = gameState?.activeCharacterTransmission
   const cinematicLocksTerminal = cinematicActive?.lockTerminal
+  const presenceLockUntil = gameState?.ultraTechPresence?.terminalLockUntil || 0
+  const presenceLocksTerminal = presenceLockUntil > Date.now()
+  const uiFreezeActive = gameState?.activeUiEffect?.type === 'ut_freeze'
 
   const isLocked = !!error || commandLoading || gameOverActive || cinematicLocksTerminal
+    || presenceLocksTerminal || uiFreezeActive || onboardingActive
 
   const networkTheme = gameState?.network?.currentNodeMeta?.theme ?? 'default'
 
-  const operatorName = authUser?.username || 'GHOST'
+  const operatorName = gameState?.player?.username || authUser?.username || 'GHOST'
+
+  const onboardingActive = !!(gameState && !gameState.onboardingSeen && !booting && !loading)
 
   const ui = computeUiProgression(gameState)
 
@@ -1475,8 +1545,15 @@ function App() {
 
       <CharacterTransmission
         transmission={transmissionActive}
+        playerName={operatorName}
         onComplete={handleTransmissionComplete}
       />
+
+
+
+      {onboardingActive && (
+        <NarrativeOnboarding onComplete={handleOnboardingComplete} />
+      )}
 
 
 
@@ -1494,6 +1571,8 @@ function App() {
         active={gameOverActive}
 
         skipToFinal={gameOverSkipToFinal}
+
+        playerName={operatorName}
 
         onTerminalAppend={appendTerminalLine}
 

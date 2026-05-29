@@ -61,6 +61,7 @@ const NOVA_LINES = [
 export default function GameOverSequence({
   active,
   skipToFinal = false,
+  playerName = 'ghost_operator',
   onTerminalAppend,
   onRestart,
 }) {
@@ -99,6 +100,8 @@ export default function GameOverSequence({
       schedule(() => {
         if (entry.type === 'cmd') {
           term(`> ${entry.text}`)
+        } else if (entry.type === 'out' && entry.text.includes('ghost_operative')) {
+          term(`${playerName} [ACCESS REVOKED]`)
         } else {
           term(entry.text)
         }

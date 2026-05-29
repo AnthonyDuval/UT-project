@@ -127,6 +127,29 @@ export default {
     line3: '[???] Fragments sleep in local memory.',
   },
 
+  onboarding: {
+    live: '● CHANNEL',
+    callerIds: ['UNKNOWN_OPERATOR', 'UNIDENTIFIED_USER', 'operator_██'],
+    lore: {
+      p1: 'You just opened a door that was never meant to exist.',
+      p2: 'UltraTech has monitored this network for years.',
+      p3: 'Every command leaves a trace.',
+      p4: 'Every trace brings them closer.',
+      p5: 'If you want to survive here, read before you act.',
+      p6: 'And above all… trust no one.',
+    },
+    namePrompt: 'What should I call you?',
+    namePlaceholder: 'Operator name…',
+    confirm: 'Confirm',
+    confirmed: 'Very well, {{playerName}}. Stay quiet.',
+    terminalBlocked: '[SYS] Incoming channel — operator identification required.',
+    footer: 'Clandestine channel · partial encryption · unknown origin',
+    errors: {
+      length: '3–20 characters — letters, numbers, dashes or underscores.',
+      chars: 'Allowed characters: letters, numbers, dashes, underscores.',
+    },
+  },
+
   intros: {
     trace: [
       '[ALERT] UltraTech is monitoring this terminal.',
@@ -252,10 +275,10 @@ export default {
       m1_ghost_operator: '[RELAY] The ghost relay awaits analysis. An old log mentions SCAN.',
       m1_network_response: '[CAPTURE] The scan answered. A new fragment waits in the documents.',
       m1_active_relay: '[RELAY] A signal sleeps in relay_ghost. Operators used CONNECT.',
-      m2_orbital_channel: '[ORBIT] SATLINK_03 waits — operators crossed relays with CONNECT.',
+      m2_orbital_channel: '[ORBIT] SATLINK_03 waits — operators did not scan this relay, they interrogated it.',
       m2_orbital_channel_nova: '[N0VA] SATLINK_03 — something waits on the other side.',
       m2_orbital_segment: '[NET] The tunnel is open. Explore the orbital relay.',
-      m2_erased_cartographer: '[LOG] The erased cartographer mentioned PROBE in their last lines.',
+      m2_erased_cartographer: '[LOG] PROBE appears in several erased logs — the cartographer mentioned it one last time.',
       m2_orbital_manifest: '[FILE] A manifest lingers on the relay — read what UltraTech hides.',
       m2_forbidden_segments: '[MAP] Two forbidden segments appear — map the network.',
       m2_orbital_fragment: '[RELAY] Someone left a trace on this orbital segment.',
@@ -337,7 +360,7 @@ export default {
     },
     m2_orbital_channel: {
       title: 'Orbital channel',
-      lead: 'SATLINK_03 waits beyond the local network. Operators crossed relays.',
+      lead: 'SATLINK_03 waits beyond the local network. Operators did not scan it — they interrogated it.',
       step: 1,
       total: 6,
       terminal: '[ORBIT] SATLINK_03 — CONNECT satlink_03',
@@ -353,7 +376,7 @@ export default {
     },
     m2_orbital_segment: {
       title: 'Orbital segment',
-      lead: 'The tunnel is open. SATLINK_03 still keeps secrets.',
+      lead: 'The tunnel is open. SATLINK_03 is watched — read what lingers before you act.',
       step: 2,
       total: 6,
       terminal: '[NET] Explore the orbital relay — read what lingers there.',
@@ -361,7 +384,7 @@ export default {
     },
     m2_erased_cartographer: {
       title: 'Erased cartographer',
-      lead: 'SATLINK_03 awaits a probe. The word PROBE keeps returning in the logs.',
+      lead: 'PROBE appears in several erased logs. SATLINK_03 awaits a probe.',
       step: 3,
       total: 6,
       terminal: '[LOG] PROBE — the erased cartographer mentioned it one last time.',
@@ -407,6 +430,28 @@ export default {
     },
   },
 
+  presence: {
+    riposte: {
+      title: 'UNAUTHORIZED ACTIVITY DETECTED',
+      subtitle: 'This session is now being monitored.',
+      cinematicBanner: 'ULTRATECH TRANSMISSION — SECOPS PRIORITY',
+      lines: [
+        '[UT/SECOPS] UNAUTHORIZED ACTIVITY DETECTED',
+        '[UT/SECOPS] This session is now being monitored.',
+      ],
+    },
+    monitoring: {
+      warnings: [
+        '[UT] Session indexed — abnormal behavior.',
+        '[TRACE] Passive surveillance active.',
+        '[SECOPS] Request logged.',
+      ],
+    },
+    lockdown: {
+      terminalLock: '[LOCKDOWN] Terminal locked — UltraTech response in progress…',
+    },
+  },
+
   missions: {
     signal_fantome: {
       title: 'Ghost Signal',
@@ -418,13 +463,13 @@ export default {
         scan_network: 'Understand what happened to the last operator',
         connect_relay: 'Reach the ghost relay',
       },
-      rewardsSummary: 'N0VA contact · BLACK MARKET · SATLINK_03 access',
+      rewardsSummary: 'N0VA contact · BLACK MARKET · Disposable Firewall · SATLINK_03 access',
     },
     satlink_intrusion: {
       title: 'Orbital Intrusion',
       subtitle: 'Mission 2',
       description: 'Penetrate orbital relay SATLINK_03 and map the UltraTech network.',
-      atmosphere: 'SATLINK_03 transmits data no orbital contract justifies. Erased cartographers knew that.',
+      atmosphere: 'SATLINK_03 transmits data no orbital contract justifies. Operators did not scan this relay — they interrogated it. PROBE keeps surfacing in erased logs.',
       objectives: {
         connect_satlink: 'Reach orbital relay SATLINK_03',
         use_probe: 'Understand what happened to the last cartographer',
@@ -432,7 +477,23 @@ export default {
         open_satellite_file: 'Read what the orbital manifest hides',
         nova_fragment: 'Recover a fragment left by N0VA',
       },
-      rewardsSummary: 'Bypass command · advanced BLACK MARKET',
+      rewardsSummary: 'Bypass command · Ghost Proxy · advanced BLACK MARKET',
+    },
+    transmission_interdite: {
+      title: 'Forbidden Transmission',
+      subtitle: 'Mission 3',
+      description: 'Intercept a classified UltraTech transmission.',
+      atmosphere: 'Someone speaks outside official channels. UltraTech is already erasing the trace.',
+      objectives: {},
+      rewardsSummary: '+250 BitTek · advanced anti-trace tool',
+    },
+    node_fantome: {
+      title: 'Ghost Node',
+      subtitle: 'Mission 4',
+      description: 'Locate and penetrate a node missing from official maps.',
+      atmosphere: 'An unnamed relay answers dead queries.',
+      objectives: {},
+      rewardsSummary: '+350 BitTek · permanent TRACE reduction',
     },
   },
 
@@ -531,6 +592,11 @@ export default {
         name: 'Trace Wiper Pro',
         description: 'Signature eraser.',
         effect: 'Downloads trace_wiper.exe',
+      },
+      spoof_identite: {
+        name: 'Identity Spoof',
+        description: 'Temporarily masks operator signature.',
+        effect: 'Reduces TRACE by 20 pts.',
       },
       pack_firewall_basique: {
         name: 'Basic Firewall Pack',

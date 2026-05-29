@@ -5,7 +5,9 @@ import { getLocale, getTranslator } from '../i18n'
 import { clearActiveCinematicDemo, executeDemoCommand, getDemoState, loadAdvancedDemoGame, markNovaIntroSeenDemo, resetDemoGame, rollRandomCinematicDemo, rollCharacterTransmissionDemo, clearActiveCharacterTransmissionDemo, tickDemoMystery, touchPlayerActivityDemo } from '../demo/demoEngine'
 import { buyDemoHint, getDemoHintBroker } from '../demo/hintBroker'
 import { buyDemoItem, getDemoInventory, getDemoMarket, useDemoItem } from '../demo/demoMarket'
-import { loadDemoChat, saveDemoChat } from '../demo/demoStorage'
+import { loadDemoChat, saveDemoChat, loadDemoSave } from '../demo/demoStorage'
+import { completePlayerOnboarding } from '../demo/playerOnboarding'
+import { getPlayerDisplayName } from '../utils/playerName'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://127.0.0.1:8000/api'
 const TOKEN_KEY = 'ut_auth_token'
@@ -144,7 +146,8 @@ export async function logoutUser() {
 
 export async function fetchMe() {
   if (DEMO_MODE) {
-    return demoDelay({ username: 'ghost_demo' })
+    const save = loadDemoSave()
+    return demoDelay({ username: getPlayerDisplayName(save) })
   }
   return apiFetch('/auth/me')
 }
@@ -165,6 +168,16 @@ export async function sendCommand(command) {
   return apiFetch('/command', {
     method: 'POST',
     body: JSON.stringify({ command }),
+  })
+}
+
+export async function submitPlayerOnboarding(name) {
+  if (DEMO_MODE) {
+    return demoDelay(completePlayerOnboarding(name))
+  }
+  return apiFetch('/onboarding', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
   })
 }
 
@@ -308,9 +321,10 @@ export async function fetchChat() {
 
 export async function sendChatMessage(message) {
   if (DEMO_MODE) {
+    const save = loadDemoSave()
     const messages = loadDemoChat()
     messages.push({
-      username: 'ghost_demo',
+      username: getPlayerDisplayName(save),
       timestamp: new Date().toISOString(),
       message,
     })

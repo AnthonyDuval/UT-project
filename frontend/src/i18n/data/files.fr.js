@@ -76,8 +76,11 @@ export default {
       content: [
         '[SATLINK_03] Segments adjacents : morgue_server, blackvault',
         '',
+        'Note interne (effacée) : « Les opérateurs ne scannaient pas SATLINK_03. Ils l\'interrogeaient. »',
+        '',
         'Dernier cartographe connu — statut : EFFACÉ',
         'Dernière entrée de journal : « PROBE le segment avant qu\'ils ne m\'effacent. »',
+        'Référence PROBE — 7 occurrences dans les logs effacés.',
         '',
         '[WARN] Firewall actif sur blackvault.',
       ],

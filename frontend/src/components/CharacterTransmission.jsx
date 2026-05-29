@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../i18n/LanguageProvider'
 import { useAudio } from '../systems/AudioManager'
+import { interpolatePlayerName } from '../utils/playerName'
 import './CharacterTransmission.css'
 
 const DEFAULT_VOLUME = 0.55
@@ -8,7 +9,7 @@ const DEFAULT_VOLUME = 0.55
 /**
  * Fenêtre glitchée — transmission personnage brève, non intrusive.
  */
-export default function CharacterTransmission({ transmission, onComplete }) {
+export default function CharacterTransmission({ transmission, playerName, onComplete }) {
   const { t } = useLanguage()
   const videoRef = useRef(null)
   const completedRef = useRef(false)
@@ -81,7 +82,7 @@ export default function CharacterTransmission({ transmission, onComplete }) {
 
   const name = t(transmission.displayNameKey)
   const tag = t(transmission.tagKey)
-  const message = t(transmission.messageKey)
+  const message = interpolatePlayerName(t(transmission.messageKey), playerName || 'ghost_operator')
 
   return (
     <div
