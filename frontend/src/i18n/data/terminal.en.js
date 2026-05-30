@@ -4,6 +4,8 @@ export default {
     footer: '[???] This terminal knows more than it admits.',
   },
 
+  shellRejected: '[ERR] The shell rejected this request.',
+
   files: {
     empty: '[EMPTY] No accessible fragments.',
     header: 'Local fragments:',
@@ -88,6 +90,12 @@ export default {
 
   probe: {
     noSegment: '[PROBE] No adjacent segment from this position.',
+    secopsUndiscovered: '[PROBE] secops_gate not discovered.',
+    secopsGate: [
+      '[PROBE] secops_gate — SECOPS segment mapped.',
+      '[PROBE] VEIL Protocol — partial access.',
+      '[UT/SECOPS] Enhanced observation.',
+    ],
     lines: [
       '[PROBE] Orbital segment mapped.',
       '[PROBE] morgue_server — DETECTED',
@@ -173,6 +181,23 @@ export default {
       discover_nodes: 'Map the forbidden segments',
       open_satellite_file: 'Read what the orbital manifest hides',
       nova_fragment: 'Recover a fragment left by N0VA',
+      read_orbital_manifest: 'Read orbital_manifest.log',
+      discover_listen: 'Discover the listen command',
+      use_listen: 'Listen to SATLINK_03',
+      receive_echo17: 'Receive the ECHO_17 transmission',
+      choose_signal: 'Decide the signal\'s fate',
+      unlock_echo_fragment: 'Recover echo_fragment.log',
+      discover_mirror: 'Discover mirror_relay',
+      connect_mirror: 'Connect to the mirror relay',
+      read_mirror_index: 'Read mirror_index.dat',
+      discover_echo_cmd: 'Discover the echo command',
+      echo_operator: 'Query the ghost operator',
+      impossible_response: 'Receive the impossible response',
+      receive_veil: 'Receive the VEIL transmission',
+      read_secops_notice: 'Read secops_notice.log',
+      veil_choice: 'Respond to VEIL',
+      unlock_secops_gate: 'Unlock secops_gate',
+      probe_secops_gate: 'Probe secops_gate',
     },
     signalFantome: {
       bittekRep: '[SYS] +120 BitTek | +1 Reputation',
@@ -197,6 +222,98 @@ export default {
       bittekRep: '[SYS] +180 BitTek | +1 Reputation',
       proxyGift: '[SYS] Ghost Proxy added to inventory.',
       missionComplete: '[MISSION] Orbital Intrusion — COMPLETE',
+    },
+    transmissionInterdite: {
+      bittekRep: '[SYS] +250 BitTek | +2 Reputation',
+      listenUnlocked: '[SYS] LISTEN command — orbital frequency unlocked.',
+      missionComplete: '[MISSION] Forbidden Transmission — COMPLETE',
+    },
+    relaisMiroir: {
+      bittekRep: '[SYS] +300 BitTek | +2 Reputation',
+      echoUnlocked: '[SYS] ECHO command — mirror relay synchronized.',
+      missionComplete: '[MISSION] The Mirror Relay — COMPLETE',
+    },
+    protocoleVeil: {
+      bittekRep: '[SYS] +350 BitTek | +2 Reputation',
+      scrubberHint: '[MARKET] Signal Scrubber — rare stock reported.',
+      missionComplete: '[MISSION] VEIL Protocol — COMPLETE',
+      act2Closing: '[???] SATLINK_03 lied. The network still remembers you.',
+    },
+  },
+
+  listen: {
+    locked: '[LISTEN] Frequency locked — read orbital_manifest.log.',
+    usage: '[ERR] Usage : listen [target]',
+    noSignal: '[LISTEN] No signal on \'{{target}}\' — try satlink_03.',
+    tuning: [
+      '[LISTEN] Tuning channel…',
+      '[LISTEN] SATLINK_03 — passive listen.',
+    ],
+    intercept: [
+      '[ECHO_17] Incoming video signal…',
+      '[ECHO_17] If you can hear me… don\'t answer the first voice.',
+    ],
+    silent: '[LISTEN] Channel silent. Something was already heard.',
+  },
+
+  echoAct2: {
+    locked: '[ECHO] Command locked — read mirror_index.dat.',
+    operator: [
+      '[ECHO] operator…',
+      '[ECHO] operator_0…',
+      '[SYS] Impossible system response.',
+    ],
+    impossible: '[???] « {{name}} » — Your name was already here.',
+  },
+
+  influence: {
+    veil: {
+      unknown: [
+        '[UT/SECOPS] Request denied — \'{{cmd}}\' logged.',
+        '[TRACE] This attempt feeds your operator profile : \'{{cmd}}\'',
+        '[SYS] Command \'{{cmd}}\' — active observation.',
+      ],
+      trace: [
+        '[UT/SECOPS] Signature exposed (+{{amount}}). Behavior correlated.',
+        '[TRACE] +{{amount}} — your session is prioritized.',
+        '[SECOPS] +{{amount}} — the network remembers your steps.',
+      ],
+    },
+    nova: {
+      help: [
+        '[???] A clue lingers in the files — if you read between the lines.',
+        '[N0VA] ...some words are not in HELP. Old operators whispered them.',
+      ],
+    },
+    morse: {
+      precision: [
+        '— MORSE fragment : check the logs before your next command.',
+        '— broker note : the target segment responds better after FILES.',
+      ],
+    },
+    reactions: {
+      general: [
+        'Someone noticed.',
+        'The network remembered your choice.',
+        'A foreign signature crosses the terminal.',
+        '[???] ...',
+      ],
+      override: [
+        'A lock gave way — somewhere, a counter moved.',
+        '[UT/SECOPS] Privilege anomaly — correlation in progress.',
+      ],
+      secret_command: [
+        'The shell obeyed too quickly.',
+        '[???] That word was not supposed to exist here.',
+      ],
+      market_purchase: [
+        'A ghost transaction left your wallet.',
+        '[BLACKNODE] The market remembers buyers.',
+      ],
+      forbidden_node: [
+        'A forbidden segment logged your passage.',
+        '[NET] Unauthorized mapping — parallel trace.',
+      ],
     },
   },
 
@@ -296,5 +413,15 @@ export default {
       '[???] Yet a phantom tunnel just closed somewhere else.',
       '[SYS] Entry logged — origin : UNKNOWN',
     ],
+    resonate: {
+      locked: '[RESONATE] Frequency locked — unknown source signal.',
+      lines: [
+        '[RESONATE] Channel harmonization...',
+        '[ECHO_17] SATLINK_03 was not empty.',
+        '[ECHO_17] If she speaks to you… wait before answering.',
+        '',
+        '[???] The terminal retains the frequency.',
+      ],
+    },
   },
 }

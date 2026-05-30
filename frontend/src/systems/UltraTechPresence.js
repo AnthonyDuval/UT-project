@@ -3,6 +3,7 @@
  */
 
 import { discoverCodex } from '../demo/codexService'
+import { activateSafeWindow } from './traceRecovery'
 import {
   CINEMATIC_TYPES,
   fireCinematicEvent,
@@ -94,8 +95,9 @@ export function tryFirstUltraTechRiposte(save, source = 'unknown') {
   syncPresenceLevel(save)
 
   save.activeUiEffect = {
-    type: 'ut_freeze',
-    duration: 500,
+    type: 'session_surveillance',
+    duration: 3000 + Math.floor(Math.random() * 5000),
+    startedAt: Date.now(),
   }
 
   const autoLines = getRiposteTerminalLines()
@@ -118,6 +120,9 @@ export function tryFirstUltraTechRiposte(save, source = 'unknown') {
   if (!save.flags.veil_intro_seen) {
     save._pendingVeilIntro = true
   }
+
+  const safeLine = activateSafeWindow(save, 'ut_riposte')
+  if (safeLine) autoLines.push('', safeLine)
 
   return {
     autoLines,

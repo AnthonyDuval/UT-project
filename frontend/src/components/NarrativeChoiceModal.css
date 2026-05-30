@@ -1,0 +1,116 @@
+.narrative-choice {
+  position: fixed;
+  inset: 0;
+  z-index: 9220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.narrative-choice.enter,
+.narrative-choice.visible,
+.narrative-choice.exit {
+  animation: nc-fade-in 0.35s ease-out;
+}
+
+@keyframes nc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.narrative-choice__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(2px);
+}
+
+.narrative-choice__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.14) 0,
+    rgba(0, 0, 0, 0.14) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.4;
+}
+
+.narrative-choice__panel {
+  position: relative;
+  width: min(540px, calc(100vw - 2rem));
+  padding: 1.2rem 1.35rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: linear-gradient(180deg, rgba(6, 8, 14, 0.97) 0%, rgba(2, 4, 8, 0.99) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.9),
+    0 0 32px rgba(100, 116, 139, 0.1);
+  color: #cbd5e1;
+  font-family: var(--font-mono, 'Share Tech Mono', monospace);
+}
+
+.narrative-choice__header {
+  margin-bottom: 0.65rem;
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.narrative-choice__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #e2e8f0;
+}
+
+.narrative-choice__subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(203, 213, 225, 0.82);
+}
+
+.narrative-choice__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.narrative-choice__option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.55);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.narrative-choice__option:hover {
+  border-color: rgba(148, 163, 184, 0.45);
+  background: rgba(30, 41, 59, 0.65);
+}
+
+.narrative-choice__option--alt {
+  border-color: rgba(100, 116, 139, 0.18);
+}
+
+.narrative-choice__option-label {
+  font-size: 0.88rem;
+  color: #f1f5f9;
+}
+
+.narrative-choice__option-hint {
+  font-size: 0.72rem;
+  color: rgba(148, 163, 184, 0.75);
+}

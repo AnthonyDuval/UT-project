@@ -92,6 +92,41 @@ function migrateSave(save) {
     save.player = save.player || {}
     save.player.username = 'ghost_demo'
   }
+  save.warningTrace20Seen = save.warningTrace20Seen ?? false
+  if (save.traceWarning20 === undefined) save.traceWarning20 = null
+  save.triangulation50Seen = save.triangulation50Seen ?? false
+  if (save.traceTriangulation50 === undefined) save.traceTriangulation50 = null
+  save.emergencyEscape75Seen = save.emergencyEscape75Seen ?? false
+  if (save.traceEmergency75 === undefined) save.traceEmergency75 = null
+  save.safeWindow = save.safeWindow ?? null
+  save.missionCleanup = save.missionCleanup ?? null
+  save.missionCleanupOffers = save.missionCleanupOffers || []
+  save.marketMissionPurchases = save.marketMissionPurchases || {}
+  if (!save.characterInfluence) {
+    save.characterInfluence = {
+      novaAffinity: 0,
+      veilSuspicion: 0,
+      morseTrust: 0,
+      absentExposure: 0,
+    }
+  }
+  save.influenceUnlocks = save.influenceUnlocks || {}
+  save.narrativeChoicesSeen = save.narrativeChoicesSeen || {}
+  if (save.narrativeChoice === undefined) save.narrativeChoice = null
+  const ensureMission = (id, afterCompleted) => {
+    if (!save.missions?.[id]) {
+      save.missions = save.missions || {}
+      save.missions[id] = {
+        status: afterCompleted ? 'active' : 'locked',
+        currentObjective: null,
+        completedObjectives: [],
+        rewardsClaimed: false,
+      }
+    }
+  }
+  ensureMission('transmission_interdite', save.missions?.satlink_intrusion?.status === 'completed')
+  ensureMission('relais_miroir', save.missions?.transmission_interdite?.status === 'completed')
+  ensureMission('protocole_veil', save.missions?.relais_miroir?.status === 'completed')
   save.lastRiskyActionAt = save.lastRiskyActionAt || save.sessionStartMs || Date.now()
   if (save.read_files?.includes('readme.txt') && !save.read_files.includes('note.txt')) {
     save.read_files.push('note.txt')

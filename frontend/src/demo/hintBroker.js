@@ -5,6 +5,8 @@
 import { loadDemoSave, saveDemoSave } from './demoStorage'
 import { isNovaRevealed } from '../utils/novaGate'
 import { getLocale, getTranslator } from '../i18n'
+import { getHintPriceMultiplier, getMorseHintPrecisionSuffix } from '../systems/influenceConsequences'
+import { applyMarketPurchaseInfluence } from '../systems/CharacterInfluence'
 
 export const HINT_TYPES = {
   HINT: 'hint',
@@ -166,16 +168,24 @@ function sanitizeHintText(hint, save) {
 
 export function getHintCatalogForSave(save) {
   const purchased = new Set(save.purchasedHints || [])
+  const priceMult = getHintPriceMultiplier(save)
   return HINT_CATALOG.map((hint) => {
     const available = meetsRequirements(hint, save)
     const owned = purchased.has(hint.id)
+    const adjustedPrice = Math.max(5, Math.round(hint.price * priceMult))
+    let text = sanitizeHintText(hint, save)
+    const precision = getMorseHintPrecisionSuffix(save)
+    if (precision && !owned && hint.type === HINT_TYPES.HINT) {
+      text = `${text} ${precision}`
+    }
     return {
       id: hint.id,
       type: hint.type,
-      price: hint.price,
+      price: adjustedPrice,
+      basePrice: hint.price,
       title: hint.title,
       teaser: hint.teaser,
-      text: sanitizeHintText(hint, save),
+      text,
       isDecoy: !!hint.isDecoy,
       available,
       owned,
@@ -250,6 +260,8 @@ export function buyDemoHint(hintId) {
 
   save.hintBrokerHistory = save.hintBrokerHistory || []
   save.hintBrokerHistory.unshift(historyEntry)
+
+  applyMarketPurchaseInfluence(save, item.price)
 
   saveDemoSave(save)
 

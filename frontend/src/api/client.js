@@ -2,7 +2,7 @@
 
 import { getLocale, getTranslator } from '../i18n'
 
-import { clearActiveCinematicDemo, executeDemoCommand, getDemoState, loadAdvancedDemoGame, markNovaIntroSeenDemo, resetDemoGame, rollRandomCinematicDemo, rollCharacterTransmissionDemo, clearActiveCharacterTransmissionDemo, tickDemoMystery, touchPlayerActivityDemo } from '../demo/demoEngine'
+import { clearActiveCinematicDemo, executeDemoCommand, getDemoState, loadAdvancedDemoGame, markNovaIntroSeenDemo, resetDemoGame, rollRandomCinematicDemo, rollCharacterTransmissionDemo, clearActiveCharacterTransmissionDemo, tickDemoMystery, touchPlayerActivityDemo, clearActiveUiEffectDemo, forceUnlockTerminalDemo, dismissTraceWarning20Demo, dismissTraceTriangulation50Demo, resolveTraceEmergency75Demo, resolveMissionCleanupDemo, resolveNarrativeChoiceDemo, touchHintBrokerDemo } from '../demo/demoEngine'
 import { buyDemoHint, getDemoHintBroker } from '../demo/hintBroker'
 import { buyDemoItem, getDemoInventory, getDemoMarket, useDemoItem } from '../demo/demoMarket'
 import { loadDemoChat, saveDemoChat, loadDemoSave } from '../demo/demoStorage'
@@ -244,6 +244,55 @@ export async function touchPlayerActivity() {
   return { state: null }
 }
 
+export async function clearActiveUiEffect() {
+  if (DEMO_MODE) {
+    return demoDelay(clearActiveUiEffectDemo())
+  }
+  return { state: null }
+}
+
+export async function forceUnlockTerminal() {
+  if (DEMO_MODE) {
+    return demoDelay(forceUnlockTerminalDemo())
+  }
+  return { state: null }
+}
+
+export async function dismissTraceWarning20() {
+  if (DEMO_MODE) {
+    return demoDelay(dismissTraceWarning20Demo())
+  }
+  return { state: null }
+}
+
+export async function dismissTraceTriangulation50() {
+  if (DEMO_MODE) {
+    return demoDelay(dismissTraceTriangulation50Demo())
+  }
+  return { state: null }
+}
+
+export async function resolveTraceEmergency75(choice) {
+  if (DEMO_MODE) {
+    return demoDelay(resolveTraceEmergency75Demo(choice))
+  }
+  return { state: null, output: [] }
+}
+
+export async function resolveMissionCleanup(choice) {
+  if (DEMO_MODE) {
+    return demoDelay(resolveMissionCleanupDemo(choice))
+  }
+  return { state: null, output: [] }
+}
+
+export async function resolveNarrativeChoice(choiceId, option) {
+  if (DEMO_MODE) {
+    return demoDelay(resolveNarrativeChoiceDemo(choiceId, option))
+  }
+  return { state: null, output: [] }
+}
+
 export async function checkHealth() {
   try {
     const controller = new AbortController()
@@ -294,7 +343,8 @@ export async function useInventoryItem(itemId) {
 
 export async function fetchHintBroker() {
   if (DEMO_MODE) {
-    return demoDelay(getDemoHintBroker())
+    const touched = touchHintBrokerDemo()
+    return demoDelay({ ...getDemoHintBroker(), state: touched.state })
   }
   return apiFetch('/hint-broker')
 }

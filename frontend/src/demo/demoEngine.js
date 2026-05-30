@@ -22,6 +22,7 @@ import {
 } from './eventManager'
 import { syncMissionObjectiveText, getTerminalGuidanceHint } from '../utils/missionHints'
 import { getLocale } from '../i18n'
+import { tx, txRaw } from '../i18n/helpers'
 import {
   checkPlayerStuck,
   recordUnknownCommand,
@@ -46,12 +47,26 @@ import {
   processHorrorTrace,
   trackHorrorConnection,
 } from '../systems/HorrorEventSystem'
-import { trackBehaviorCommand, ensureBehavior } from '../systems/PlayerBehaviorTracker'
+import {
+  pickInfluenceUnknownLine,
+  pickInfluenceHelpExtra,
+  pickInfluenceTraceFeedback,
+  applyInfluenceOutputLayer,
+} from '../systems/influenceConsequences'
+import {
+  resolveNarrativeChoice,
+  dismissNarrativeChoice,
+  tryScheduleMorseIntelChoice,
+  tryScheduleNarrativeChoice,
+  tryStartMission5VeilTransmission,
+} from '../systems/narrativeChoices'
+import { fireCharacterTransmission } from '../systems/CharacterTransmissionSystem'
 import {
   mergeBehaviorResult,
   processBehaviorAfterCommand,
   processBehaviorTick,
 } from '../systems/SystemReactionEngine'
+import { trackBehaviorCommand, ensureBehavior } from '../systems/PlayerBehaviorTracker'
 import { clearActiveCinematic } from '../systems/CinematicEventSystem'
 import { rollRandomCinematic } from '../systems/RandomCinematicEvents'
 import {
@@ -68,6 +83,17 @@ import {
   flushPendingVeilIntro,
   PRESENCE_LEVELS,
 } from '../systems/UltraTechPresence'
+import { dismissTraceWarning20, tryTriggerTraceWarning20 } from '../systems/traceWarning20'
+import { dismissTraceTriangulation50, tryTriggerTraceTriangulation50 } from '../systems/traceTriangulation50'
+import { dismissTraceEmergency75, resolveTraceEmergency75, tryTriggerTraceEmergency75 } from '../systems/traceEmergency75'
+import { getSafeWindowTraceMultiplier, reduceTrace } from '../systems/traceRecovery'
+import { resolveMissionCleanup, dismissMissionCleanup } from '../systems/missionCleanupReward'
+import {
+  applyCommandInfluence,
+  applyTraceInfluence,
+  applyInfluenceTick,
+  consumePendingInfluenceTransmission,
+} from '../systems/CharacterInfluence'
 import { getPlayerDisplayName } from '../utils/playerName'
 
 function trackTutorial(save, cmd, args) {
@@ -81,13 +107,8 @@ function trackTutorial(save, cmd, args) {
   touchProgress(save)
 }
 
-function pickUnknownCommandLine(cmd) {
-  const flavors = txRaw('terminal.unknown.flavors')
-  if (Array.isArray(flavors) && flavors.length) {
-    const line = flavors[Math.floor(Math.random() * flavors.length)]
-    return line.replace(/\{\{cmd\}\}/g, cmd)
-  }
-  return tx('terminal.unknown.command', { cmd })
+function pickUnknownCommandLine(save, cmd) {
+  return pickInfluenceUnknownLine(save, cmd)
 }
 
 function appendStuckHint(save, output, level = 'firm') {
@@ -111,6 +132,8 @@ function cmdHelp(save) {
     '',
     tx('terminal.help.footer'),
   ]
+  const novaExtra = pickInfluenceHelpExtra(save)
+  if (novaExtra) lines.push('', novaExtra)
   const stuck = checkPlayerStuck(save)
   if (stuck?.stuck) {
     lines.push('', tx('guidance.stuck.help'))
@@ -122,16 +145,30 @@ function cmdHelp(save) {
 
 function tryCharacterTransmission(save, trigger = 'random') {
   if (save.gameOver || save.activeCinematic || save.activeCharacterTransmission) return null
+  const pending = consumePendingInfluenceTransmission(save, fireCharacterTransmission)
+  if (pending?.transmission) return pending
   return rollCharacterTransmission(save, { trigger })
 }
 
 function finishCommand(save, output, extras = {}) {
+  if (save._influenceCtx) {
+    const influenceLines = applyCommandInfluence(
+      save,
+      save._influenceCtx.cmd,
+      save._influenceCtx.args,
+      save._influenceCtx.meta,
+    )
+    save._influenceCtx = null
+    if (influenceLines.length) {
+      extras.autoLines = [...(extras.autoLines || []), ...influenceLines]
+    }
+  }
   stampUiEffectStart(save)
   saveDemoSave(save)
   const newCodexDiscoveries = consumePendingCodexDiscoveries(save)
   saveDemoSave(save)
   return {
-    output: output ?? [],
+    output: applyInfluenceOutputLayer(output ?? [], save),
     clear_terminal: extras.clear_terminal || false,
     state: toPublicState(save),
     uiEffect: save.activeUiEffect,
@@ -150,6 +187,19 @@ function finalizeCommand(save, output, extras = {}) {
   if (mission.output.length) {
     touchProgress(save)
     tryCharacterTransmission(save, 'mission_progress')
+  }
+
+  if (save._pendingVeilMissionTransmission) {
+    delete save._pendingVeilMissionTransmission
+    const pending = tryStartMission5VeilTransmission(save)
+    if (pending && !save.activeCharacterTransmission && !save.activeCinematic) {
+      fireCharacterTransmission(save, pending.characterId, 'mission', {
+        bypassCooldown: true,
+        forceMessageKey: pending.messageKey,
+      })
+    } else if (pending) {
+      save._pendingInfluenceTransmission = pending
+    }
   }
 
   const traceMsgs = traceMessages(save)
@@ -179,10 +229,12 @@ function addTrace(save, amount) {
   const prev = save.traceLevel
   const mult = (NODE_META[save.currentNode]?.traceMultiplier || 1) * getPresenceTraceMultiplier(save)
   const passive = save.traceReductionPassive || 0
-  const actual = Math.max(1, Math.round(effectiveAmount * mult * (1 - passive / 100)))
+  const safeMult = getSafeWindowTraceMultiplier(save)
+  const actual = Math.max(1, Math.round(effectiveAmount * mult * (1 - passive / 100) * safeMult))
   save.traceLevel = Math.min(100, save.traceLevel + actual)
   const mysteryAuto = []
-  const traceFeedback = getTraceRiseFeedback(save, actual)
+  const traceFeedback = pickInfluenceTraceFeedback(save, actual)
+    || getTraceRiseFeedback(save, actual)
 
   if (save.traceLevel >= 30 && !save.trace_alerts_triggered.includes(30)) {
     save.trace_alerts_triggered.push(30)
@@ -192,12 +244,23 @@ function addTrace(save, amount) {
     save.trace_alerts_triggered.push(60)
     save.events_log.push(tx('terminal.trace.analyzing60'))
   }
+  if (save.traceLevel >= 20) {
+    tryTriggerTraceWarning20(save)
+  }
+  if (save.traceLevel >= 50) {
+    tryTriggerTraceTriangulation50(save)
+  }
+  if (save.traceLevel >= 75) {
+    tryTriggerTraceEmergency75(save)
+  }
   if (save.traceLevel >= 100) {
     save.gameOver = true
     save.events_log.push(tx('terminal.trace.gameOver'))
   }
   if (prev !== save.traceLevel) {
     syncPresenceLevel(save)
+    const influenceLines = applyTraceInfluence(save, prev, save.traceLevel)
+    if (influenceLines.length) mysteryAuto.push(...influenceLines)
     if (prev <= 45 && save.traceLevel > 45) {
       const riposte = checkRiposteTriggers(save, 'trace_threshold')
       if (riposte?.autoLines?.length) mysteryAuto.push(...riposte.autoLines)
@@ -324,6 +387,29 @@ function cmdOpen(save, args) {
       if (!save.unlocked_commands.includes(c)) save.unlocked_commands.push(c)
     }
   }
+  if (name === 'orbital_manifest.log') {
+    save.flags.listen_discovered = true
+    discoverCodex(save, 'satlink_lie')
+  }
+  if (name === 'mirror_index.dat') {
+    save.flags.echo_discovered = true
+  }
+  if (name === 'secops_notice.log') {
+    save.flags.secops_notice_read = true
+    if (!save.discoveredNodes.includes('secops_gate')) {
+      save.discoveredNodes.push('secops_gate')
+    }
+    save.flags.secops_gate_unlocked = true
+  }
+
+  if (name === 'operator_shadow.log') {
+    const playerName = getPlayerDisplayName(save)
+    for (let i = 0; i < lines.length; i += 1) {
+      if (typeof lines[i] === 'string') {
+        lines[i] = lines[i].replace(/\{\{name\}\}/g, playerName)
+      }
+    }
+  }
 
   syncMissionObjectiveText(save)
   touchProgress(save)
@@ -392,6 +478,13 @@ function cmdConnect(save, args) {
 
   if (target === 'relay_ghost') tryCharacterTransmission(save, 'ghost_node')
 
+  if (target === 'mirror_relay') {
+    const m4 = save.missions?.relais_miroir
+    if (m4?.status === 'active' && !save.flags?.mirror_connect_logged) {
+      save.flags.mirror_connect_logged = true
+    }
+  }
+
   return connectLines
 }
 
@@ -438,7 +531,19 @@ function cmdScan(save) {
   return lines
 }
 
-function cmdProbe(save) {
+function cmdProbe(save, args = []) {
+  const target = args[0]?.toLowerCase()
+
+  if (target === 'secops_gate') {
+    if (!save.discoveredNodes.includes('secops_gate')) {
+      return [tx('terminal.probe.secopsUndiscovered')]
+    }
+    save.flags.secops_gate_probed = true
+    addTrace(save, 14)
+    discoverCodex(save, 'veil_protocol')
+    return [...(txRaw('terminal.probe.secopsGate') || [])]
+  }
+
   if (save.currentNode !== 'satlink_03') {
     return [tx('terminal.probe.noSegment')]
   }
@@ -447,6 +552,12 @@ function cmdProbe(save) {
   for (const n of ['morgue_server', 'blackvault']) {
     if (!save.discoveredNodes.includes(n)) save.discoveredNodes.push(n)
   }
+  const m3 = save.missions?.transmission_interdite
+  if (m3?.status === 'active' || m3?.status === 'completed') {
+    if (!save.discoveredNodes.includes('mirror_relay')) {
+      save.discoveredNodes.push('mirror_relay')
+    }
+  }
   addTrace(save, 12)
   syncMissionObjectiveText(save)
   const lines = [...(txRaw('terminal.probe.lines') || [])]
@@ -454,6 +565,22 @@ function cmdProbe(save) {
   if (riposte?.autoLines?.length) lines.push('', ...riposte.autoLines)
   if (riposte?.uiEffect) save.activeUiEffect = riposte.uiEffect
   return lines
+}
+
+function cmdListenHandler(save, args) {
+  const result = cmdListen(save, args)
+  if (result.pendingTransmission) {
+    if (!save.activeCharacterTransmission && !save.activeCinematic) {
+      fireCharacterTransmission(save, result.pendingTransmission.characterId, 'mission', {
+        bypassCooldown: true,
+        forceMessageKey: result.pendingTransmission.messageKey,
+      })
+    } else {
+      save._pendingInfluenceTransmission = result.pendingTransmission
+    }
+  }
+  if (result.addTrace) addTrace(save, result.addTrace)
+  return result.output || []
 }
 
 function cmdRun(save, args) {
@@ -477,9 +604,8 @@ function cmdRun(save, args) {
   }
 
   if (pid === 'trace_wiper') {
-    const old = save.traceLevel
-    save.traceLevel = Math.max(0, save.traceLevel - 15)
-    lines.push(tx('terminal.run.traceChange', { old, new: save.traceLevel }))
+    const result = reduceTrace(save, 15)
+    lines.push(...result.output)
   } else if (pid === 'packet_sniffer') {
     const n = NODE_META[save.currentNode]
     lines.push(tx('terminal.run.sniff', { node: n.name, multiplier: n.traceMultiplier }))
@@ -511,21 +637,44 @@ function cmdSync(save) {
 
 function processTraceDecay(save) {
   const level = save.ultraTechPresence?.level
-  if (level === PRESENCE_LEVELS.HOSTILE || level === PRESENCE_LEVELS.LOCKDOWN) return
-  if (save.traceLevel <= 0) return
+  if (level === PRESENCE_LEVELS.HOSTILE || level === PRESENCE_LEVELS.LOCKDOWN) return []
+  if (save.traceLevel <= 0) return []
 
   const now = Date.now()
   const sinceRisk = now - (save.lastRiskyActionAt || save.sessionStartMs || now)
-  if (sinceRisk < 60000) return
+  if (sinceRisk < 60000) return []
 
   save._traceDecayTick = save._traceDecayTick || 0
-  if (now - save._traceDecayTick < 60000) return
+  if (now - save._traceDecayTick < 60000) return []
 
   save._traceDecayTick = now
-  save.traceLevel = Math.max(0, save.traceLevel - 2)
+  const decay = reduceTrace(save, 2, { showDelta: false })
+  return decay.changed ? decay.output : []
 }
 
 export function executeDemoCommand(command) {
+  try {
+    return runExecuteDemoCommand(command)
+  } catch (err) {
+    console.error('[demoEngine]', command, err)
+    try {
+      const save = loadDemoSave()
+      return {
+        output: [tx('terminal.shellRejected')],
+        clear_terminal: false,
+        state: toPublicState(save),
+      }
+    } catch {
+      return {
+        output: ['[ERR] Le shell a rejeté cette requête.'],
+        clear_terminal: false,
+        state: getDemoState(),
+      }
+    }
+  }
+}
+
+function runExecuteDemoCommand(command) {
   const save = loadDemoSave()
   clearExpiredUiEffects(save)
 
@@ -565,6 +714,7 @@ export function executeDemoCommand(command) {
     isSecret: isHiddenCommand(cmd),
     rawCommand: command.trim(),
   })
+  save._influenceCtx = { cmd, args, meta: { isSecret: isHiddenCommand(cmd) } }
 
   let autoLines = []
 
@@ -598,8 +748,19 @@ export function executeDemoCommand(command) {
       save.guidanceUnknownStreak = 0
       resetUnknownStreak(save)
       tryCharacterTransmission(save, 'secret_command')
+      if (hidden.pendingTransmission) {
+        const p = hidden.pendingTransmission
+        if (!save.activeCharacterTransmission && !save.activeCinematic) {
+          fireCharacterTransmission(save, p.characterId, 'mission', {
+            bypassCooldown: true,
+            forceMessageKey: p.messageKey,
+          })
+        } else {
+          save._pendingInfluenceTransmission = p
+        }
+      }
       const mergedOut = hidden.silent ? behavior.autoLines : [...(hidden.output || []), ...autoLines]
-      return finishCommand(save, mergedOut, {
+      return finalizeCommand(save, mergedOut, {
         autoLines,
         terminalEffect: horror.terminalEffect || null,
       })
@@ -615,15 +776,24 @@ export function executeDemoCommand(command) {
     }
   }
 
+  if (cmd === 'listen') {
+    resetUnknownStreak(save)
+    const output = cmdListenHandler(save, args)
+    return finalizeCommand(save, output)
+  }
+
   if (!save.unlocked_commands.includes(cmd) && cmd !== 'clear' && cmd !== 'ls') {
     addTrace(save, 1)
     recordUnknownCommand(save)
     recordUselessCommand(save, cmd)
-    let output = [pickUnknownCommandLine(cmd), ...traceMessages(save)]
+    let output = [pickUnknownCommandLine(save, cmd), ...traceMessages(save)]
     if (save.playerGuidance?.unknownStreak >= 3) {
       resetUnknownStreak(save)
       output = appendStuckHint(save, output, 'firm')
     }
+    save._influenceCtx = { cmd, args, meta: { isSecret: false } }
+    const influenceLines = applyCommandInfluence(save, cmd, args, { isSecret: false })
+    if (influenceLines.length) output = [...output, '', ...influenceLines]
     saveDemoSave(save)
     return {
       output,
@@ -647,7 +817,7 @@ export function executeDemoCommand(command) {
     case 'connect': output = cmdConnect(save, args); break
     case 'disconnect': output = cmdDisconnect(save); break
     case 'scan': output = cmdScan(save); break
-    case 'probe': output = cmdProbe(save); break
+    case 'probe': output = cmdProbe(save, args); break
     case 'run': output = cmdRun(save, args); break
     case 'programs': output = cmdLs(save, ['programs']); break
     case 'inventory': output = cmdLs(save, ['inventory']); break
@@ -699,6 +869,14 @@ export function tickDemoMystery() {
     mergeHorrorResult(processMysteryTick(save), processHorrorTick(save)),
     behaviorTick,
   )
+  const influenceTickLines = applyInfluenceTick(save, behaviorTick.deltaMs || 0)
+  if (influenceTickLines.length) {
+    result.autoLines = [...(result.autoLines || []), ...influenceTickLines]
+  }
+  const pendingTx = consumePendingInfluenceTransmission(save, fireCharacterTransmission)
+  if (pendingTx?.transmission) {
+    save.activeCharacterTransmission = pendingTx.transmission
+  }
   const presenceTick = tickPresenceEffects(save)
   if (presenceTick.autoLines?.length) {
     result.autoLines = [...(result.autoLines || []), ...presenceTick.autoLines]
@@ -707,7 +885,10 @@ export function tickDemoMystery() {
     save.activeCharacterTransmission = presenceTick.transmission
   }
   flushPendingVeilIntro(save)
-  processTraceDecay(save)
+  const decayLines = processTraceDecay(save)
+  if (decayLines.length) {
+    result.autoLines = [...(result.autoLines || []), ...decayLines]
+  }
   if (result.uiEffect) save.activeUiEffect = result.uiEffect
   if (result.fakeGameOver) {
     save.fakeGameOverUntil = Date.now() + result.fakeGameOver.duration
@@ -830,6 +1011,100 @@ export function markNovaIntroSeenDemo() {
 export function touchPlayerActivityDemo() {
   const save = loadDemoSave()
   ensureBehavior(save).lastInputAt = Date.now()
+  saveDemoSave(save)
+  return { state: toPublicState(save) }
+}
+
+export function clearActiveUiEffectDemo() {
+  const save = loadDemoSave()
+  save.activeUiEffect = null
+  saveDemoSave(save)
+  return { state: toPublicState(save) }
+}
+
+export function dismissTraceWarning20Demo() {
+  const save = loadDemoSave()
+  const result = dismissTraceWarning20(save)
+  const autoLines = result.safeLine ? ['', result.safeLine] : []
+  saveDemoSave(save)
+  return { state: toPublicState(save), autoLines }
+}
+
+export function dismissTraceTriangulation50Demo() {
+  const save = loadDemoSave()
+  const result = dismissTraceTriangulation50(save)
+  tryScheduleNarrativeChoice(save, 'ut_ignore')
+  const autoLines = result.safeLine ? ['', result.safeLine] : []
+  saveDemoSave(save)
+  return { state: toPublicState(save), autoLines }
+}
+
+export function touchHintBrokerDemo() {
+  const save = loadDemoSave()
+  tryScheduleMorseIntelChoice(save)
+  saveDemoSave(save)
+  return { state: toPublicState(save) }
+}
+
+export function resolveNarrativeChoiceDemo(choiceId, option) {
+  const save = loadDemoSave()
+  const result = resolveNarrativeChoice(save, choiceId, option)
+  if (!result.ok) {
+    return { state: toPublicState(save), output: [], error: 'invalid_choice' }
+  }
+
+  if (result.pendingTransmission) {
+    const pending = result.pendingTransmission
+    if (!save.activeCharacterTransmission && !save.activeCinematic) {
+      fireCharacterTransmission(save, pending.characterId, 'mission', {
+        bypassCooldown: true,
+        forceMessageKey: pending.messageKey,
+      })
+    } else {
+      save._pendingInfluenceTransmission = pending
+    }
+  }
+
+  updateMissionProgress(save)
+  saveDemoSave(save)
+  return { state: toPublicState(save), output: result.output }
+}
+
+export function resolveTraceEmergency75Demo(choice) {
+  const save = loadDemoSave()
+  const result = resolveTraceEmergency75(save, choice)
+  if (result.ok) {
+    saveDemoSave(save)
+    return { state: toPublicState(save), output: result.output }
+  }
+  return { state: toPublicState(save), output: [], error: result.error }
+}
+
+export function resolveMissionCleanupDemo(choice) {
+  const save = loadDemoSave()
+  const result = resolveMissionCleanup(save, choice)
+  if (result.ok) {
+    saveDemoSave(save)
+    return { state: toPublicState(save), output: result.output }
+  }
+  return { state: toPublicState(save), output: [], error: result.error }
+}
+
+/** Failsafe — déverrouille terminal, effets UI, cinématique et transmission bloqués. */
+export function forceUnlockTerminalDemo() {
+  const save = loadDemoSave()
+  clearExpiredUiEffects(save)
+  save.activeUiEffect = null
+  if (save.ultraTechPresence) {
+    save.ultraTechPresence.terminalLockUntil = 0
+  }
+  dismissTraceWarning20(save)
+  dismissTraceTriangulation50(save)
+  dismissTraceEmergency75(save)
+  dismissMissionCleanup(save)
+  dismissNarrativeChoice(save)
+  clearActiveCinematic(save)
+  clearActiveCharacterTransmission(save)
   saveDemoSave(save)
   return { state: toPublicState(save) }
 }

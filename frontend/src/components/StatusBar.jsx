@@ -64,6 +64,9 @@ export default function StatusBar({
           <div>
             <strong>{t('statusbar.surveillance')}</strong>
             <p>{t('statusbar.surveillanceHint', { level: state.traceLevel ?? 0 })}</p>
+            {state.safeWindow?.active && (
+              <p className="statusbar__safe-window">{t('traceRecovery.safeWindowHint')}</p>
+            )}
           </div>
         </div>
       )}

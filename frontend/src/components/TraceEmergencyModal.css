@@ -1,0 +1,196 @@
+.trace-emergency {
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.trace-emergency.enter,
+.trace-emergency.visible,
+.trace-emergency.exit {
+  animation: trace-emg-fade-in 0.35s ease-out;
+}
+
+.trace-emergency.exit {
+  animation: trace-emg-fade-out 0.32s ease-in forwards;
+}
+
+.trace-emergency__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(3px);
+}
+
+.trace-emergency__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.2) 0,
+    rgba(0, 0, 0, 0.2) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.55;
+  animation: trace-emg-scan 6s linear infinite;
+}
+
+.trace-emergency__panel {
+  position: relative;
+  width: min(620px, calc(100vw - 2rem));
+  padding: 1.35rem 1.5rem 1.25rem;
+  border: 1px solid rgba(220, 38, 38, 0.72);
+  background: linear-gradient(180deg, rgba(12, 0, 0, 0.98) 0%, rgba(4, 0, 0, 0.99) 100%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.92),
+    0 0 52px rgba(220, 38, 38, 0.3),
+    inset 0 0 72px rgba(220, 38, 38, 0.08);
+  color: #f5e6e6;
+  font-family: var(--font-mono, 'Share Tech Mono', monospace);
+  transform: translateY(10px);
+  opacity: 0;
+}
+
+.trace-emergency.visible .trace-emergency__panel,
+.trace-emergency.enter .trace-emergency__panel {
+  transform: translateY(0);
+  opacity: 1;
+  animation: trace-emg-glitch 6s ease-in-out infinite;
+}
+
+.trace-emergency__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  color: #ef4444;
+}
+
+.trace-emergency__seal {
+  font-weight: 700;
+}
+
+.trace-emergency__timer {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(239, 68, 68, 0.55);
+  background: rgba(127, 29, 29, 0.4);
+  color: #fecaca;
+}
+
+.trace-emergency__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #fca5a5;
+  text-align: center;
+}
+
+.trace-emergency__subtitle {
+  margin: 0 0 1.2rem;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: rgba(254, 202, 202, 0.9);
+}
+
+.trace-emergency__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.trace-emergency__choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(0, 0, 0, 0.45);
+  color: #f5e6e6;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.trace-emergency__choice:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.75);
+  background: rgba(127, 29, 29, 0.28);
+}
+
+.trace-emergency__choice:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: rgba(127, 29, 29, 0.35);
+}
+
+.trace-emergency__choice--danger {
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.trace-emergency__choice--danger:hover {
+  background: rgba(127, 29, 29, 0.38);
+}
+
+.trace-emergency__choice-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fecaca;
+}
+
+.trace-emergency__choice-effect {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: rgba(254, 226, 226, 0.82);
+}
+
+.trace-emergency__choice-reason {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(248, 113, 113, 0.85);
+}
+
+@keyframes trace-emg-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes trace-emg-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes trace-emg-scan {
+  from { background-position: 0 0; }
+  to { background-position: 0 12px; }
+}
+
+@keyframes trace-emg-glitch {
+  0%, 94%, 100% {
+    filter: none;
+    transform: translateY(0);
+  }
+  95% {
+    filter: hue-rotate(-5deg) brightness(1.05);
+    transform: translateY(-1px) translateX(1px);
+  }
+  97% {
+    transform: translateY(1px) translateX(-1px);
+  }
+}

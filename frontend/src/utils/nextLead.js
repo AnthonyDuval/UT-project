@@ -1,6 +1,6 @@
 import { getLocale, getTranslator } from '../i18n'
 
-/** Détecte l'étape narrative courante (même logique que la progression Acte 1). */
+/** Détecte l'étape narrative courante (Acte 1 + Acte 2). */
 export function getNextLeadStageId(state) {
   if (!state) return 'connection'
 
@@ -23,6 +23,7 @@ export function getNextLeadStageId(state) {
   const m2 = state.missions?.satlink_intrusion
   const hacked = state.network?.hackedNodes || state.hackedNodes || []
   const connected = state.network?.currentNode ?? state.currentNode
+  const discovered = state.network?.discoveredNodes || state.discoveredNodes || []
 
   if (m2?.status === 'active') {
     if (!hacked.includes('satlink_03')) {
@@ -33,13 +34,40 @@ export function getNextLeadStageId(state) {
     }
     if (!flags.probe_used_satlink) return 'm2_erased_cartographer'
     if (!read.includes('satlink_manifest.dat')) return 'm2_orbital_manifest'
-    const discovered = state.network?.discoveredNodes || state.discoveredNodes || []
     if (!discovered.includes('morgue_server') || !discovered.includes('blackvault')) {
       return 'm2_forbidden_segments'
     }
     if (!read.includes('nova_orbital_fragment.dat')) {
       return novaRevealed ? 'm2_orbital_fragment_nova' : 'm2_orbital_fragment'
     }
+  }
+
+  const m3 = state.missions?.transmission_interdite
+  if (m3?.status === 'active') {
+    if (!read.includes('orbital_manifest.log')) return 'm3_orbital_manifest'
+    if (!flags.listen_discovered && !flags.listen_unlocked) return 'm3_discover_listen'
+    if (!flags.listen_used_satlink) return 'm3_listen_satlink'
+    if (!flags.echo17_transmission_seen) return 'm3_echo17'
+    if (!flags.echo_signal_choice_done) return 'm3_signal_choice'
+    if (!read.includes('echo_fragment.log') && !flags.echo_fragment_unlocked) return 'm3_echo_fragment'
+  }
+
+  const m4 = state.missions?.relais_miroir
+  if (m4?.status === 'active') {
+    if (!discovered.includes('mirror_relay')) return 'm4_discover_mirror'
+    if (!hacked.includes('mirror_relay')) return 'm4_connect_mirror'
+    if (!read.includes('mirror_index.dat')) return 'm4_mirror_index'
+    if (!flags.echo_discovered && !flags.echo_unlocked) return 'm4_discover_echo'
+    if (!flags.echo_operator_used) return 'm4_echo_operator'
+  }
+
+  const m5 = state.missions?.protocole_veil
+  if (m5?.status === 'active') {
+    if (!flags.veil_m5_transmission_fired) return 'm5_veil_transmission'
+    if (!read.includes('secops_notice.log')) return 'm5_secops_notice'
+    if (!flags.veil_protocol_choice_done) return 'm5_veil_choice'
+    if (!discovered.includes('secops_gate')) return 'm5_secops_gate'
+    if (!flags.secops_gate_probed) return 'm5_probe_secops'
   }
 
   return 'infiltration'

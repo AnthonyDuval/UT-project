@@ -129,7 +129,7 @@ export const MYSTERY_EVENTS = [
 ]
 
 export const HIDDEN_COMMANDS = new Set([
-  'mirror', 'ghost', 'nova', 'trace', 'echo', 'override',
+  'mirror', 'ghost', 'nova', 'trace', 'echo', 'override', 'resonate',
 ])
 
 /** Commandes secrètes — jamais listées dans help. */

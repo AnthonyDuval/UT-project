@@ -260,7 +260,9 @@ export default function BlackMarket({ gameState, onStateUpdate, onTerminalAppend
                 onClick={() => handleBuy(item.id)}
                 disabled={disabled || loading || !item.can_buy || !canAfford}
               >
-                {!item.can_buy ? t('market.owned') : item.isProgram ? t('market.download') : t('market.buy')}
+                {!item.can_buy
+                  ? (item.mission_limit_reached ? t('market.missionLimit') : t('market.owned'))
+                  : item.isProgram ? t('market.download') : t('market.buy')}
               </button>
             </article>
           )

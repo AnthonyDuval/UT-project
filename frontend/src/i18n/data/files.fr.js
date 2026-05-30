@@ -152,5 +152,67 @@ export default {
         'Coordonnées : mirror_relay · deepnode_alpha · ???',
       ],
     },
+    orbital_manifest_log: {
+      description: 'Manifeste orbital — journal interne',
+      content: [
+        '[SATLINK_03] Classification : PRISON DE SIGNAUX',
+        '[LOG] Flux sortant : AUCUN — jamais transmis vers l\'extérieur.',
+        '',
+        'Procédure opérateur effacé :',
+        '« LISTEN satlink_03 avant d\'interpréter le manifeste. »',
+        '',
+        'Note UltraTech : « Les opérateurs piégés ici ne partent pas. »',
+        '« Ils sont copiés. Puis effacés. »',
+      ],
+    },
+    echo_fragment_log: {
+      description: 'Fragment ECHO_17 récupéré',
+      content: [
+        '[ECHO_17] Si vous m\'entendez… ne répondez pas à la première voix.',
+        '[ECHO_17] SATLINK_03 n\'a jamais transmis vers l\'extérieur.',
+        '[ECHO_17] Quelqu\'un réécrit les opérateurs.',
+        '',
+        '[FRAGMENT] Je ne sais plus si je suis vivant, copié, ou piégé.',
+      ],
+    },
+    mirror_index_dat: {
+      description: 'Index du relais miroir',
+      content: [
+        '[MIRROR_RELAY] operator_0 — statut : ENCORE CONNECTÉ',
+        '[MIRROR_RELAY] operator_0 n\'a jamais quitté le relais.',
+        '',
+        'Commande miroir : ECHO operator',
+        '« Le terminal répète ce qu\'UltraTech efface. »',
+      ],
+    },
+    operator_shadow_log: {
+      description: 'Ombre opérateur — journal impossible',
+      content: [
+        '[SHADOW] Votre nom était déjà ici.',
+        '[SHADOW] operator_0 = {{name}} ? NON. OUI. LES DEUX.',
+        '',
+        'L\'ABSENT écoute depuis le reflet.',
+      ],
+    },
+    secops_notice_log: {
+      description: 'Avis SECOPS — protocole VEIL',
+      content: [
+        '[UT/SECOPS] Votre profil devient prioritaire.',
+        '[VEIL] Coopérez, et cette session peut encore être classée comme incident mineur.',
+        '',
+        'Segment verrouillé : secops_gate',
+        'Procédure : PROBE secops_gate',
+      ],
+    },
+    veil_protocol_enc: {
+      description: 'Protocole VEIL chiffré',
+      content: [
+        '-----BEGIN VEIL PROTOCOL-----',
+        'Répondre n\'est pas toujours obéir.',
+        'NOVA n\'est pas entièrement transparente.',
+        'VEIL n\'est peut-être pas seulement un ennemi.',
+        '-----END-----',
+      ],
+    },
   },
 }

@@ -150,15 +150,30 @@ export function clearExpiredUiEffects(save) {
   if (save.fakeGameOverUntil && Date.now() > save.fakeGameOverUntil) {
     save.fakeGameOverUntil = null
   }
-  if (save.activeUiEffect?.duration && save.activeUiEffect._started) {
-    if (Date.now() - save.activeUiEffect._started > save.activeUiEffect.duration) {
+  const fx = save.activeUiEffect
+  if (fx?.duration) {
+    const started = fx._started || fx.startedAt
+    if (started && Date.now() - started > fx.duration) {
       save.activeUiEffect = null
+    }
+  }
+  if (save.ultraTechPresence?.terminalLockUntil && Date.now() >= save.ultraTechPresence.terminalLockUntil) {
+    save.ultraTechPresence.terminalLockUntil = 0
+  }
+  if (save.activeCinematic?.startedAt && save.activeCinematic?.maxDurationMs) {
+    const elapsed = Date.now() - save.activeCinematic.startedAt
+    if (elapsed > save.activeCinematic.maxDurationMs + 3000) {
+      save.activeCinematic = null
     }
   }
 }
 
 export function stampUiEffectStart(save) {
   if (save.activeUiEffect && !save.activeUiEffect._started) {
-    save.activeUiEffect = { ...save.activeUiEffect, _started: Date.now() }
+    save.activeUiEffect = {
+      ...save.activeUiEffect,
+      _started: Date.now(),
+      startedAt: save.activeUiEffect.startedAt || Date.now(),
+    }
   }
 }

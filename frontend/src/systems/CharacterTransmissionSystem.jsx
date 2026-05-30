@@ -3,6 +3,8 @@
  */
 
 import { isPlayerStuckForTransmission } from '../utils/playerStuck'
+import { getInfluenceMessageKeys, getInfluenceWeightMultiplier } from './CharacterInfluence'
+import { onTransmissionClosed } from './narrativeChoices'
 
 export const CHARACTER_IDS = {
   ECHO_17: 'echo_17',
@@ -155,16 +157,18 @@ function getCharacterWeights(save) {
     weights[CHARACTER_IDS.ECHO_17] = 0.2 + (hiddenUses > 0 ? 0.06 : 0)
   }
   if (isCharacterEligible(CHARACTER_IDS.VEIL, save)) {
-    weights[CHARACTER_IDS.VEIL] = trace > 50 ? 0.38 : 0.1
+    weights[CHARACTER_IDS.VEIL] = (trace > 50 ? 0.38 : 0.1)
+      * getInfluenceWeightMultiplier(save, CHARACTER_IDS.VEIL)
   }
   if (isCharacterEligible(CHARACTER_IDS.MORSE, save)) {
-    weights[CHARACTER_IDS.MORSE] = 0.16
+    weights[CHARACTER_IDS.MORSE] = 0.16 * getInfluenceWeightMultiplier(save, CHARACTER_IDS.MORSE)
   }
   if (isCharacterEligible(CHARACTER_IDS.ABSENT, save)) {
-    weights[CHARACTER_IDS.ABSENT] = trace > 70 ? 0.05 : 0.012
+    weights[CHARACTER_IDS.ABSENT] = (trace > 70 ? 0.05 : 0.012)
+      * getInfluenceWeightMultiplier(save, CHARACTER_IDS.ABSENT)
   }
   if (isCharacterEligible(CHARACTER_IDS.NOVA, save)) {
-    weights[CHARACTER_IDS.NOVA] = 0.035
+    weights[CHARACTER_IDS.NOVA] = 0.035 * getInfluenceWeightMultiplier(save, CHARACTER_IDS.NOVA)
   }
 
   if (sessionMin > 8) {
@@ -196,13 +200,17 @@ function pickMessage(character, save, { preferHints = false } = {}) {
     if (id) seenCounts[id] = (seenCounts[id] || 0) + 1
   }
 
-  const poolKeys = preferHints && character.hintMessageKeys?.length
+  const influenceKeys = getInfluenceMessageKeys(character.id, save)
+  const baseKeys = preferHints && character.hintMessageKeys?.length
     ? character.hintMessageKeys
     : character.messageKeys
+  const poolKeys = influenceKeys.length
+    ? [...influenceKeys, ...baseKeys]
+    : baseKeys
 
   const candidates = poolKeys.map((key, idx) => ({
     key,
-    id: `${character.id}_hint_${idx}`,
+    id: `${character.id}_${key.replace(/\./g, '_')}_${idx}`,
   })).filter(({ id }) => {
     if ((seenCounts[id] || 0) >= 2) return false
     const recent = seen.find((entry) => {
@@ -215,7 +223,7 @@ function pickMessage(character, save, { preferHints = false } = {}) {
 
   const pool = candidates.length
     ? candidates
-    : character.messageKeys.map((key, idx) => ({ key, id: `${character.id}_${idx}` }))
+    : poolKeys.map((key, idx) => ({ key, id: `${character.id}_${idx}` }))
 
   return pool[Math.floor(Math.random() * pool.length)]
 }
@@ -255,7 +263,7 @@ export function fireCharacterTransmission(save, characterId, source = 'random', 
   return { transmission: { ...save.activeCharacterTransmission } }
 }
 
-export function clearActiveCharacterTransmission(save) {
+export function clearActiveCharacterTransmission(save, { scheduleChoice = true } = {}) {
   ensureCharacterTransmissionState(save)
   const was = save.activeCharacterTransmission
   if (!was) return { cleared: false, autoLines: [] }
@@ -270,6 +278,11 @@ export function clearActiveCharacterTransmission(save) {
   }
 
   save.activeCharacterTransmission = null
+
+  if (scheduleChoice) {
+    onTransmissionClosed(save, was)
+  }
+
   return { cleared: true, transmission: was, autoLines: [] }
 }
 

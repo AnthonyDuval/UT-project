@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageProvider'
 import './MysteryOverlay.css'
 
 const HORROR_TYPES = new Set([
@@ -29,6 +30,7 @@ function buildPixelMass() {
  * Effets visuels subtils — glitches, scanlines, horreur psychologique, faux game over.
  */
 export default function MysteryOverlay({ effect, onExpire }) {
+  const { t } = useLanguage()
   const [visible, setVisible] = useState(false)
   const [notify, setNotify] = useState(null)
   const [pixels, setPixels] = useState([])
@@ -85,6 +87,7 @@ export default function MysteryOverlay({ effect, onExpire }) {
     `mystery-overlay--${type}`,
     isHorror ? 'mystery-overlay--horror' : '',
     type === 'ut_freeze' ? 'mystery-overlay--ut-freeze' : '',
+    type === 'session_surveillance' ? 'mystery-overlay--session-surveillance' : '',
     visible ? 'mystery-overlay--visible' : '',
   ].filter(Boolean).join(' ')
 
@@ -119,6 +122,14 @@ export default function MysteryOverlay({ effect, onExpire }) {
           {type === 'ut_freeze' && (
             <div className="mystery-ut-freeze" aria-hidden="true">
               <span className="mystery-ut-freeze__pulse" />
+            </div>
+          )}
+
+          {type === 'session_surveillance' && (
+            <div className="mystery-surveillance" role="status">
+              <p className="mystery-surveillance__banner">{t('presence.surveillance.banner')}</p>
+              <p className="mystery-surveillance__line">{t('presence.surveillance.line1')}</p>
+              <p className="mystery-surveillance__line mystery-surveillance__line--dim">{t('presence.surveillance.line2')}</p>
             </div>
           )}
 

@@ -142,6 +142,7 @@ export default {
     namePlaceholder: 'Nom d\'opérateur…',
     confirm: 'Valider',
     confirmed: 'Très bien, {{playerName}}. Reste discret.',
+    fallbackError: '[SYS] Canal onboarding interrompu — session restaurée. Reste discret.',
     terminalBlocked: '[SYS] Canal entrant — identification opérateur requise.',
     footer: 'Canal clandestin · chiffrement partiel · origine inconnue',
     errors: {
@@ -422,11 +423,198 @@ export default {
       terminal: '[N0VA] nova_orbital_fragment.dat — récupérez le fragment.',
       stuckSoft: '[N0VA] Une trace attend sur le relais orbital.',
     },
+    m3_orbital_manifest: {
+      title: 'Manifeste orbital',
+      lead: 'Un manifeste orbital mentionne LISTEN. Ce mot revient trop souvent.',
+      step: 1,
+      total: 6,
+      terminal: '[FILE] orbital_manifest.log — lisez ce que SATLINK_03 cache.',
+      stuckSoft: '[FILE] Un manifeste orbital traîne sur SATLINK_03.',
+    },
+    m3_discover_listen: {
+      title: 'Écoute passive',
+      lead: 'Le manifeste parle d\'écoute avant d\'interpréter. LISTEN n\'est pas dans HELP.',
+      step: 2,
+      total: 6,
+      terminal: '[LOG] Procédure : LISTEN satlink_03',
+      stuckSoft: '[LOG] LISTEN apparaît dans le manifeste — pas dans HELP.',
+    },
+    m3_listen_satlink: {
+      title: 'Canal ECHO',
+      lead: 'SATLINK_03 émet en dehors des canaux officiels. Écoutez avant de répondre.',
+      step: 3,
+      total: 6,
+      terminal: '[LISTEN] LISTEN satlink_03',
+      stuckSoft: '[LISTEN] Quelqu\'un parle sur le relais orbital.',
+    },
+    m3_echo17: {
+      title: 'ECHO_17',
+      lead: 'Une transmission vidéo arrive. Ne répondez pas à la première voix.',
+      step: 4,
+      total: 6,
+      terminal: '[ECHO_17] Signal entrant — attendez la fin de la transmission.',
+      stuckSoft: '[ECHO_17] Une voix parle depuis SATLINK_03.',
+    },
+    m3_signal_choice: {
+      title: 'Sort du signal',
+      lead: 'Le signal attend une décision — sauvegarder, couper, ou vendre.',
+      step: 5,
+      total: 6,
+      terminal: '[???] Décidez du sort du signal ECHO_17.',
+      stuckSoft: '[???] Le terminal attend votre choix.',
+    },
+    m3_echo_fragment: {
+      title: 'Fragment récupéré',
+      lead: 'Un fragment reste dans la mémoire tampon — echo_fragment.log.',
+      step: 6,
+      total: 6,
+      terminal: '[FILE] echo_fragment.log — récupérez le fragment.',
+      stuckSoft: '[FILE] Un fragment ECHO attend sur le relais.',
+    },
+    m4_discover_mirror: {
+      title: 'Relais miroir',
+      lead: 'Un segment répète ce qu\'UltraTech efface — mirror_relay.',
+      step: 1,
+      total: 5,
+      terminal: '[MAP] PROBE depuis SATLINK_03 — mirror_relay détecté.',
+      stuckSoft: '[NET] Un relais miroir dort dans la cartographie.',
+    },
+    m4_connect_mirror: {
+      title: 'Connexion miroir',
+      lead: 'Le relais miroir ne répond pas aux scans. Il répète.',
+      step: 2,
+      total: 5,
+      terminal: '[NET] CONNECT mirror_relay',
+      stuckSoft: '[NET] mirror_relay attend une connexion.',
+    },
+    m4_mirror_index: {
+      title: 'Index miroir',
+      lead: 'operator_0 n\'a jamais quitté le relais. Lisez l\'index.',
+      step: 3,
+      total: 5,
+      terminal: '[FILE] mirror_index.dat — lisez l\'index du relais.',
+      stuckSoft: '[FILE] L\'index miroir traîne sur le segment.',
+    },
+    m4_discover_echo: {
+      title: 'Commande ECHO',
+      lead: 'L\'index mentionne ECHO operator — un mot que HELP ne liste pas.',
+      step: 4,
+      total: 5,
+      terminal: '[LOG] Procédure : ECHO operator',
+      stuckSoft: '[LOG] ECHO apparaît dans mirror_index.dat.',
+    },
+    m4_echo_operator: {
+      title: 'Opérateur fantôme',
+      lead: 'Interrogez l\'opérateur effacé. Le terminal pourrait répondre avec votre nom.',
+      step: 5,
+      total: 5,
+      terminal: '[ECHO] ECHO operator',
+      stuckSoft: '[ECHO] operator_0 attend une requête.',
+    },
+    m5_veil_transmission: {
+      title: 'Protocole VEIL',
+      lead: 'VEIL vous contacte. Votre profil devient prioritaire.',
+      step: 1,
+      total: 5,
+      terminal: '[UT/SECOPS] Transmission VEIL entrante — attendez le signal.',
+      stuckSoft: '[VEIL] Une transmission SECOPS est en cours.',
+    },
+    m5_secops_notice: {
+      title: 'Avis SECOPS',
+      lead: 'Un avis SECOPS traîne sur le terminal local — secops_notice.log.',
+      step: 2,
+      total: 5,
+      terminal: '[FILE] secops_notice.log — lisez l\'avis SECOPS.',
+      stuckSoft: '[FILE] Un avis SECOPS attend dans /home.',
+    },
+    m5_veil_choice: {
+      title: 'Réponse VEIL',
+      lead: 'VEIL attend une réponse, mais répondre n\'est pas toujours obéir.',
+      step: 3,
+      total: 5,
+      terminal: '[VEIL] Décidez : coopérer, ignorer, ou prévenir N0VA.',
+      stuckSoft: '[VEIL] Le terminal attend votre décision.',
+    },
+    m5_secops_gate: {
+      title: 'Segment SECOPS',
+      lead: 'Un nœud verrouillé apparaît — secops_gate.',
+      step: 4,
+      total: 5,
+      terminal: '[NET] secops_gate — segment cartographié.',
+      stuckSoft: '[NET] secops_gate attend une sonde.',
+    },
+    m5_probe_secops: {
+      title: 'Sonde SECOPS',
+      lead: 'Sondez le segment SECOPS avant qu\'UltraTech ne le scelle.',
+      step: 5,
+      total: 5,
+      terminal: '[PROBE] PROBE secops_gate',
+      stuckSoft: '[PROBE] secops_gate attend PROBE.',
+    },
     infiltration: {
       title: 'Infiltration en cours',
       lead: 'Le réseau garde encore des secrets. UltraTech observe.',
       terminal: '[SYS] Poursuivez l\'enquête — le réseau ne dort jamais.',
       stuckSoft: '[SYS] UltraTech observe. Restez discret.',
+    },
+  },
+
+  traceWarning20: {
+    seal: 'ULTRATECH SECOPS',
+    badge: 'AVERTISSEMENT OFFICIEL',
+    title: 'OPÉRATEUR,',
+    body: [
+      'Votre activité attire désormais notre attention.',
+      '',
+      'Si votre traçage atteint 100%,',
+      'nous appliquerons immédiatement la loi.',
+      '',
+      'Vous serez déconnecté,',
+      'localisé,',
+      'puis arrêté.',
+    ],
+    acknowledge: 'Compris',
+    traceLevel: 'TRACE ≥ 20%',
+    eventLog: '[UT/SECOPS] Avertissement officiel — seuil de traçage atteint.',
+  },
+
+  traceTriangulation50: {
+    seal: 'ULTRATECH SECOPS',
+    badge: 'PROTOCOLE TRIANGULATION',
+    title: 'TRIANGULATION EN COURS',
+    subtitle: 'ARRESTATION IMMÉDIATE AUTORISÉE À 100%',
+    gaugeLabel: 'Progression triangulation',
+    status: 'TRACE ≥ 50% — LOCALISATION ACTIVE',
+    dismiss: 'Masquer',
+    eventLog: '[UT/SECOPS] Triangulation en cours — arrestation autorisée à 100%.',
+  },
+
+  traceEmergency75: {
+    seal: 'ULTRATECH SECOPS',
+    title: 'PROTOCOLE D\'ARRESTATION EN PRÉPARATION',
+    subtitle: 'Fenêtre de fuite détectée : 30 secondes.',
+    timer: '{{seconds}}s',
+    eventLog: '[UT/SECOPS] Protocole d\'arrestation — fenêtre de fuite ouverte.',
+    choices: {
+      firewall: {
+        label: 'Brûler un Firewall',
+        effect: 'Consommer un Firewall pour réduire la TRACE de 25%.',
+        unavailable: 'Aucun Firewall disponible.',
+      },
+      scrambler: {
+        label: 'Payer un Brouilleur d\'urgence',
+        effect: 'Coût : {{cost}} BitTek — TRACE -30%.',
+        unavailable: 'BitTek insuffisant ({{cost}} requis).',
+      },
+      continue: {
+        label: 'Continuer malgré tout',
+        effect: 'UltraTech passe en mode hostile.',
+      },
+    },
+    result: {
+      firewall: '[UT/ESCAPE] Firewall consommé — TRACE {{old}}% → {{trace}}%.',
+      scrambler: '[UT/ESCAPE] Brouilleur d\'urgence activé (-{{cost}} BitTek) — TRACE {{old}}% → {{trace}}%.',
+      continue: '[UT/SECOPS] Fenêtre ignorée — présence UltraTech hostile.',
     },
   },
 
@@ -449,6 +637,11 @@ export default {
     },
     lockdown: {
       terminalLock: '[LOCKDOWN] Terminal verrouillé — réponse UltraTech en cours…',
+    },
+    surveillance: {
+      banner: 'SESSION SURVEILLÉE',
+      line1: 'Session momentanément restreinte.',
+      line2: 'UltraTech analyse votre activité.',
     },
   },
 
@@ -482,10 +675,46 @@ export default {
     transmission_interdite: {
       title: 'Transmission Interdite',
       subtitle: 'Mission 3',
-      description: 'Intercepter une transmission classifiée UltraTech.',
-      atmosphere: 'Quelqu\'un parle en dehors des canaux officiels. UltraTech efface déjà la trace.',
-      objectives: {},
-      rewardsSummary: '+250 BitTek · outil anti-trace avancé',
+      description: 'SATLINK_03 n\'était pas un relais — c\'était une prison de signaux.',
+      atmosphere: 'Des opérateurs y ont été piégés, copiés, ou effacés. ECHO_17 parle en dehors des canaux.',
+      objectives: {
+        read_orbital_manifest: 'Lire orbital_manifest.log',
+        discover_listen: 'Découvrir la commande listen',
+        use_listen: 'Écouter SATLINK_03',
+        receive_echo17: 'Recevoir la transmission ECHO_17',
+        choose_signal: 'Décider du sort du signal',
+        unlock_echo_fragment: 'Récupérer echo_fragment.log',
+      },
+      rewardsSummary: '+250 BitTek · commande listen · Codex ECHO_17',
+    },
+    relais_miroir: {
+      title: 'Le Relais Miroir',
+      subtitle: 'Mission 4',
+      description: 'Un nœud qui répète les opérateurs effacés.',
+      atmosphere: 'operator_0 n\'a jamais quitté le relais. Votre nom était déjà ici.',
+      objectives: {
+        discover_mirror: 'Découvrir mirror_relay',
+        connect_mirror: 'Se connecter au relais miroir',
+        read_mirror_index: 'Lire mirror_index.dat',
+        discover_echo_cmd: 'Découvrir la commande echo',
+        echo_operator: 'Interroger l\'opérateur fantôme',
+        impossible_response: 'Recevoir la réponse impossible',
+      },
+      rewardsSummary: '+300 BitTek · commande echo · operator_shadow.log',
+    },
+    protocole_veil: {
+      title: 'Protocole VEIL',
+      subtitle: 'Mission 5',
+      description: 'UltraTech propose un marché. VEIL attend une réponse.',
+      atmosphere: 'Coopérer, et cette session peut encore être classée comme incident mineur.',
+      objectives: {
+        receive_veil: 'Recevoir la transmission VEIL',
+        read_secops_notice: 'Lire secops_notice.log',
+        veil_choice: 'Répondre à VEIL',
+        unlock_secops_gate: 'Débloquer secops_gate',
+        probe_secops_gate: 'Sonder secops_gate',
+      },
+      rewardsSummary: '+350 BitTek · Signal Scrubber · vérité partielle',
     },
     node_fantome: {
       title: 'Node Fantôme',
@@ -566,11 +795,22 @@ export default {
     use: 'Utiliser',
     owned: 'Possédé',
     alreadyOwned: 'Déjà possédé',
+    missionLimit: 'Limite mission',
     items: {
       firewall_jetable: {
         name: 'Firewall Jetable',
         description: 'Barrière réseau éphémère.',
         effect: 'Réduit la TRACE de 15 pts.',
+      },
+      trace_cleaner: {
+        name: 'Trace Cleaner',
+        description: 'Effaceur de signature réseau.',
+        effect: 'Réduit la TRACE de 20 pts.',
+      },
+      signal_scrubber: {
+        name: 'Signal Scrubber',
+        description: 'Outil clandestin — effaceur profond.',
+        effect: 'Réduit la TRACE de 25 pts.',
       },
       proxy_fantome: {
         name: 'Proxy Fantôme',
@@ -703,11 +943,89 @@ export default {
     },
   },
 
+  traceRecovery: {
+    signatureErased: '[TRACE] Signature opérateur partiellement effacée.',
+    safeWindowTerminal: '[NET] Fenêtre réseau instable — surveillance réduite.',
+    safeWindowLog: '[NET] Fenêtre réseau instable — hausses TRACE atténuées.',
+    safeWindowHint: 'Fenêtre réseau instable — surveillance réduite.',
+  },
+
+  missionCleanup: {
+    seal: 'CANAL CLANDESTIN',
+    title: 'Fenêtre de nettoyage détectée.',
+    subtitle: 'UltraTech recalibre ses capteurs. Profitez-en.',
+    eventLog: '[???] Fenêtre de nettoyage détectée — choix tactique disponible.',
+    skip: 'Laisser passer',
+    choices: {
+      bittek: {
+        label: 'Exfiltrer des crédits',
+        effect: 'Récupérer +80 BitTek.',
+      },
+      trace: {
+        label: 'Effacer la signature',
+        effect: 'Réduire la TRACE de 15%.',
+      },
+      firewall: {
+        label: 'Récupérer un outil',
+        effect: 'Obtenir un Firewall Jetable.',
+      },
+    },
+    result: {
+      bittek: '[SYS] Exfiltration réussie — +{{amount}} BitTek.',
+      trace: '[TRACE] Nettoyage partiel — {{old}}% → {{trace}}%.',
+      firewall: '[SYS] Firewall Jetable ajouté à l\'inventaire.',
+      skip: '[SYS] Fenêtre de nettoyage expirée.',
+    },
+  },
+
+  gameOver: {
+    seal: 'ULTRATECH SECOPS',
+    utMessages: {
+      location: 'LOCALISATION CONFIRMÉE',
+      intervention: 'INTERVENTION AUTORISÉE',
+      session: 'SESSION TERMINÉE',
+    },
+    terminal: {
+      critical: '[!!!] TRACE CRITIQUE — 100%',
+      engaged: '[!!!] ULTRATECH SECOPS — PROTOCOLE D\'ARRÊT',
+      hijacked: '[SYS] TERMINAL COMPROMIS — CONTRÔLE EXTERNE',
+      cmdWhoami: '> whoami',
+      accessRevoked: '{{name}} [ACCÈS RÉVOQUÉ]',
+      cmdDisconnect: '> disconnect --force',
+      cmdBlocked: '[ERR] COMMANDE BLOQUÉE PAR ULTRATECH SECOPS',
+      cmdPurge: '> purge trace',
+      purgeDenied: '[ERR] REFUSÉ — TRACE VERROUILLÉE À 100%',
+    },
+    videoLabel: 'TRANSMISSION SECOPS — ÉCHEC SYSTÈME',
+    report: {
+      title: 'RAPPORT ULTRATECH SECOPS',
+      subtitle: 'Dossier opérateur — intervention terminée',
+      operator: 'Opérateur',
+      finalTrace: 'TRACE finale',
+      suspiciousCommands: 'Commandes suspectes',
+      visitedNodes: 'Nœuds visités',
+      sessionDuration: 'Durée session',
+      status: 'Statut',
+      statusValue: 'ARRÊTÉ',
+      none: '—',
+      commandEntry: '{{cmd}} ×{{count}}',
+    },
+    rareLines: [
+      'Nous vous observions depuis le début.',
+      'Cette session n\'aurait jamais dû exister.',
+    ],
+    actions: {
+      newIdentity: 'Nouvelle identité',
+      returnHome: 'Retour écran accueil',
+    },
+  },
+
   errors: {
     retry: 'Réessayer',
     marketNotFound: 'Objet introuvable',
     marketInsufficient: 'BitTek insuffisant',
     marketNotInInventory: 'Objet absent de l\'inventaire',
+    marketMissionLimit: 'Limite d\'achat atteinte pour cette mission.',
     marketPurchase: '[DEMO MARKET] Achat : {{name}} (-{{price}} BitTek)',
   },
 
@@ -720,6 +1038,7 @@ export default {
     loadSession: 'Impossible de charger la session ({{message}})',
     resetError: 'Erreur reset : {{message}}',
     sessionLoading: 'Chargement de la session…',
+    narrativeChoiceInterrupted: '[???] La transmission s\'est interrompue.',
   },
 
   footer: {
@@ -796,6 +1115,98 @@ export default {
     footerForced: 'Interface forcée',
   },
 
+  influenceUnlock: {
+    morseRareCatalog: '[???] Nouveau stock signalé sur le canal privé.',
+    veilDirect: '[UT/SECOPS] Priorité profil — observation renforcée.',
+    absentNode: '[NET] Segment non répertorié détecté sur la cartographie.',
+    absentWhisper: '[???] ...signal incomplet... persiste...',
+  },
+
+  influenceChoices: {
+    nova_listen: {
+      seal: 'CANAL ENTRANT — DÉCISION',
+      title: 'Transmission terminée',
+      subtitle: 'N0VA a parlé. Le terminal attend votre réaction.',
+      options: {
+        listen: { label: 'Écouter encore', hint: 'Rester sur la fréquence.' },
+        ignore: { label: 'Ignorer le signal', hint: 'Couper le canal.' },
+      },
+      listen: '[N0VA] ...merci de ne pas avoir détourné les yeux.',
+      ignore: '[SYS] Canal fermé. Quelque chose s\'en souviendra quand même.',
+    },
+    veil_cut: {
+      seal: 'SECOPS — OBSERVATION',
+      title: 'VEIL vous observe',
+      subtitle: 'La transmission SECOPS est encore ouverte.',
+      options: {
+        cut: { label: 'Couper la transmission', hint: 'Refuser l\'observation.' },
+        stay: { label: 'Rester connecté', hint: 'Accepter la surveillance.' },
+      },
+      cut: '[NET] Signal VEIL interrompu — trace parallèle détectée.',
+      stay: '[UT/SECOPS] Session confirmée sous observation.',
+    },
+    morse_intel: {
+      seal: 'GHOST BROKER — OFFRE',
+      title: 'Information privée',
+      subtitle: 'MORSE propose un fragment hors catalogue. 35 BitTek.',
+      options: {
+        buy: { label: 'Acheter l\'info', hint: '35 BitTek — source non tracée.' },
+        decline: { label: 'Refuser', hint: 'Fermer le canal privé.' },
+      },
+      buy: '[BROKER] Fragment livré — quelqu\'un d\'autre paie pour vos erreurs.',
+      decline: '[BROKER] Offre retirée. Le marché n\'insiste pas.',
+    },
+    ut_ignore: {
+      seal: 'ULTRATECH — PROTOCOLE',
+      title: 'Triangulation en cours',
+      subtitle: 'UltraTech demande une réponse protocolaire.',
+      options: {
+        ignore: { label: 'Ignorer UltraTech', hint: 'Continuer l\'infiltration.' },
+        obey: { label: 'Obéir au protocole', hint: 'Réduire la visibilité.' },
+      },
+      ignore: '[???] Le protocole attend. Vous, non.',
+      obey: '[UT/SECOPS] Conformité partielle enregistrée.',
+    },
+    forbidden_signal: {
+      seal: 'SATLINK_03 — SIGNAL CLASSIFIÉ',
+      title: 'Transmission interdite',
+      subtitle: 'Une vidéo chiffrée attend sur le relais orbital.',
+      options: {
+        open: { label: 'Ouvrir la transmission', hint: 'Découvrir ECHO_17.' },
+        ignore: { label: 'Ignorer le signal', hint: 'Laisser UltraTech effacer.' },
+      },
+      open: '[ORBIT] Flux vidéo déchiffré — source : ECHO_17.',
+      ignore: '[ORBIT] Signal ignoré. Il continue sans vous.',
+      ignoreEcho: '[ECHO_17] ...',
+    },
+    echo_signal: {
+      seal: 'ECHO_17 — SIGNAL INTERCEPTÉ',
+      title: 'Transmission terminée',
+      subtitle: 'Le signal attend une décision.',
+      options: {
+        save: { label: 'Sauvegarder le signal', hint: 'Conserver le fragment ECHO_17.' },
+        cut: { label: 'Couper le signal', hint: 'Refuser la fréquence.' },
+        sell: { label: 'Vendre à MORSE', hint: '+120 BitTek — vérité incomplète.' },
+      },
+      save: '[ECHO_17] Fragment archivé — quelqu\'un d\'autre l\'entendra aussi.',
+      cut: '[NET] Signal coupé — fragment partiel récupéré depuis la mémoire tampon.',
+      sell: '[BROKER] MORSE paie pour vos écoutes — fragment livré.',
+    },
+    veil_protocol: {
+      seal: 'SECOPS — PROTOCOLE VEIL',
+      title: 'VEIL attend une réponse',
+      subtitle: 'Coopérer, ignorer, ou prévenir N0VA.',
+      options: {
+        cooperate: { label: 'Coopérer temporairement', hint: 'Réduire la suspicion VEIL.' },
+        ignore: { label: 'Ignorer VEIL', hint: 'Refuser le marché.' },
+        warn_nova: { label: 'Prévenir N0VA', hint: 'Transmettre l\'avertissement.' },
+      },
+      cooperate: '[UT/SECOPS] Coopération partielle — secops_gate déverrouillé.',
+      ignore: '[VEIL] Silence enregistré — le profil reste prioritaire.',
+      warn_nova: '[N0VA] Avertissement transmis — VEIL observe les deux canaux.',
+    },
+  },
+
   transmissions: {
     ui: {
       live: '● SIGNAL',
@@ -807,9 +1218,9 @@ export default {
       name: 'ECHO_17',
       tag: 'RELAY FANTÔME — FRAGMENT',
       messages: {
-        0: 'Ne faites pas confiance à tout ce qui vous répond.',
-        1: 'SATLINK_03 n\'était pas vide.',
-        2: 'Si elle vous parle… attendez avant de répondre.',
+        0: 'Si vous m\'entendez… ne répondez pas à la première voix.',
+        1: 'SATLINK_03 n\'a jamais transmis vers l\'extérieur.',
+        2: 'Quelqu\'un réécrit les opérateurs.',
       },
       hints: {
         0: 'Le relais ne répond pas aux curieux. Il répond aux scans.',
@@ -819,12 +1230,21 @@ export default {
       name: 'VEIL',
       tag: 'SECOPS — OBSERVATION',
       messages: {
-        0: 'Votre activité devient problématique.',
-        1: 'Cette session est observée.',
+        0: 'Votre profil devient prioritaire.',
+        1: 'Coopérez, et cette session peut encore être classée comme incident mineur.',
         2: 'Vous n\'êtes pas aussi invisible que vous le pensez.',
       },
       hints: {
         0: 'Chaque tentative inconnue est enregistrée.',
+      },
+      influence: {
+        low: {
+          0: 'Restez discret et tout ira bien.',
+        },
+        high: {
+          0: 'Votre profil devient prioritaire.',
+          1: 'Nous savons où chercher.',
+        },
       },
     },
     morse: {
@@ -838,6 +1258,14 @@ export default {
       hints: {
         0: 'Tu veux une porte ? Commence par trouver la commande qui frappe.',
       },
+      influence: {
+        low: {
+          0: 'Vous hésitez. Le réseau aussi.',
+        },
+        high: {
+          0: 'Pour vous, j\'ai des portes que UltraTech n\'indexe pas.',
+        },
+      },
     },
     absent: {
       name: 'L\'ABSENT',
@@ -846,6 +1274,15 @@ export default {
         0: '...encore... connecté...',
         1: 'operator_0 n\'a jamais quitté le relais.',
         2: 'ne regardez pas le node trop longtemps.',
+      },
+      influence: {
+        mid: {
+          0: '...vous aussi... vous restez...',
+        },
+        high: {
+          0: '...je vous vois... depuis le relais...',
+          1: '...ne partez pas...',
+        },
       },
     },
     nova: {
@@ -858,6 +1295,16 @@ export default {
       },
       hints: {
         0: 'Certains mots ne sont pas des commandes. Pas encore.',
+      },
+      influence: {
+        high: {
+          0: 'Je peux encore vous protéger.',
+          1: 'Restez près de moi. Pas d\'eux.',
+        },
+        low: {
+          0: 'Pourquoi continuez-vous à les écouter ?',
+          1: 'Vous préférez leur loi à la mienne.',
+        },
       },
     },
   },

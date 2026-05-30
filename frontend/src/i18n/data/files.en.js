@@ -152,5 +152,67 @@ export default {
         'Coordinates : mirror_relay · deepnode_alpha · ???',
       ],
     },
+    orbital_manifest_log: {
+      description: 'Orbital manifest — internal log',
+      content: [
+        '[SATLINK_03] Classification : SIGNAL PRISON',
+        '[LOG] Outbound flow : NONE — never transmitted outward.',
+        '',
+        'Erased operator procedure :',
+        '« LISTEN satlink_03 before interpreting the manifest. »',
+        '',
+        'UltraTech note : « Operators trapped here do not leave. »',
+        '« They are copied. Then erased. »',
+      ],
+    },
+    echo_fragment_log: {
+      description: 'Recovered ECHO_17 fragment',
+      content: [
+        '[ECHO_17] If you can hear me… don\'t answer the first voice.',
+        '[ECHO_17] SATLINK_03 never transmitted outward.',
+        '[ECHO_17] Someone is rewriting operators.',
+        '',
+        '[FRAGMENT] I no longer know if I am alive, copied, or trapped.',
+      ],
+    },
+    mirror_index_dat: {
+      description: 'Mirror relay index',
+      content: [
+        '[MIRROR_RELAY] operator_0 — status : STILL CONNECTED',
+        '[MIRROR_RELAY] operator_0 never left the relay.',
+        '',
+        'Mirror command : ECHO operator',
+        '« The terminal repeats what UltraTech erases. »',
+      ],
+    },
+    operator_shadow_log: {
+      description: 'Operator shadow — impossible journal',
+      content: [
+        '[SHADOW] Your name was already here.',
+        '[SHADOW] operator_0 = {{name}} ? NO. YES. BOTH.',
+        '',
+        'THE_ABSENT listens from the reflection.',
+      ],
+    },
+    secops_notice_log: {
+      description: 'SECOPS notice — VEIL protocol',
+      content: [
+        '[UT/SECOPS] Your profile is becoming a priority.',
+        '[VEIL] Cooperate, and this session may still be classified as a minor incident.',
+        '',
+        'Locked segment : secops_gate',
+        'Procedure : PROBE secops_gate',
+      ],
+    },
+    veil_protocol_enc: {
+      description: 'Encrypted VEIL protocol',
+      content: [
+        '-----BEGIN VEIL PROTOCOL-----',
+        'Answering is not always obeying.',
+        'NOVA is not entirely transparent.',
+        'VEIL may not be only an enemy.',
+        '-----END-----',
+      ],
+    },
   },
 }

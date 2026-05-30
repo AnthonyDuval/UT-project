@@ -111,10 +111,11 @@ export default function HintBroker({ gameState, onStateUpdate, disabled }) {
     try {
       const data = await fetchHintBroker()
       setBroker(data)
+      if (data?.state) onStateUpdate?.(data.state)
     } catch (err) {
       setError(err.message)
     }
-  }, [])
+  }, [onStateUpdate])
 
   useEffect(() => {
     if (gameState?.hintBroker?.unlocked) loadBroker()

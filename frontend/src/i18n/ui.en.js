@@ -142,6 +142,7 @@ export default {
     namePlaceholder: 'Operator name…',
     confirm: 'Confirm',
     confirmed: 'Very well, {{playerName}}. Stay quiet.',
+    fallbackError: '[SYS] Onboarding channel interrupted — session restored. Stay quiet.',
     terminalBlocked: '[SYS] Incoming channel — operator identification required.',
     footer: 'Clandestine channel · partial encryption · unknown origin',
     errors: {
@@ -422,11 +423,198 @@ export default {
       terminal: '[N0VA] nova_orbital_fragment.dat — recover the fragment.',
       stuckSoft: '[N0VA] A trace waits on the orbital relay.',
     },
+    m3_orbital_manifest: {
+      title: 'Orbital manifest',
+      lead: 'An orbital manifest mentions LISTEN. The word appears too often.',
+      step: 1,
+      total: 6,
+      terminal: '[FILE] orbital_manifest.log — read what SATLINK_03 hides.',
+      stuckSoft: '[FILE] An orbital manifest lingers on SATLINK_03.',
+    },
+    m3_discover_listen: {
+      title: 'Passive listen',
+      lead: 'The manifest speaks of listening before interpreting. LISTEN is not in HELP.',
+      step: 2,
+      total: 6,
+      terminal: '[LOG] Procedure : LISTEN satlink_03',
+      stuckSoft: '[LOG] LISTEN appears in the manifest — not in HELP.',
+    },
+    m3_listen_satlink: {
+      title: 'ECHO channel',
+      lead: 'SATLINK_03 broadcasts outside official channels. Listen before you answer.',
+      step: 3,
+      total: 6,
+      terminal: '[LISTEN] LISTEN satlink_03',
+      stuckSoft: '[LISTEN] Someone is speaking on the orbital relay.',
+    },
+    m3_echo17: {
+      title: 'ECHO_17',
+      lead: 'A video transmission arrives. Don\'t answer the first voice.',
+      step: 4,
+      total: 6,
+      terminal: '[ECHO_17] Incoming signal — wait for the transmission to end.',
+      stuckSoft: '[ECHO_17] A voice speaks from SATLINK_03.',
+    },
+    m3_signal_choice: {
+      title: 'Signal fate',
+      lead: 'The signal awaits a decision — save, cut, or sell.',
+      step: 5,
+      total: 6,
+      terminal: '[???] Decide the fate of the ECHO_17 signal.',
+      stuckSoft: '[???] The terminal awaits your choice.',
+    },
+    m3_echo_fragment: {
+      title: 'Recovered fragment',
+      lead: 'A fragment remains in the buffer — echo_fragment.log.',
+      step: 6,
+      total: 6,
+      terminal: '[FILE] echo_fragment.log — recover the fragment.',
+      stuckSoft: '[FILE] An ECHO fragment waits on the relay.',
+    },
+    m4_discover_mirror: {
+      title: 'Mirror relay',
+      lead: 'A segment repeats what UltraTech erases — mirror_relay.',
+      step: 1,
+      total: 5,
+      terminal: '[MAP] PROBE from SATLINK_03 — mirror_relay detected.',
+      stuckSoft: '[NET] A mirror relay sleeps in the map.',
+    },
+    m4_connect_mirror: {
+      title: 'Mirror connection',
+      lead: 'The mirror relay does not respond to scans. It repeats.',
+      step: 2,
+      total: 5,
+      terminal: '[NET] CONNECT mirror_relay',
+      stuckSoft: '[NET] mirror_relay awaits a connection.',
+    },
+    m4_mirror_index: {
+      title: 'Mirror index',
+      lead: 'operator_0 never left the relay. Read the index.',
+      step: 3,
+      total: 5,
+      terminal: '[FILE] mirror_index.dat — read the relay index.',
+      stuckSoft: '[FILE] The mirror index lingers on the segment.',
+    },
+    m4_discover_echo: {
+      title: 'ECHO command',
+      lead: 'The index mentions ECHO operator — a word HELP never lists.',
+      step: 4,
+      total: 5,
+      terminal: '[LOG] Procedure : ECHO operator',
+      stuckSoft: '[LOG] ECHO appears in mirror_index.dat.',
+    },
+    m4_echo_operator: {
+      title: 'Ghost operator',
+      lead: 'Query the erased operator. The terminal might answer with your name.',
+      step: 5,
+      total: 5,
+      terminal: '[ECHO] ECHO operator',
+      stuckSoft: '[ECHO] operator_0 awaits a query.',
+    },
+    m5_veil_transmission: {
+      title: 'VEIL Protocol',
+      lead: 'VEIL contacts you. Your profile is becoming a priority.',
+      step: 1,
+      total: 5,
+      terminal: '[UT/SECOPS] Incoming VEIL transmission — wait for the signal.',
+      stuckSoft: '[VEIL] A SECOPS transmission is in progress.',
+    },
+    m5_secops_notice: {
+      title: 'SECOPS notice',
+      lead: 'A SECOPS notice lingers on the local terminal — secops_notice.log.',
+      step: 2,
+      total: 5,
+      terminal: '[FILE] secops_notice.log — read the SECOPS notice.',
+      stuckSoft: '[FILE] A SECOPS notice waits in /home.',
+    },
+    m5_veil_choice: {
+      title: 'VEIL response',
+      lead: 'VEIL is waiting for an answer, but answering is not always obeying.',
+      step: 3,
+      total: 5,
+      terminal: '[VEIL] Decide : cooperate, ignore, or warn N0VA.',
+      stuckSoft: '[VEIL] The terminal awaits your decision.',
+    },
+    m5_secops_gate: {
+      title: 'SECOPS segment',
+      lead: 'A locked node appears — secops_gate.',
+      step: 4,
+      total: 5,
+      terminal: '[NET] secops_gate — segment mapped.',
+      stuckSoft: '[NET] secops_gate awaits a probe.',
+    },
+    m5_probe_secops: {
+      title: 'SECOPS probe',
+      lead: 'Probe the SECOPS segment before UltraTech seals it.',
+      step: 5,
+      total: 5,
+      terminal: '[PROBE] PROBE secops_gate',
+      stuckSoft: '[PROBE] secops_gate awaits PROBE.',
+    },
     infiltration: {
       title: 'Infiltration in progress',
       lead: 'The network still holds secrets. UltraTech is watching.',
       terminal: '[SYS] Continue the investigation — the network never sleeps.',
       stuckSoft: '[SYS] UltraTech is watching. Stay discreet.',
+    },
+  },
+
+  traceWarning20: {
+    seal: 'ULTRATECH SECOPS',
+    badge: 'OFFICIAL WARNING',
+    title: 'OPERATOR,',
+    body: [
+      'Your activity is now attracting our attention.',
+      '',
+      'If your trace reaches 100%,',
+      'we will immediately enforce the law.',
+      '',
+      'You will be disconnected,',
+      'located,',
+      'then arrested.',
+    ],
+    acknowledge: 'Understood',
+    traceLevel: 'TRACE ≥ 20%',
+    eventLog: '[UT/SECOPS] Official warning — trace threshold reached.',
+  },
+
+  traceTriangulation50: {
+    seal: 'ULTRATECH SECOPS',
+    badge: 'TRIANGULATION PROTOCOL',
+    title: 'TRIANGULATION IN PROGRESS',
+    subtitle: 'IMMEDIATE ARREST AUTHORIZED AT 100%',
+    gaugeLabel: 'Triangulation progress',
+    status: 'TRACE ≥ 50% — ACTIVE LOCALIZATION',
+    dismiss: 'Dismiss',
+    eventLog: '[UT/SECOPS] Triangulation in progress — arrest authorized at 100%.',
+  },
+
+  traceEmergency75: {
+    seal: 'ULTRATECH SECOPS',
+    title: 'ARREST PROTOCOL PREPARING',
+    subtitle: 'Escape window detected: 30 seconds.',
+    timer: '{{seconds}}s',
+    eventLog: '[UT/SECOPS] Arrest protocol — escape window open.',
+    choices: {
+      firewall: {
+        label: 'Burn a Firewall',
+        effect: 'Consume a Firewall to reduce TRACE by 25%.',
+        unavailable: 'No Firewall available.',
+      },
+      scrambler: {
+        label: 'Pay for an emergency Scrambler',
+        effect: 'Cost: {{cost}} BitTek — TRACE -30%.',
+        unavailable: 'Insufficient BitTek ({{cost}} required).',
+      },
+      continue: {
+        label: 'Continue anyway',
+        effect: 'UltraTech presence turns hostile.',
+      },
+    },
+    result: {
+      firewall: '[UT/ESCAPE] Firewall consumed — TRACE {{old}}% → {{trace}}%.',
+      scrambler: '[UT/ESCAPE] Emergency scrambler activated (-{{cost}} BitTek) — TRACE {{old}}% → {{trace}}%.',
+      continue: '[UT/SECOPS] Window ignored — UltraTech presence hostile.',
     },
   },
 
@@ -449,6 +637,11 @@ export default {
     },
     lockdown: {
       terminalLock: '[LOCKDOWN] Terminal locked — UltraTech response in progress…',
+    },
+    surveillance: {
+      banner: 'SESSION MONITORED',
+      line1: 'Session temporarily restricted.',
+      line2: 'UltraTech is analyzing your activity.',
     },
   },
 
@@ -482,10 +675,46 @@ export default {
     transmission_interdite: {
       title: 'Forbidden Transmission',
       subtitle: 'Mission 3',
-      description: 'Intercept a classified UltraTech transmission.',
-      atmosphere: 'Someone speaks outside official channels. UltraTech is already erasing the trace.',
-      objectives: {},
-      rewardsSummary: '+250 BitTek · advanced anti-trace tool',
+      description: 'SATLINK_03 was not a relay — it was a signal prison.',
+      atmosphere: 'Operators were trapped, copied, or erased there. ECHO_17 speaks outside official channels.',
+      objectives: {
+        read_orbital_manifest: 'Read orbital_manifest.log',
+        discover_listen: 'Discover the listen command',
+        use_listen: 'Listen to SATLINK_03',
+        receive_echo17: 'Receive the ECHO_17 transmission',
+        choose_signal: 'Decide the signal\'s fate',
+        unlock_echo_fragment: 'Recover echo_fragment.log',
+      },
+      rewardsSummary: '+250 BitTek · listen command · Codex ECHO_17',
+    },
+    relais_miroir: {
+      title: 'The Mirror Relay',
+      subtitle: 'Mission 4',
+      description: 'A node that repeats erased operators.',
+      atmosphere: 'operator_0 never left the relay. Your name was already here.',
+      objectives: {
+        discover_mirror: 'Discover mirror_relay',
+        connect_mirror: 'Connect to the mirror relay',
+        read_mirror_index: 'Read mirror_index.dat',
+        discover_echo_cmd: 'Discover the echo command',
+        echo_operator: 'Query the ghost operator',
+        impossible_response: 'Receive the impossible response',
+      },
+      rewardsSummary: '+300 BitTek · echo command · operator_shadow.log',
+    },
+    protocole_veil: {
+      title: 'VEIL Protocol',
+      subtitle: 'Mission 5',
+      description: 'UltraTech offers a deal. VEIL awaits a response.',
+      atmosphere: 'Cooperate, and this session may still be classified as a minor incident.',
+      objectives: {
+        receive_veil: 'Receive the VEIL transmission',
+        read_secops_notice: 'Read secops_notice.log',
+        veil_choice: 'Respond to VEIL',
+        unlock_secops_gate: 'Unlock secops_gate',
+        probe_secops_gate: 'Probe secops_gate',
+      },
+      rewardsSummary: '+350 BitTek · Signal Scrubber · partial truth',
     },
     node_fantome: {
       title: 'Ghost Node',
@@ -566,11 +795,22 @@ export default {
     use: 'Use',
     owned: 'Owned',
     alreadyOwned: 'Already owned',
+    missionLimit: 'Mission limit',
     items: {
       firewall_jetable: {
         name: 'Disposable Firewall',
         description: 'Ephemeral network barrier.',
         effect: 'Reduces TRACE by 15 pts.',
+      },
+      trace_cleaner: {
+        name: 'Trace Cleaner',
+        description: 'Network signature eraser.',
+        effect: 'Reduces TRACE by 20 pts.',
+      },
+      signal_scrubber: {
+        name: 'Signal Scrubber',
+        description: 'Clandestine tool — deep eraser.',
+        effect: 'Reduces TRACE by 25 pts.',
       },
       proxy_fantome: {
         name: 'Ghost Proxy',
@@ -703,11 +943,89 @@ export default {
     },
   },
 
+  traceRecovery: {
+    signatureErased: '[TRACE] Operator signature partially erased.',
+    safeWindowTerminal: '[NET] Unstable network window — reduced surveillance.',
+    safeWindowLog: '[NET] Unstable network window — TRACE gains attenuated.',
+    safeWindowHint: 'Unstable network window — reduced surveillance.',
+  },
+
+  missionCleanup: {
+    seal: 'CLANDESTINE CHANNEL',
+    title: 'Cleanup window detected.',
+    subtitle: 'UltraTech is recalibrating its sensors. Use it.',
+    eventLog: '[???] Cleanup window detected — tactical choice available.',
+    skip: 'Let it pass',
+    choices: {
+      bittek: {
+        label: 'Exfiltrate credits',
+        effect: 'Recover +80 BitTek.',
+      },
+      trace: {
+        label: 'Erase signature',
+        effect: 'Reduce TRACE by 15%.',
+      },
+      firewall: {
+        label: 'Recover a tool',
+        effect: 'Obtain a Disposable Firewall.',
+      },
+    },
+    result: {
+      bittek: '[SYS] Exfiltration successful — +{{amount}} BitTek.',
+      trace: '[TRACE] Partial cleanup — {{old}}% → {{trace}}%.',
+      firewall: '[SYS] Disposable Firewall added to inventory.',
+      skip: '[SYS] Cleanup window expired.',
+    },
+  },
+
+  gameOver: {
+    seal: 'ULTRATECH SECOPS',
+    utMessages: {
+      location: 'LOCATION CONFIRMED',
+      intervention: 'INTERVENTION AUTHORIZED',
+      session: 'SESSION TERMINATED',
+    },
+    terminal: {
+      critical: '[!!!] CRITICAL TRACE — 100%',
+      engaged: '[!!!] ULTRATECH SECOPS — ARREST PROTOCOL',
+      hijacked: '[SYS] TERMINAL COMPROMISED — EXTERNAL CONTROL',
+      cmdWhoami: '> whoami',
+      accessRevoked: '{{name}} [ACCESS REVOKED]',
+      cmdDisconnect: '> disconnect --force',
+      cmdBlocked: '[ERR] COMMAND BLOCKED BY ULTRATECH SECOPS',
+      cmdPurge: '> purge trace',
+      purgeDenied: '[ERR] DENIED — TRACE LOCKED AT 100%',
+    },
+    videoLabel: 'SECOPS TRANSMISSION — SYSTEM FAILURE',
+    report: {
+      title: 'ULTRATECH SECOPS REPORT',
+      subtitle: 'Operator file — intervention complete',
+      operator: 'Operator',
+      finalTrace: 'Final TRACE',
+      suspiciousCommands: 'Suspicious commands',
+      visitedNodes: 'Visited nodes',
+      sessionDuration: 'Session duration',
+      status: 'Status',
+      statusValue: 'DETAINED',
+      none: '—',
+      commandEntry: '{{cmd}} ×{{count}}',
+    },
+    rareLines: [
+      'We were watching you from the start.',
+      'This session was never supposed to exist.',
+    ],
+    actions: {
+      newIdentity: 'New identity',
+      returnHome: 'Return to home screen',
+    },
+  },
+
   errors: {
     retry: 'Retry',
     marketNotFound: 'Item not found',
     marketInsufficient: 'Insufficient BitTek',
     marketNotInInventory: 'Item not in inventory',
+    marketMissionLimit: 'Purchase limit reached for this mission.',
     marketPurchase: '[DEMO MARKET] Purchase: {{name}} (-{{price}} BitTek)',
   },
 
@@ -720,6 +1038,7 @@ export default {
     loadSession: 'Unable to load session ({{message}})',
     resetError: 'Reset error: {{message}}',
     sessionLoading: 'Loading session…',
+    narrativeChoiceInterrupted: '[???] The transmission was interrupted.',
   },
 
   footer: {
@@ -796,6 +1115,98 @@ export default {
     footerForced: 'Forced interface',
   },
 
+  influenceUnlock: {
+    morseRareCatalog: '[???] New stock flagged on the private channel.',
+    veilDirect: '[UT/SECOPS] Profile priority — enhanced observation.',
+    absentNode: '[NET] Unlisted segment detected on the map.',
+    absentWhisper: '[???] ...incomplete signal... persists...',
+  },
+
+  influenceChoices: {
+    nova_listen: {
+      seal: 'INCOMING CHANNEL — DECISION',
+      title: 'Transmission ended',
+      subtitle: 'N0VA spoke. The terminal awaits your reaction.',
+      options: {
+        listen: { label: 'Keep listening', hint: 'Stay on the frequency.' },
+        ignore: { label: 'Ignore the signal', hint: 'Cut the channel.' },
+      },
+      listen: '[N0VA] ...thanks for not looking away.',
+      ignore: '[SYS] Channel closed. Something will remember anyway.',
+    },
+    veil_cut: {
+      seal: 'SECOPS — OBSERVATION',
+      title: 'VEIL is watching',
+      subtitle: 'The SECOPS transmission is still open.',
+      options: {
+        cut: { label: 'Cut the transmission', hint: 'Reject observation.' },
+        stay: { label: 'Stay connected', hint: 'Accept surveillance.' },
+      },
+      cut: '[NET] VEIL signal interrupted — parallel trace detected.',
+      stay: '[UT/SECOPS] Session confirmed under observation.',
+    },
+    morse_intel: {
+      seal: 'GHOST BROKER — OFFER',
+      title: 'Private intel',
+      subtitle: 'MORSE offers an off-catalog fragment. 35 BitTek.',
+      options: {
+        buy: { label: 'Buy the intel', hint: '35 BitTek — untraced source.' },
+        decline: { label: 'Decline', hint: 'Close the private channel.' },
+      },
+      buy: '[BROKER] Fragment delivered — someone else pays for your mistakes.',
+      decline: '[BROKER] Offer withdrawn. The market does not insist.',
+    },
+    ut_ignore: {
+      seal: 'ULTRATECH — PROTOCOL',
+      title: 'Triangulation in progress',
+      subtitle: 'UltraTech requests a protocol response.',
+      options: {
+        ignore: { label: 'Ignore UltraTech', hint: 'Continue infiltration.' },
+        obey: { label: 'Obey protocol', hint: 'Reduce visibility.' },
+      },
+      ignore: '[???] The protocol waits. You do not.',
+      obey: '[UT/SECOPS] Partial compliance logged.',
+    },
+    forbidden_signal: {
+      seal: 'SATLINK_03 — CLASSIFIED SIGNAL',
+      title: 'Forbidden transmission',
+      subtitle: 'An encrypted video waits on the orbital relay.',
+      options: {
+        open: { label: 'Open the transmission', hint: 'Discover ECHO_17.' },
+        ignore: { label: 'Ignore the signal', hint: 'Let UltraTech erase it.' },
+      },
+      open: '[ORBIT] Video stream decrypted — source : ECHO_17.',
+      ignore: '[ORBIT] Signal ignored. It continues without you.',
+      ignoreEcho: '[ECHO_17] ...',
+    },
+    echo_signal: {
+      seal: 'ECHO_17 — INTERCEPTED SIGNAL',
+      title: 'Transmission ended',
+      subtitle: 'The signal awaits a decision.',
+      options: {
+        save: { label: 'Save the signal', hint: 'Keep the ECHO_17 fragment.' },
+        cut: { label: 'Cut the signal', hint: 'Refuse the frequency.' },
+        sell: { label: 'Sell to MORSE', hint: '+120 BitTek — incomplete truth.' },
+      },
+      save: '[ECHO_17] Fragment archived — someone else will hear it too.',
+      cut: '[NET] Signal cut — partial fragment recovered from buffer.',
+      sell: '[BROKER] MORSE pays for your listening — fragment delivered.',
+    },
+    veil_protocol: {
+      seal: 'SECOPS — VEIL PROTOCOL',
+      title: 'VEIL awaits a response',
+      subtitle: 'Cooperate, ignore, or warn N0VA.',
+      options: {
+        cooperate: { label: 'Cooperate temporarily', hint: 'Reduce VEIL suspicion.' },
+        ignore: { label: 'Ignore VEIL', hint: 'Refuse the deal.' },
+        warn_nova: { label: 'Warn N0VA', hint: 'Transmit the warning.' },
+      },
+      cooperate: '[UT/SECOPS] Partial cooperation — secops_gate unlocked.',
+      ignore: '[VEIL] Silence logged — profile remains priority.',
+      warn_nova: '[N0VA] Warning transmitted — VEIL watches both channels.',
+    },
+  },
+
   transmissions: {
     ui: {
       live: '● SIGNAL',
@@ -807,9 +1218,9 @@ export default {
       name: 'ECHO_17',
       tag: 'GHOST RELAY — FRAGMENT',
       messages: {
-        0: 'Don\'t trust everything that answers you.',
-        1: 'SATLINK_03 wasn\'t empty.',
-        2: 'If she talks to you… wait before you reply.',
+        0: 'If you can hear me… don\'t answer the first voice.',
+        1: 'SATLINK_03 never transmitted outward.',
+        2: 'Someone is rewriting operators.',
       },
       hints: {
         0: 'The relay does not answer the curious. It answers scans.',
@@ -819,12 +1230,21 @@ export default {
       name: 'VEIL',
       tag: 'SECOPS — OBSERVATION',
       messages: {
-        0: 'Your activity is becoming problematic.',
-        1: 'This session is being observed.',
+        0: 'Your profile is becoming a priority.',
+        1: 'Cooperate, and this session may still be classified as a minor incident.',
         2: 'You\'re not as invisible as you think.',
       },
       hints: {
         0: 'Every unknown attempt is logged.',
+      },
+      influence: {
+        low: {
+          0: 'Stay discreet and all will be fine.',
+        },
+        high: {
+          0: 'Your profile is becoming priority.',
+          1: 'We know where to look.',
+        },
       },
     },
     morse: {
@@ -838,6 +1258,14 @@ export default {
       hints: {
         0: 'Want a door? Start by finding the command that knocks.',
       },
+      influence: {
+        low: {
+          0: 'You hesitate. The network does too.',
+        },
+        high: {
+          0: 'For you, I have doors UltraTech doesn\'t index.',
+        },
+      },
     },
     absent: {
       name: 'THE ABSENT',
@@ -846,6 +1274,15 @@ export default {
         0: '...still... connected...',
         1: 'operator_0 never left the relay.',
         2: 'don\'t stare at the node too long.',
+      },
+      influence: {
+        mid: {
+          0: '...you too... you stay...',
+        },
+        high: {
+          0: '...I see you... from the relay...',
+          1: '...don\'t leave...',
+        },
       },
     },
     nova: {
@@ -858,6 +1295,16 @@ export default {
       },
       hints: {
         0: 'Some words are not commands. Not yet.',
+      },
+      influence: {
+        high: {
+          0: 'I can still protect you.',
+          1: 'Stay close to me. Not them.',
+        },
+        low: {
+          0: 'Why do you keep listening to them?',
+          1: 'You prefer their law to mine.',
+        },
       },
     },
   },

@@ -7,6 +7,14 @@
   overflow-y: auto;
 }
 
+.statusbar__safe-window {
+  margin: 0.35rem 0 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: rgba(134, 239, 172, 0.75);
+  font-style: italic;
+}
+
 /* Objectif */
 .statusbar__objective {
   padding: 1rem 1.1rem;

@@ -30,6 +30,20 @@ import {
 
   submitPlayerOnboarding,
 
+  clearActiveUiEffect,
+
+  forceUnlockTerminal,
+
+  dismissTraceWarning20,
+
+  dismissTraceTriangulation50,
+
+  resolveTraceEmergency75,
+
+  resolveMissionCleanup,
+
+  resolveNarrativeChoice,
+
 } from './api/client'
 
 import Terminal from './components/Terminal'
@@ -73,6 +87,18 @@ import CharacterTransmission from './components/CharacterTransmission'
 
 import NarrativeOnboarding from './components/NarrativeOnboarding'
 
+import TraceWarningModal from './components/TraceWarningModal'
+
+import TraceTriangulationModal from './components/TraceTriangulationModal'
+
+import TraceEmergencyModal from './components/TraceEmergencyModal'
+
+import MissionCleanupModal from './components/MissionCleanupModal'
+
+import NarrativeChoiceModal from './components/NarrativeChoiceModal'
+
+import ModalErrorBoundary from './components/ModalErrorBoundary'
+
 import CinematicEventManager from './systems/CinematicEventManager'
 
 import { getRandomRollDelayMs } from './systems/RandomCinematicEvents'
@@ -80,6 +106,14 @@ import { getRandomRollDelayMs } from './systems/RandomCinematicEvents'
 import { getRandomTransmissionRollDelayMs } from './systems/CharacterTransmissionSystem.jsx'
 
 import { interpolatePlayerName } from './utils/playerName'
+
+import { completePlayerOnboarding } from './demo/playerOnboarding'
+
+import {
+  computeNarrativeTerminalLock,
+  getNarrativeLockStartedAt,
+  TERMINAL_LOCK_FAILSAFE_MS,
+} from './utils/terminalLock'
 
 import './App.css'
 
@@ -177,6 +211,10 @@ function App() {
   const [gameOverSkipToFinal, setGameOverSkipToFinal] = useState(false)
 
   const [openApps, setOpenApps] = useState(['terminal'])
+
+  const [onboardingBypass, setOnboardingBypass] = useState(false)
+
+  const [lockClock, setLockClock] = useState(0)
 
   const gameOverTriggeredRef = useRef(false)
 
@@ -304,6 +342,20 @@ function App() {
 
       /* ignore */
 
+    } finally {
+
+      try {
+
+        const cleared = await clearActiveUiEffect()
+
+        if (cleared?.state) setGameState(cleared.state)
+
+      } catch {
+
+        setGameState((prev) => (prev ? { ...prev, activeUiEffect: null } : prev))
+
+      }
+
     }
 
   }, [])
@@ -321,6 +373,227 @@ function App() {
     } catch {
 
       /* ignore */
+
+    } finally {
+
+      setMysteryEffect(null)
+
+      try {
+
+        const cleared = await clearActiveUiEffect()
+
+        if (cleared?.state) setGameState(cleared.state)
+
+      } catch {
+
+        setGameState((prev) => (prev ? { ...prev, activeUiEffect: null } : prev))
+
+      }
+
+    }
+
+  }, [])
+
+
+
+  const handleUiEffectExpire = useCallback(async () => {
+
+    setMysteryEffect(null)
+
+    try {
+
+      const result = await clearActiveUiEffect()
+
+      if (result?.state) setGameState(result.state)
+
+    } catch {
+
+      setGameState((prev) => (prev ? { ...prev, activeUiEffect: null } : prev))
+
+    }
+
+  }, [])
+
+
+
+  const handleTraceWarningDismiss = useCallback(async () => {
+
+    try {
+
+      const result = await dismissTraceWarning20()
+
+      if (result?.state) setGameState(result.state)
+
+      if (result?.autoLines?.length) {
+
+        setTerminalLines((prev) => [...prev, ...result.autoLines, ''])
+
+      }
+
+    } catch {
+
+      setGameState((prev) => (prev ? { ...prev, traceWarning20: null } : prev))
+
+    }
+
+  }, [])
+
+
+
+  const handleTraceTriangulationDismiss = useCallback(async () => {
+
+    try {
+
+      const result = await dismissTraceTriangulation50()
+
+      if (result?.state) setGameState(result.state)
+
+      if (result?.autoLines?.length) {
+
+        setTerminalLines((prev) => [...prev, ...result.autoLines, ''])
+
+      }
+
+    } catch {
+
+      setGameState((prev) => (prev ? { ...prev, traceTriangulation50: null } : prev))
+
+    }
+
+  }, [])
+
+
+
+  const handleTraceEmergencyChoice = useCallback(async (choice) => {
+
+    try {
+
+      const result = await resolveTraceEmergency75(choice)
+
+      if (result?.state) setGameState(result.state)
+
+      if (result?.output?.length) {
+
+        setTerminalLines((prev) => [...prev, ...result.output, ''])
+
+      }
+
+    } catch {
+
+      setGameState((prev) => (prev ? { ...prev, traceEmergency75: null } : prev))
+
+    }
+
+  }, [])
+
+
+
+  const handleMissionCleanupChoice = useCallback(async (choice) => {
+
+    try {
+
+      const result = await resolveMissionCleanup(choice)
+
+      if (result?.state) setGameState(result.state)
+
+      if (result?.output?.length) {
+
+        setTerminalLines((prev) => [...prev, ...result.output, ''])
+
+      }
+
+    } catch {
+
+      setGameState((prev) => (prev ? { ...prev, missionCleanup: null } : prev))
+
+    }
+
+  }, [])
+
+
+
+  const handleNarrativeChoice = useCallback(async (choiceId, option) => {
+
+    if (!choiceId || !option) {
+      // eslint-disable-next-line no-console
+      console.warn('[NarrativeChoiceModal] missing choice payload', { choiceId, option })
+      setGameState((prev) => (prev ? { ...prev, narrativeChoice: null } : prev))
+      setTerminalLines((prev) => [...prev, t('app.narrativeChoiceInterrupted'), ''])
+      return
+    }
+
+    try {
+
+      const result = await resolveNarrativeChoice(choiceId, option)
+
+      if (result?.state) setGameState(result.state)
+
+      if (result?.output?.length) {
+
+        setTerminalLines((prev) => [...prev, ...result.output, ''])
+
+      }
+
+      if (result?.error) {
+
+        setTerminalLines((prev) => [...prev, t('app.narrativeChoiceInterrupted'), ''])
+
+      }
+
+    } catch (err) {
+
+      // eslint-disable-next-line no-console
+      console.warn('[NarrativeChoiceModal] resolve failed', err)
+
+      setGameState((prev) => (prev ? { ...prev, narrativeChoice: null } : prev))
+
+      setTerminalLines((prev) => [...prev, t('app.narrativeChoiceInterrupted'), ''])
+
+    }
+
+  }, [t])
+
+
+
+  const handleNarrativeModalError = useCallback(() => {
+
+    setGameState((prev) => (prev ? { ...prev, narrativeChoice: null } : prev))
+
+    setTerminalLines((prev) => [...prev, t('app.narrativeChoiceInterrupted'), ''])
+
+  }, [t])
+
+
+
+  const forceUnlockTerminalState = useCallback(async () => {
+
+    // eslint-disable-next-line no-console
+    console.warn('[failsafe unlock triggered]')
+
+    setMysteryEffect(null)
+
+    try {
+
+      const result = await forceUnlockTerminal()
+
+      if (result?.state) setGameState(result.state)
+
+    } catch {
+
+      setGameState((prev) => (prev ? {
+        ...prev,
+        activeUiEffect: null,
+        activeCinematic: null,
+        activeCharacterTransmission: null,
+        ultraTechPresence: {
+          ...(prev.ultraTechPresence || {}),
+          terminalLockUntil: 0,
+        },
+        traceWarning20: null,
+        traceTriangulation50: null,
+        traceEmergency75: null,
+        missionCleanup: null,
+      } : prev))
 
     }
 
@@ -583,7 +856,49 @@ function App() {
 
     } catch (err) {
 
-      setError(err.message)
+      console.error('[onboarding]', err)
+
+      try {
+
+        const result = completePlayerOnboarding('')
+
+        setGameState(result.state)
+
+        setAuthUser({ username: result.playerName })
+
+        setTerminalLines((prev) => [
+
+          ...prev,
+
+          '',
+
+          t('onboarding.confirmed', { playerName: result.playerName }),
+
+          '',
+
+        ])
+
+        setError(null)
+
+      } catch (fallbackErr) {
+
+        console.error('[onboarding] fallback failed', fallbackErr)
+
+        setOnboardingBypass(true)
+
+        setAuthenticated(false)
+
+        setShowWelcome(true)
+
+        setGameState(null)
+
+        setBooting(false)
+
+        bootDoneRef.current = false
+
+        setError(t('onboarding.fallbackError'))
+
+      }
 
     }
 
@@ -673,8 +988,6 @@ function App() {
 
     if (!command.trim() || commandLoading || gameOverActive) return
 
-    if (gameState?.activeCinematic?.lockTerminal) return
-
     if (gameState?.gameOver && !fakeOver) return
 
 
@@ -733,7 +1046,9 @@ function App() {
 
     } catch (err) {
 
-      setTerminalLines((prev) => [...prev, `[ERR] ${err.message}`, ''])
+      console.error('[command]', err)
+
+      setTerminalLines((prev) => [...prev, t('terminal.shellRejected'), ''])
 
     } finally {
 
@@ -791,6 +1106,8 @@ function App() {
 
     setOpenApps(['terminal'])
 
+    setOnboardingBypass(false)
+
     bootDoneRef.current = true
 
     setBooting(false)
@@ -826,6 +1143,46 @@ function App() {
 
 
   const handleGameOverRestart = () => handleReset(true)
+
+
+
+  const handleGameOverReturnHome = useCallback(async () => {
+
+    setGameOverActive(false)
+
+    setGameOverSkipToFinal(false)
+
+    gameOverTriggeredRef.current = false
+
+    setGameState(null)
+
+    setTerminalLines([])
+
+    setOpenApps([])
+
+    setBooting(false)
+
+    setOnboardingBypass(false)
+
+    uiIntrosHandledRef.current = {}
+
+    resetNotificationCache()
+
+    try {
+
+      await resetGame()
+
+    } catch {
+
+      /* ignore */
+
+    }
+
+    setAuthenticated(true)
+
+    setShowWelcome(true)
+
+  }, [])
 
 
 
@@ -1022,6 +1379,46 @@ function App() {
 
   useEffect(() => {
 
+    if (gameOverActive || !gameState) return undefined
+
+    const locked = computeNarrativeTerminalLock(gameState, Date.now())
+
+    if (!locked) return undefined
+
+    const startedAt = getNarrativeLockStartedAt(gameState) || Date.now()
+
+    const tick = setInterval(() => {
+
+      const now = Date.now()
+
+      setLockClock(now)
+
+      if (now - startedAt > TERMINAL_LOCK_FAILSAFE_MS) {
+
+        forceUnlockTerminalState()
+
+      }
+
+    }, 500)
+
+    return () => clearInterval(tick)
+
+  }, [
+    gameOverActive,
+    gameState?.activeUiEffect,
+    gameState?.activeCinematic,
+    gameState?.activeCharacterTransmission,
+    gameState?.ultraTechPresence?.terminalLockUntil,
+    gameState?.traceWarning20,
+    gameState?.traceTriangulation50,
+    gameState?.traceEmergency75,
+    forceUnlockTerminalState,
+  ])
+
+
+
+  useEffect(() => {
+
     if (!inDemo || showWelcome || !authenticated || loading || booting) return undefined
 
     if (gameState && !gameState.onboardingSeen) return undefined
@@ -1118,19 +1515,34 @@ function App() {
 
   const cinematicActive = gameState?.activeCinematic
   const transmissionActive = gameState?.activeCharacterTransmission
-  const cinematicLocksTerminal = cinematicActive?.lockTerminal
-  const presenceLockUntil = gameState?.ultraTechPresence?.terminalLockUntil || 0
-  const presenceLocksTerminal = presenceLockUntil > Date.now()
-  const uiFreezeActive = gameState?.activeUiEffect?.type === 'ut_freeze'
-
-  const isLocked = !!error || commandLoading || gameOverActive || cinematicLocksTerminal
-    || presenceLocksTerminal || uiFreezeActive || onboardingActive
-
-  const networkTheme = gameState?.network?.currentNodeMeta?.theme ?? 'default'
+  const traceWarningActive = gameState?.traceWarning20
+  const traceEmergencyActive = gameState?.traceEmergency75
+  const missionCleanupActive = gameState?.missionCleanup
+  const narrativeChoiceActive = gameState?.narrativeChoice
+  const traceTriangulationActive = (traceEmergencyActive || missionCleanupActive || narrativeChoiceActive)
+    ? null
+    : gameState?.traceTriangulation50
+  const emergencyFirewallCount = gameState?.inventory?.find(
+    (e) => e.itemId === 'firewall_jetable',
+  )?.quantity || 0
+  const emergencyBittek = gameState?.player?.bittek || 0
+  const lockNow = lockClock || Date.now()
+  const narrativeTerminalLock = computeNarrativeTerminalLock(gameState, lockNow)
 
   const operatorName = gameState?.player?.username || authUser?.username || 'GHOST'
 
-  const onboardingActive = !!(gameState && !gameState.onboardingSeen && !booting && !loading)
+  const onboardingActive = !!(
+    gameState
+    && !gameState.onboardingSeen
+    && !booting
+    && !loading
+    && !onboardingBypass
+  )
+
+  const isLocked = !!error || commandLoading || gameOverActive || onboardingActive
+    || narrativeTerminalLock
+
+  const networkTheme = gameState?.network?.currentNodeMeta?.theme ?? 'default'
 
   const ui = computeUiProgression(gameState)
 
@@ -1235,7 +1647,7 @@ function App() {
   return (
 
     <div
-      className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${activeEffect ? 'app--mystery-active' : ''} ${horrorActive ? 'app--horror-active' : ''} ${cinematicActive ? 'app--cinematic-active' : ''} ${cinematicLocksTerminal ? 'app--cinematic-lock' : ''} ${traceFx.className}`}
+      className={`app app--theme-${networkTheme} ${ui.earlyGame ? 'app--focus-terminal' : ''} ${gameOverActive ? 'app--game-over' : ''} ${activeEffect ? 'app--mystery-active' : ''} ${horrorActive ? 'app--horror-active' : ''} ${cinematicActive ? 'app--cinematic-active' : ''} ${narrativeTerminalLock ? 'app--cinematic-lock' : ''} ${traceFx.className}`}
       style={{ '--trace-scan-opacity': traceFx.scanlineOpacity }}
     >
 
@@ -1557,13 +1969,53 @@ function App() {
 
 
 
+      <TraceWarningModal
+        warning={(traceTriangulationActive || traceEmergencyActive || missionCleanupActive) ? null : traceWarningActive}
+        onDismiss={handleTraceWarningDismiss}
+      />
+
+
+
+      <TraceTriangulationModal
+        triangulation={(traceEmergencyActive || missionCleanupActive) ? null : traceTriangulationActive}
+        onDismiss={handleTraceTriangulationDismiss}
+      />
+
+
+
+      <TraceEmergencyModal
+        emergency={missionCleanupActive ? null : traceEmergencyActive}
+        firewallCount={emergencyFirewallCount}
+        bittek={emergencyBittek}
+        onChoice={handleTraceEmergencyChoice}
+      />
+
+
+
+      <MissionCleanupModal
+        cleanup={missionCleanupActive}
+        onChoice={handleMissionCleanupChoice}
+      />
+
+      <ModalErrorBoundary
+        resetKey={narrativeChoiceActive?.id ?? 'none'}
+        onError={handleNarrativeModalError}
+      >
+        <NarrativeChoiceModal
+          choice={narrativeChoiceActive}
+          onChoice={handleNarrativeChoice}
+        />
+      </ModalErrorBoundary>
+
+
+
       <AudioToggle />
 
 
 
       <MysteryOverlay
         effect={activeEffect}
-        onExpire={() => setMysteryEffect(null)}
+        onExpire={handleUiEffectExpire}
       />
 
       <GameOverSequence
@@ -1574,9 +2026,13 @@ function App() {
 
         playerName={operatorName}
 
+        gameOverReport={gameState?.gameOverReport}
+
         onTerminalAppend={appendTerminalLine}
 
         onRestart={handleGameOverRestart}
+
+        onReturnHome={handleGameOverReturnHome}
 
       />
 

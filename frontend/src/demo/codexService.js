@@ -9,6 +9,7 @@ import {
   FILE_TO_CODEX,
 } from './codexCatalog'
 import { filterCodexOrder, NOVA_CODEX_IDS } from '../utils/novaGate'
+import { getAdaptiveCodexDescription } from '../systems/influenceConsequences'
 import { getLocale, getTranslator } from '../i18n'
 
 export function ensureCodexState(save) {
@@ -16,13 +17,16 @@ export function ensureCodexState(save) {
   if (!save.codexNotified) save.codexNotified = {}
 }
 
-function localizedEntry(entryId) {
+function localizedEntry(entryId, save = null) {
   const tr = getTranslator(getLocale())
   const meta = tr.raw(`codex.entries.${entryId}`) || CODEX_ENTRIES[entryId]
   if (!meta) return null
+  const description = save
+    ? getAdaptiveCodexDescription(entryId, save, meta.description)
+    : meta.description
   return {
     name: meta.name,
-    description: meta.description,
+    description,
     nextHint: meta.nextHint,
     rarity: meta.rarity,
   }
@@ -37,7 +41,7 @@ export function isUnlocked(save, entryId) {
 function queueCodexDiscovery(save, entryId) {
   save._pendingCodexDiscoveries = save._pendingCodexDiscoveries || []
   if (save._pendingCodexDiscoveries.some((e) => e.id === entryId)) return
-  const meta = localizedEntry(entryId)
+  const meta = localizedEntry(entryId, save)
   save._pendingCodexDiscoveries.push({
     id: entryId,
     name: meta?.name || CODEX_ENTRIES[entryId].name,
@@ -51,7 +55,7 @@ export function discoverCodex(save, entryId) {
 
   ensureCodexState(save)
   save.codexDiscovered[entryId] = new Date().toISOString()
-  const meta = localizedEntry(entryId)
+  const meta = localizedEntry(entryId, save)
   const tr = getTranslator(getLocale())
   save.events_log = save.events_log || []
   save.events_log.push(tr('codex.unlocked', { name: meta?.name || entryId }))
@@ -97,7 +101,7 @@ export function buildCodexState(save) {
     const discoveredAt = discovered[id]
 
     if (discoveredAt) {
-      const meta = localizedEntry(id)
+      const meta = localizedEntry(id, save)
       return {
         id,
         slot: index + 1,

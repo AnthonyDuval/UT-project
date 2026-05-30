@@ -7,6 +7,11 @@ import { processMysteryEvents } from './eventManager'
 import { discoverCodex } from './codexService'
 import { NODE_META } from './demoState'
 import { tx, txRaw } from '../i18n/helpers'
+import { isEchoDiscovered, cmdEchoAct2 } from './act2Commands'
+import { syncPresenceLevel } from '../systems/UltraTechPresence'
+import { tryTriggerTraceWarning20 } from '../systems/traceWarning20'
+import { tryTriggerTraceTriangulation50 } from '../systems/traceTriangulation50'
+import { tryTriggerTraceEmergency75 } from '../systems/traceEmergency75'
 
 function bumpHiddenUse(save, cmd) {
   save.hiddenCommandUses = save.hiddenCommandUses || {}
@@ -95,7 +100,26 @@ function cmdNova(save) {
   }
 }
 
-function cmdTraceHidden(save) {
+function cmdTraceHidden(save, args = []) {
+  if (args[0] === 'set' && args[1] !== undefined) {
+    const val = parseInt(args[1], 10)
+    if (!Number.isNaN(val)) {
+      save.traceLevel = Math.min(100, Math.max(0, val))
+      tryTriggerTraceWarning20(save)
+      tryTriggerTraceTriangulation50(save)
+      tryTriggerTraceEmergency75(save)
+      if (save.traceLevel >= 100) {
+        save.gameOver = true
+        save.events_log.push(tx('terminal.trace.gameOver'))
+      }
+      syncPresenceLevel(save)
+      return {
+        output: [`[DEBUG] TRACE → ${save.traceLevel}%`],
+        addTrace: 0,
+      }
+    }
+  }
+
   bumpHiddenUse(save, 'trace')
   discoverCodex(save, 'trace_introspection')
   const level = save.traceLevel
@@ -129,6 +153,10 @@ function cmdTraceHidden(save) {
 }
 
 function cmdEcho(save, args) {
+  if (isEchoDiscovered(save)) {
+    return cmdEchoAct2(save, args)
+  }
+
   bumpHiddenUse(save, 'echo')
   discoverCodex(save, 'echo_chamber')
   const text = args.join(' ') || save.lastCommand || ''
@@ -214,7 +242,7 @@ export function handleHiddenCommand(save, cmd, args) {
     case 'mirror': return cmdMirror(save)
     case 'ghost': return cmdGhost(save)
     case 'nova': return cmdNova(save)
-    case 'trace': return cmdTraceHidden(save)
+    case 'trace': return cmdTraceHidden(save, args)
     case 'echo': return cmdEcho(save, args)
     case 'override': return cmdOverride(save)
     default: return null

@@ -3,6 +3,8 @@ import { getHintBrokerState } from './hintBroker'
 import { createBehaviorState } from '../systems/PlayerBehaviorTracker'
 import { getFileContent, getFileDescription } from '../i18n/helpers'
 import { getPlayerDisplayName } from '../utils/playerName'
+import { buildGameOverReport } from '../utils/gameOverReport'
+import { isSafeWindowActive } from '../systems/traceRecovery'
 import {
   NOVA_GATED_FILES,
   sanitizeMissionRewards,
@@ -52,14 +54,62 @@ const MISSION_DEFS = {
     id: 'transmission_interdite',
     title: 'Transmission Interdite',
     subtitle: 'Mission 3',
-    description: 'Intercepter une transmission classifiée UltraTech.',
+    description: 'SATLINK_03 n\'était pas un relais — c\'était une prison de signaux.',
     atmosphere: 'Quelqu\'un parle en dehors des canaux officiels. UltraTech efface déjà la trace.',
     primaryNode: 'satlink_03',
-    objectiveDefs: [],
+    objectiveDefs: [
+      { id: 'read_orbital_manifest', label: 'Lire orbital_manifest.log' },
+      { id: 'discover_listen', label: 'Découvrir la commande listen' },
+      { id: 'use_listen', label: 'Écouter SATLINK_03' },
+      { id: 'receive_echo17', label: 'Recevoir la transmission ECHO_17' },
+      { id: 'choose_signal', label: 'Décider du sort du signal' },
+      { id: 'unlock_echo_fragment', label: 'Récupérer echo_fragment.log' },
+    ],
     rewardsPreview: {
       bittek: 250,
       reputation: 2,
-      summary: 'Outil anti-trace avancé · accès segments profonds',
+      summary: 'Commande listen · Codex ECHO_17 · fragment orbital',
+    },
+  },
+  relais_miroir: {
+    id: 'relais_miroir',
+    title: 'Le Relais Miroir',
+    subtitle: 'Mission 4',
+    description: 'Un nœud qui répète les opérateurs effacés.',
+    atmosphere: 'operator_0 n\'a jamais quitté le relais. Votre nom était déjà ici.',
+    primaryNode: 'mirror_relay',
+    objectiveDefs: [
+      { id: 'discover_mirror', label: 'Découvrir mirror_relay' },
+      { id: 'connect_mirror', label: 'Se connecter au relais miroir' },
+      { id: 'read_mirror_index', label: 'Lire mirror_index.dat' },
+      { id: 'discover_echo_cmd', label: 'Découvrir la commande echo' },
+      { id: 'echo_operator', label: 'Interroger l\'opérateur fantôme' },
+      { id: 'impossible_response', label: 'Recevoir la réponse impossible' },
+    ],
+    rewardsPreview: {
+      bittek: 300,
+      reputation: 2,
+      summary: 'Commande echo · operator_shadow.log · THE_ABSENT',
+    },
+  },
+  protocole_veil: {
+    id: 'protocole_veil',
+    title: 'Protocole VEIL',
+    subtitle: 'Mission 5',
+    description: 'UltraTech propose un marché. VEIL attend une réponse.',
+    atmosphere: 'Coopérer, et cette session peut encore être classée comme incident mineur.',
+    primaryNode: 'satlink_03',
+    objectiveDefs: [
+      { id: 'receive_veil', label: 'Recevoir la transmission VEIL' },
+      { id: 'read_secops_notice', label: 'Lire secops_notice.log' },
+      { id: 'veil_choice', label: 'Répondre à VEIL' },
+      { id: 'unlock_secops_gate', label: 'Débloquer secops_gate' },
+      { id: 'probe_secops_gate', label: 'Sonder secops_gate' },
+    ],
+    rewardsPreview: {
+      bittek: 350,
+      reputation: 2,
+      summary: 'Signal Scrubber · accès SECOPS · vérité partielle',
     },
   },
   node_fantome: {
@@ -83,6 +133,23 @@ export function createFreshDemoState() {
   return {
     player: { username: '', bittek: 0, reputation: 0 },
     onboardingSeen: false,
+    warningTrace20Seen: false,
+    traceWarning20: null,
+    triangulation50Seen: false,
+    traceTriangulation50: null,
+    emergencyEscape75Seen: false,
+    traceEmergency75: null,
+    safeWindow: null,
+    missionCleanup: null,
+    missionCleanupOffers: [],
+    marketMissionPurchases: {},
+    characterInfluence: {
+      novaAffinity: 0,
+      veilSuspicion: 0,
+      morseTrust: 0,
+      absentExposure: 0,
+    },
+    influenceUnlocks: {},
     unlocked_commands: ['help', 'clear', 'files', 'open'],
     read_files: [],
     flags: {
@@ -100,6 +167,24 @@ export function createFreshDemoState() {
         rewardsClaimed: false,
       },
       satlink_intrusion: {
+        status: 'locked',
+        currentObjective: null,
+        completedObjectives: [],
+        rewardsClaimed: false,
+      },
+      transmission_interdite: {
+        status: 'locked',
+        currentObjective: null,
+        completedObjectives: [],
+        rewardsClaimed: false,
+      },
+      relais_miroir: {
+        status: 'locked',
+        currentObjective: null,
+        completedObjectives: [],
+        rewardsClaimed: false,
+      },
+      protocole_veil: {
         status: 'locked',
         currentObjective: null,
         completedObjectives: [],
@@ -174,6 +259,23 @@ export function createAdvancedDemoState() {
   return {
     player: { username: 'ghost_demo', bittek: 250, reputation: 3 },
     onboardingSeen: true,
+    warningTrace20Seen: false,
+    traceWarning20: null,
+    triangulation50Seen: false,
+    traceTriangulation50: null,
+    emergencyEscape75Seen: false,
+    traceEmergency75: null,
+    safeWindow: null,
+    missionCleanup: null,
+    missionCleanupOffers: [],
+    marketMissionPurchases: {},
+    characterInfluence: {
+      novaAffinity: 0,
+      veilSuspicion: 0,
+      morseTrust: 0,
+      absentExposure: 0,
+    },
+    influenceUnlocks: {},
     unlocked_commands: [
       'help', 'clear', 'ls', 'open', 'status', 'sync',
       'scan', 'connect', 'disconnect', 'probe', 'run', 'install', 'uninstall',
@@ -282,14 +384,23 @@ function buildMissionListItem(missionId, save) {
 export function buildMissionJournal(save) {
   const m1 = save.missions.signal_fantome
   const m2 = save.missions.satlink_intrusion
+  const m3 = save.missions.transmission_interdite
+  const m4 = save.missions.relais_miroir
+  const m5 = save.missions.protocole_veil
   const missions = [
     buildMissionListItem('signal_fantome', save),
     buildMissionListItem('satlink_intrusion', save),
+    buildMissionListItem('transmission_interdite', save),
+    buildMissionListItem('relais_miroir', save),
+    buildMissionListItem('protocole_veil', save),
   ]
   const completedMissions = missions.filter((m) => m.status === 'completed')
 
   let currentMissionId = null
-  if (m2?.status === 'active') currentMissionId = 'satlink_intrusion'
+  if (m5?.status === 'active') currentMissionId = 'protocole_veil'
+  else if (m4?.status === 'active') currentMissionId = 'relais_miroir'
+  else if (m3?.status === 'active') currentMissionId = 'transmission_interdite'
+  else if (m2?.status === 'active') currentMissionId = 'satlink_intrusion'
   else if (m1?.status === 'active') currentMissionId = 'signal_fantome'
 
   const currentMission = currentMissionId
@@ -333,6 +444,10 @@ const NODE_META = {
   void_relay: {
     id: 'void_relay', name: '██_VOID_RELAY', displayName: 'ghost@void_relay',
     securityLevel: 'UNKNOWN', traceMultiplier: 0.5, theme: 'ghost',
+  },
+  secops_gate: {
+    id: 'secops_gate', name: 'SECOPS_GATE', displayName: 'ghost@secops_gate',
+    securityLevel: 'BLACK', traceMultiplier: 2.2, theme: 'morgue',
   },
 }
 
@@ -424,8 +539,32 @@ export function toPublicState(save) {
     codex: buildCodexState(save),
     novaIntroSeen: !!save.novaIntroSeen,
     onboardingSeen: !!save.onboardingSeen,
+    warningTrace20Seen: !!save.warningTrace20Seen,
+    traceWarning20: save.traceWarning20?.open ? save.traceWarning20 : null,
+    triangulation50Seen: !!save.triangulation50Seen,
+    traceTriangulation50: save.traceTriangulation50?.open ? save.traceTriangulation50 : null,
+    emergencyEscape75Seen: !!save.emergencyEscape75Seen,
+    traceEmergency75: save.traceEmergency75?.open ? save.traceEmergency75 : null,
     ultraTechPresence: save.ultraTechPresence || { level: 'passive' },
     hintBroker: getHintBrokerState(save),
+    gameOverReport: save.gameOver ? buildGameOverReport(save) : null,
+    safeWindow: isSafeWindowActive(save, now)
+      ? { until: save.safeWindow.until, active: true }
+      : null,
+    missionCleanup: save.missionCleanup?.open
+      ? {
+        open: true,
+        missionId: save.missionCleanup.missionId,
+        startedAt: save.missionCleanup.startedAt,
+      }
+      : null,
+    narrativeChoice: save.narrativeChoice?.open
+      ? {
+        open: true,
+        id: save.narrativeChoice.id,
+        startedAt: save.narrativeChoice.startedAt,
+      }
+      : null,
   }
 }
 
@@ -546,6 +685,36 @@ export const DEMO_FILES = {
       '« SATLINK_03 est la porte d\'entrée. Cartographie tout. »',
       '— N0VA',
     ],
+  },
+  'orbital_manifest.log': {
+    node: 'satlink_03', unlock_key: 'mission3_active',
+    description: 'Manifeste orbital — journal interne',
+    content: [],
+  },
+  'echo_fragment.log': {
+    node: 'satlink_03', unlock_key: 'echo_fragment_unlocked',
+    description: 'Fragment ECHO_17 récupéré',
+    content: [],
+  },
+  'mirror_index.dat': {
+    node: 'mirror_relay', visible_on_node: true,
+    description: 'Index du relais miroir',
+    content: [],
+  },
+  'operator_shadow.log': {
+    node: 'mirror_relay', unlock_key: 'echo_operator_done',
+    description: 'Ombre opérateur — journal impossible',
+    content: [],
+  },
+  'secops_notice.log': {
+    node: 'local', unlock_key: 'mission5_active',
+    description: 'Avis SECOPS — protocole VEIL',
+    content: [],
+  },
+  'veil_protocol.enc': {
+    node: 'local', unlock_key: 'veil_protocol_unlocked',
+    description: 'Protocole VEIL chiffré',
+    content: [],
   },
   'memory_fragment.log': {
     node: 'local', unlock_key: 'mystery_memory_unlocked',

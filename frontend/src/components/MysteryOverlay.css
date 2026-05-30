@@ -438,3 +438,44 @@
   30% { opacity: 1; }
   100% { transform: translateY(60vh); opacity: 0; }
 }
+
+.mystery-overlay--session-surveillance {
+  pointer-events: all;
+  z-index: 920;
+  background: rgba(8, 0, 0, 0.55);
+  animation: onboarding-fade-in 0.35s ease-out;
+}
+
+.mystery-surveillance {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 2rem;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.mystery-surveillance__banner {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.28em;
+  color: var(--red-primary);
+  text-shadow: 0 0 18px rgba(230, 57, 70, 0.55);
+  animation: mystery-watch-pulse 1.6s ease-in-out infinite;
+}
+
+.mystery-surveillance__line {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+
+.mystery-surveillance__line--dim {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+}

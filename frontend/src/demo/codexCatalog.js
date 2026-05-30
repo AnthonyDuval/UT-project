@@ -27,6 +27,12 @@ export const CODEX_ORDER = [
   'terminal_auto',
   'memory_fragment',
   'unknown_signal',
+  'echo_17_contact',
+  'echo_17',
+  'satlink_lie',
+  'mirror_relay',
+  'the_absent',
+  'veil_protocol',
   'forbidden_segment',
   'archive_redacted',
 ]
@@ -136,6 +142,42 @@ export const CODEX_ENTRIES = {
     nextHint: 'L\'archive classifiée attend quelque part dans /home.',
     rarity: 'interdit',
   },
+  echo_17_contact: {
+    name: 'ECHO_17',
+    description: 'Transmission vidéo interceptée — voix synthétique, canal non répertorié. SATLINK_03 n\'était pas vide.',
+    nextHint: 'Certaines fréquences répondent à des mots que HELP ne liste pas.',
+    rarity: 'interdit',
+  },
+  echo_17: {
+    name: 'ECHO_17',
+    description: 'Survivant, enregistrement ou piège — ECHO_17 parle depuis SATLINK_03. UltraTech efface la source en direct.',
+    nextHint: 'Le mensonge du relais orbital n\'est que la surface.',
+    rarity: 'interdit',
+  },
+  satlink_lie: {
+    name: 'SATLINK_LIE',
+    description: 'SATLINK_03 n\'a jamais transmis vers l\'extérieur. C\'était une prison de signaux — opérateurs piégés, copiés, effacés.',
+    nextHint: 'Le relais miroir garde ce qu\'UltraTech efface.',
+    rarity: 'interdit',
+  },
+  mirror_relay: {
+    name: 'MIRROR_RELAY',
+    description: 'Le relais miroir répète les opérateurs. operator_0 n\'a jamais quitté le segment.',
+    nextHint: 'ECHO operator — le terminal répond avec votre nom.',
+    rarity: 'anomalie',
+  },
+  the_absent: {
+    name: 'THE_ABSENT',
+    description: 'Présence sans source — L\'ABSENT connaît le nom du joueur avant qu\'il ne se présente.',
+    nextHint: 'Elle n\'apparaît que quand le réseau oublie de mentir.',
+    rarity: 'anomalie',
+  },
+  veil_protocol: {
+    name: 'VEIL_PROTOCOL',
+    description: 'Protocole SECOPS — VEIL propose un marché : coopération contre classement incident mineur.',
+    nextHint: 'Répondre n\'est pas toujours obéir.',
+    rarity: 'interdit',
+  },
   forbidden_segment: {
     name: 'FORBIDDEN_SEGMENT',
     description: 'do_not_open.sys lu malgré l\'avertissement. Projet MIRROR — duplication de conscience opérateur.',
@@ -160,6 +202,11 @@ export const EVENT_TO_CODEX = {
   command_ghost_nova: 'ghost_echo',
   file_unknown_signal: 'unknown_signal',
   file_do_not_open_aftermath: 'forbidden_segment',
+  mission3_echo: 'echo_17',
+  mission3_satlink: 'satlink_lie',
+  mission4_mirror: 'mirror_relay',
+  mission4_absent: 'the_absent',
+  mission5_veil: 'veil_protocol',
 }
 
 export const FILE_TO_CODEX = {
@@ -167,4 +214,9 @@ export const FILE_TO_CODEX = {
   'unknown_signal.enc': 'unknown_signal',
   'do_not_open.sys': 'forbidden_segment',
   'archive_███.dat': 'archive_redacted',
+  'orbital_manifest.log': 'satlink_lie',
+  'echo_fragment.log': 'echo_17',
+  'mirror_index.dat': 'mirror_relay',
+  'operator_shadow.log': 'the_absent',
+  'secops_notice.log': 'veil_protocol',
 }

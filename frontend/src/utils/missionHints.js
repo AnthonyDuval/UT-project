@@ -45,9 +45,18 @@ export function syncMissionObjectiveText(save) {
 
   const m1 = save.missions?.signal_fantome
   const m2 = save.missions?.satlink_intrusion
+  const m3 = save.missions?.transmission_interdite
+  const m4 = save.missions?.relais_miroir
+  const m5 = save.missions?.protocole_veil
   if (m1?.status === 'active' && !save.flags?.mission_1_complete) {
     m1.currentObjective = lead.lead
   } else if (m2?.status === 'active') {
     m2.currentObjective = lead.lead
+  } else if (m3?.status === 'active') {
+    m3.currentObjective = lead.lead
+  } else if (m4?.status === 'active') {
+    m4.currentObjective = lead.lead
+  } else if (m5?.status === 'active') {
+    m5.currentObjective = lead.lead
   }
 }
